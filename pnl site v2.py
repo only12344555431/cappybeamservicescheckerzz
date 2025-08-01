@@ -1,26 +1,52 @@
+
 from flask import Flask, render_template_string, request, redirect, url_for, session, jsonify, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 import os
+import json
 from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev_key_123')
 
-# Kullanıcı veritabanı
-USERS = {
-    "admin": {
-        "password": generate_password_hash("admin123"),
-        "is_admin": True,
-        "is_vip": True,
-        "email": "admin@example.com",
-        "created_at": "2024-01-01"
-    }
-}
+# Kullanıcı veritabanını dosyadan yükle
+def load_users():
+    try:
+        with open('users.json', 'r', encoding='utf-8') as f:
+            users_data = json.load(f)
+            # JSON'dan gelen verileri düzenle
+            users = {}
+            for username, data in users_data.items():
+                users[username] = {
+                    'password': data['password'],
+                    'is_admin': username == 'admin',  # İlk kullanıcı admin olsun
+                    'is_vip': True,  # Tüm kullanıcılar VIP olsun
+                    'email': f"{username}@example.com",
+                    'created_at': "2024-01-01"
+                }
+            return users
+    except FileNotFoundError:
+        # Eğer dosya yoksa boş dict döndür
+        return {}
+
+def save_users(users):
+    try:
+        # Sadece password bilgilerini kaydet
+        users_data = {}
+        for username, data in users.items():
+            users_data[username] = {'password': data['password']}
+        
+        with open('users.json', 'w', encoding='utf-8') as f:
+            json.dump(users_data, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"Kullanıcı verileri kaydedilemedi: {e}")
+
+# Kullanıcıları yükle
+USERS = load_users()
 
 # API URL'leri
 API_URLS = {
-    "adsoyad": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}",
+    "adsoyad": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilce.php?ad={ad}&soyad={soyad}",
     "tcpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcpro.php?tc={tc}",
     "tcgsm": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcgsm.php?tc={tc}",
     "tapu": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tapu.php?tc={tc}",
@@ -30,7 +56,7 @@ API_URLS = {
     "gsmdetay": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsmdetay.php?gsm={gsm}",
     "gsm": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsm.php?gsm={gsm}",
     "adres": lambda tc, _: f"https://api.hexnox.pro/sowixapi/adres.php?tc={tc}",
-    "adsoyadilice": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}",
+    "adsoyadilice": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilce.php?ad={ad}&soyad={soyad}",
 }
 
 # Decorator'lar
@@ -69,7 +95,7 @@ BASE_TEMPLATE = '''
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -88,7 +114,7 @@ BASE_TEMPLATE = '''
             --text-primary: #ffffff;
             --text-secondary: #b0b0b0;
         }
-        
+
         body {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
             min-height: 100vh;
@@ -96,7 +122,7 @@ BASE_TEMPLATE = '''
             color: var(--text-primary);
             position: relative;
         }
-        
+
         body::before {
             content: '';
             position: fixed;
@@ -111,7 +137,7 @@ BASE_TEMPLATE = '''
             pointer-events: none;
             z-index: -1;
         }
-        
+
         .card {
             border: none;
             border-radius: 20px;
@@ -120,7 +146,7 @@ BASE_TEMPLATE = '''
             background: rgba(26, 26, 26, 0.9);
             border: 1px solid var(--dark-border);
         }
-        
+
         .btn-primary {
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             border: none;
@@ -130,13 +156,13 @@ BASE_TEMPLATE = '''
             transition: all 0.3s ease;
             color: white;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
             color: white;
         }
-        
+
         .form-control, .form-select {
             border-radius: 15px;
             border: 2px solid var(--dark-border);
@@ -145,35 +171,25 @@ BASE_TEMPLATE = '''
             background: rgba(26, 26, 26, 0.8);
             color: var(--text-primary);
         }
-        
+
         .form-control:focus, .form-select:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 0.2rem rgba(0, 212, 255, 0.25);
             background: rgba(26, 26, 26, 0.9);
             color: var(--text-primary);
         }
-        
+
         .form-control::placeholder {
             color: var(--text-secondary);
         }
-        
+
         .navbar {
             background: rgba(26, 26, 26, 0.95) !important;
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--dark-border);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
-        
-        .navbar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-        }
-        
+
         .logo-container {
             display: flex;
             align-items: center;
@@ -184,13 +200,7 @@ BASE_TEMPLATE = '''
             border: 1px solid rgba(0, 212, 255, 0.2);
             transition: all 0.3s ease;
         }
-        
-        .logo-container:hover {
-            background: rgba(0, 212, 255, 0.15);
-            border-color: rgba(0, 212, 255, 0.3);
-            transform: translateY(-1px);
-        }
-        
+
         .logo-image {
             width: 45px;
             height: 45px;
@@ -201,12 +211,7 @@ BASE_TEMPLATE = '''
             transition: all 0.3s ease;
             filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3));
         }
-        
-        .logo-container:hover .logo-image {
-            transform: rotate(5deg) scale(1.1);
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
-        }
-        
+
         .logo-text {
             font-size: 1.6rem;
             font-weight: 800;
@@ -217,7 +222,7 @@ BASE_TEMPLATE = '''
             text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
             letter-spacing: 1px;
         }
-        
+
         .vip-badge {
             background: linear-gradient(45deg, #ffaa00, #ff8800);
             color: white;
@@ -230,7 +235,7 @@ BASE_TEMPLATE = '''
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .admin-badge {
             background: linear-gradient(45deg, #ff4757, #ff3742);
             color: white;
@@ -243,7 +248,7 @@ BASE_TEMPLATE = '''
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .api-card {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
@@ -255,27 +260,12 @@ BASE_TEMPLATE = '''
             position: relative;
             overflow: hidden;
         }
-        
-        .api-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .api-card:hover::before {
-            left: 100%;
-        }
-        
+
         .api-card:hover {
             transform: translateY(-8px) scale(1.02);
             box-shadow: 0 25px 50px rgba(0, 212, 255, 0.4);
         }
-        
+
         .result-box {
             background: rgba(26, 26, 26, 0.8);
             border-radius: 15px;
@@ -284,120 +274,120 @@ BASE_TEMPLATE = '''
             margin-top: 20px;
             border: 1px solid var(--dark-border);
         }
-        
+
         .loading {
             display: none;
             text-align: center;
             padding: 20px;
         }
-        
+
         .spinner-border {
             width: 3rem;
             height: 3rem;
             color: var(--primary-color);
         }
-        
+
         .alert {
             border-radius: 15px;
             border: none;
         }
-        
+
         .alert-success {
             background: rgba(0, 255, 136, 0.1);
             color: var(--success-color);
             border-left: 4px solid var(--success-color);
         }
-        
+
         .alert-warning {
             background: rgba(255, 170, 0, 0.1);
             color: var(--warning-color);
             border-left: 4px solid var(--warning-color);
         }
-        
+
         .alert-danger {
             background: rgba(255, 71, 87, 0.1);
             color: var(--danger-color);
             border-left: 4px solid var(--danger-color);
         }
-        
+
         .alert-info {
             background: rgba(0, 212, 255, 0.1);
             color: var(--primary-color);
             border-left: 4px solid var(--primary-color);
         }
-        
+
         .table {
             color: var(--text-primary);
         }
-        
+
         .table-dark {
             background: rgba(26, 26, 26, 0.8);
         }
-        
+
         .dropdown-menu {
             background: rgba(26, 26, 26, 0.95);
             border: 1px solid var(--dark-border);
             border-radius: 15px;
         }
-        
+
         .dropdown-item {
             color: var(--text-primary);
         }
-        
+
         .dropdown-item:hover {
             background: rgba(0, 212, 255, 0.1);
             color: var(--primary-color);
         }
-        
+
         .bg-light {
             background: rgba(26, 26, 26, 0.8) !important;
             color: var(--text-primary);
         }
-        
+
         .text-muted {
             color: var(--text-secondary) !important;
         }
-        
+
         pre {
             background: rgba(26, 26, 26, 0.8);
             color: var(--text-primary);
             border-radius: 10px;
             border: 1px solid var(--dark-border);
         }
-        
+
         .card-header {
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             border-radius: 20px 20px 0 0 !important;
             border: none;
         }
-        
+
         .btn-outline-primary {
             border-color: var(--primary-color);
             color: var(--primary-color);
         }
-        
+
         .btn-outline-primary:hover {
             background: var(--primary-color);
             border-color: var(--primary-color);
             color: white;
         }
-        
+
         .btn-outline-warning {
             border-color: var(--warning-color);
             color: var(--warning-color);
         }
-        
+
         .btn-outline-warning:hover {
             background: var(--warning-color);
             border-color: var(--warning-color);
             color: white;
         }
-        
+
         .btn-outline-info {
             border-color: var(--primary-color);
             color: var(--primary-color);
         }
-        
+
         .btn-outline-info:hover {
             background: var(--primary-color);
             border-color: var(--primary-color);
@@ -416,7 +406,7 @@ BASE_TEMPLATE = '''
                     <span class="logo-text">CappyBeamServicesChecks</span>
                 </div>
             </a>
-            
+
             <div class="navbar-nav ms-auto">
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -462,7 +452,7 @@ BASE_TEMPLATE = '''
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
     {{ scripts | safe }}
 </body>
 </html>
@@ -480,7 +470,7 @@ LOGIN_TEMPLATE = '''
                     <h2 class="fw-bold text-white mb-2">CappyBeamServicesChecks</h2>
                     <p class="text-secondary">Hesabınıza giriş yapın</p>
                 </div>
-                
+
                 <form method="POST" action="{{ url_for('login') }}">
                     <div class="mb-3">
                         <label for="username" class="form-label">
@@ -488,28 +478,28 @@ LOGIN_TEMPLATE = '''
                         </label>
                         <input type="text" class="form-control" id="username" name="username" placeholder="Kullanıcı adınızı girin" required>
                     </div>
-                    
+
                     <div class="mb-4">
                         <label for="password" class="form-label">
                             <i class="fas fa-lock me-2"></i>Şifre
                         </label>
                         <input type="password" class="form-control" id="password" name="password" placeholder="Şifrenizi girin" required>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
                     </button>
                 </form>
-                
+
                 <div class="text-center mt-4">
                     <small class="text-muted">
                         <i class="fas fa-info-circle me-1"></i>
-                        Demo hesap: admin / admin123
+                        users.json dosyasında kayıtlı herhangi bir kullanıcı ile giriş yapabilirsiniz
                     </small>
                 </div>
-                
+
                 <hr class="my-4">
-                
+
                 <div class="text-center">
                     <p class="text-muted mb-3">Hesabınız yok mu?</p>
                     <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
@@ -534,7 +524,7 @@ REGISTER_TEMPLATE = '''
                     <h2 class="fw-bold text-white mb-2">CappyBeamServicesChecks</h2>
                     <p class="text-secondary">Yeni hesap oluşturun</p>
                 </div>
-                
+
                 <form method="POST" action="{{ url_for('register') }}">
                     <div class="mb-3">
                         <label for="username" class="form-label">
@@ -542,33 +532,33 @@ REGISTER_TEMPLATE = '''
                         </label>
                         <input type="text" class="form-control" id="username" name="username" placeholder="Kullanıcı adınızı girin" required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="email" class="form-label">
                             <i class="fas fa-envelope me-2"></i>E-posta
                         </label>
                         <input type="email" class="form-control" id="email" name="email" placeholder="E-posta adresinizi girin" required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="password" class="form-label">
                             <i class="fas fa-lock me-2"></i>Şifre
                         </label>
                         <input type="password" class="form-control" id="password" name="password" placeholder="Şifrenizi girin" required>
                     </div>
-                    
+
                     <div class="mb-4">
                         <label for="confirm_password" class="form-label">
                             <i class="fas fa-lock me-2"></i>Şifre Tekrar
                         </label>
                         <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Şifrenizi tekrar girin" required>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="fas fa-user-plus me-2"></i>Kayıt Ol
                     </button>
                 </form>
-                
+
                 <div class="text-center mt-4">
                     <small class="text-muted">
                         <i class="fas fa-info-circle me-1"></i>
@@ -583,9 +573,9 @@ REGISTER_TEMPLATE = '''
         </div>
     </div>
 </div>
-'''
+''' 
 
-DASHBOARD_TEMPLATE = '''
+DASHBOARD_TEMPLATE = ''' 
 <div class="row">
     <div class="col-12">
         <div class="card mb-4">
@@ -610,7 +600,7 @@ DASHBOARD_TEMPLATE = '''
                         </div>
                     </div>
                 </div>
-                
+
                 {% if is_vip %}
                 <div class="alert alert-success">
                     <i class="fas fa-check-circle me-2"></i>
@@ -666,14 +656,14 @@ DASHBOARD_TEMPLATE = '''
                         </div>
                     </div>
                 </form>
-                
+
                 <div class="loading" id="loading">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Yükleniyor...</span>
                     </div>
                     <p class="mt-2 text-muted">Sorgu işleniyor...</p>
                 </div>
-                
+
                 <div id="result" class="result-box" style="display: none;">
                     <h6 class="mb-3">
                         <i class="fas fa-chart-bar me-2"></i>Sorgu Sonucu
@@ -794,7 +784,7 @@ ADMIN_TEMPLATE = '''
                     <i class="fas fa-info-circle me-2"></i>
                     Kullanıcı yönetimi ve sistem ayarları buradan yapılabilir.
                 </div>
-                
+
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-dark">
@@ -854,7 +844,7 @@ ADMIN_TEMPLATE = '''
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div class="mt-4">
                     <div class="row">
                         <div class="col-md-6">
@@ -903,7 +893,7 @@ $(document).ready(function() {
     $('#endpoint').change(function() {
         const endpoint = $(this).val();
         let helpText = '';
-        
+
         switch(endpoint) {
             case 'adsoyad':
                 helpText = 'Ad ve soyadı aralarında boşluk bırakarak girin';
@@ -941,23 +931,23 @@ $(document).ready(function() {
             default:
                 helpText = '';
         }
-        
+
         $('#paramHelp').text(helpText);
     });
-    
+
     // Form submit
     $('#queryForm').submit(function(e) {
         e.preventDefault();
-        
+
         const formData = {
             endpoint: $('#endpoint').val(),
             param: $('#param').val()
         };
-        
+
         // Loading göster
         $('#loading').show();
         $('#result').hide();
-        
+
         $.ajax({
             url: '/query',
             method: 'POST',
@@ -996,7 +986,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
         user = USERS.get(username)
-        
+
         if user and check_password_hash(user['password'], password):
             session['logged_in'] = True
             session['username'] = username
@@ -1017,7 +1007,7 @@ def register():
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
-        
+
         if username in USERS:
             flash('Bu kullanıcı adı zaten kullanılıyor!', 'danger')
         elif password != confirm_password:
@@ -1029,12 +1019,14 @@ def register():
                 'password': generate_password_hash(password),
                 'email': email,
                 'is_admin': False,
-                'is_vip': False,
+                'is_vip': True,  # Yeni kullanıcılar VIP olsun
                 'created_at': '2024-01-01'
             }
-            flash('Hesabınız başarıyla oluşturuldu! Giriş yapabilirsiniz.', 'success')
+            # Kullanıcıları kaydet
+            save_users(USERS)
+            flash('Hesabınız başarıyla oluşturuldu! VIP erişiminiz aktif. Giriş yapabilirsiniz.', 'success')
             return redirect(url_for('login'))
-    
+
     return render_template_string(BASE_TEMPLATE, 
                                 title='Kayıt Ol - CappyBeamServicesChecks',
                                 content=REGISTER_TEMPLATE,
@@ -1059,21 +1051,28 @@ def dashboard():
 def query():
     endpoint = request.form['endpoint']
     param = request.form['param']
-    
+
     if endpoint in ['adsoyad', 'adsoyadilice']:
         try:
-            ad, soyad = param.split()
+            parts = param.strip().split()
+            if len(parts) < 2:
+                return jsonify({"error": "Ad ve soyad arasında boşluk olmalıdır"}), 400
+            ad = parts[0]
+            soyad = " ".join(parts[1:])  # Soyad birden fazla kelime olabilir
             url = API_URLS[endpoint](ad, soyad)
-        except ValueError:
-            return jsonify({"error": "Ad ve soyad arasında boşluk olmalıdır"}), 400
+        except Exception as e:
+            return jsonify({"error": f"Parametre hatası: {str(e)}"}), 400
     else:
         url = API_URLS[endpoint](param, None)
-    
+
     try:
         response = requests.get(url, timeout=10)
-        return jsonify(response.json())
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"API isteği başarısız: {str(e)}"}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Genel hata: {str(e)}"}), 500
 
 @app.route('/admin')
 @login_required
@@ -1091,6 +1090,7 @@ def admin():
 def toggle_vip(username):
     if username in USERS:
         USERS[username]['is_vip'] = not USERS[username].get('is_vip', False)
+        save_users(USERS)
         flash(f"{username} VIP durumu güncellendi!", 'success')
     return redirect(url_for('admin'))
 
@@ -1101,4 +1101,9 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    # Başlangıçta kullanıcı sayısını yazdır
+    print(f"Yüklenen kullanıcı sayısı: {len(USERS)}")
+    for username in USERS:
+        print(f"- {username}")
+    
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
