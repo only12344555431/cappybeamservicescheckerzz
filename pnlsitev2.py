@@ -32,6 +32,7 @@ def login_required(func):
 
 API_URLS = {
     "adsoyad": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}",
+    "adsoyadil": lambda ad, soyad_il: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad_il.split(' ')[0] if soyad_il else ''}&il={soyad_il.split(' ')[1] if soyad_il and ' ' in soyad_il else ''}",
     "tcpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcpro.php?tc={tc}",
     "tcgsm": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcgsm.php?tc={tc}",
     "tapu": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tapu.php?tc={tc}",
@@ -622,6 +623,7 @@ PANEL_HTML = """
     <ul>
       <li><button class="query-btn active" data-query="home"><i class="fas fa-home"></i> Anasayfa</button></li>
       <li><button class="query-btn" data-query="adsoyad"><i class="fas fa-user"></i> Ad Soyad</button></li>
+      <li><button class="query-btn" data-query="adsoyadil"><i class="fas fa-user-tag"></i> Ad Soyad İl</button></li>
       <li><button class="query-btn" data-query="tcpro"><i class="fas fa-id-card"></i> TC Kimlik No</button></li>
       <li><button class="query-btn" data-query="tcgsm"><i class="fas fa-phone"></i> TC GSM</button></li>
       <li><button class="query-btn" data-query="tapu"><i class="fas fa-home"></i> Tapu</button></li>
@@ -647,8 +649,8 @@ PANEL_HTML = """
     <form id="query-form" style="display:none;" aria-label="Sorgu formu">
       <label id="label1" for="input1">Ad:</label>
       <input type="text" id="input1" name="input1" required autocomplete="off" />
-      <label id="label2" for="input2">Soyad:</label>
-      <input type="text" id="input2" name="input2" autocomplete="off" />
+      <label id="label2" for="input2">Soyad/İl (Opsiyonel):</label>
+      <input type="text" id="input2" name="input2" autocomplete="off" placeholder="Sadece soyad veya 'soyad il' şeklinde girin" />
       <button type="submit" class="submit-btn" aria-label="Sorguyu çalıştır"><i class="fas fa-search"></i> Sorgula</button>
     </form>
     <div class="result-container" id="result-container" aria-live="polite" aria-atomic="true" style="display:none;"></div>
@@ -682,6 +684,7 @@ PANEL_HTML = """
 
   const queryLabels = {
     "adsoyad": ["Ad", "Soyad"],
+    "adsoyadil": ["Ad", "Soyad veya Soyad+İl (Opsiyonel)"],
     "tcpro": ["TC Kimlik No", ""],
     "tcgsm": ["TC Kimlik No", ""],
     "tapu": ["TC Kimlik No", ""],
@@ -713,7 +716,12 @@ PANEL_HTML = """
     } else {
       label2.style.display = "block";
       input2.style.display = "block";
-      input2.required = true;
+      input2.required = false; // Ad Soyad İl için opsiyonel yapıldı
+      if(queryKey === "adsoyadil") {
+        input2.placeholder = "Sadece soyad veya 'soyad il' şeklinde girin";
+      } else {
+        input2.placeholder = "";
+      }
     }
     resultContainer.textContent = "";
     resultContainer.style.display = "none";
@@ -911,7 +919,23 @@ def api_query():
     url_func = API_URLS[query]
 
     try:
-        url = url_func(val1, val2)
+        # Ad Soyad İl sorgusu için özel işleme
+        if query == "adsoyadil":
+            # Eğer val2 boş değilse ve içinde boşluk varsa, soyad ve il olarak ayır
+            if val2 and ' ' in val2:
+                parts = val2.split(' ')
+                soyad = parts[0]
+                il = ' '.join(parts[1:])  # Birden fazla kelimeli iller için
+                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}&soyad={soyad}&il={il}"
+            elif val2:
+                # Sadece soyad girilmişse
+                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}&soyad={val2}"
+            else:
+                # Sadece ad girilmişse
+                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}"
+        else:
+            url = url_func(val1, val2)
+            
         r = requests.get(url, timeout=15)
         r.raise_for_status()
         
@@ -934,4 +958,3 @@ def api_query():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
