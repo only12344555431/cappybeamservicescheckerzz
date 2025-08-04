@@ -1,16 +1,38 @@
+import subprocess
+import sys
 from flask import Flask, render_template_string, request, jsonify, session, redirect, url_for
 import requests
-from werkzeug.security import generate_password_hash, check_password_hash
 import json
-import base64
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = "cappybeam_secret_key_1234"
 
-# API endpointleri
+USERS_FILE = "users.json"
+
+def load_users():
+    if not os.path.exists(USERS_FILE):
+        return {}
+    with open(USERS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_users(users):
+    with open(USERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, indent=2, ensure_ascii=False)
+
+def login_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if "user" not in session:
+            return redirect(url_for("login"))
+        return func(*args, **kwargs)
+    return wrapper
+
 API_URLS = {
     "adsoyad": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}",
-    "adsoyadil": lambda ad, soyad_il: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}&il={il}={soyad_il.split(' ')[0] if soyad_il else ''}&il={soyad_il.split(' ')[1] if soyad_il and ' ' in soyad_il else ''}",
+    "adsoyadil": lambda ad, soyad_il: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad_il.split(' ')[0] if soyad_il else ''}&il={soyad_il.split(' ')[1] if soyad_il and ' ' in soyad_il else ''}",
     "tcpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcpro.php?tc={tc}",
     "tcgsm": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcgsm.php?tc={tc}",
     "tapu": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tapu.php?tc={tc}",
@@ -22,711 +44,917 @@ API_URLS = {
     "adres": lambda tc, _: f"https://api.hexnox.pro/sowixapi/adres.php?tc={tc}",
 }
 
-USERS_FILE = "users.json"
-
-def load_users():
-    try:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {}
-
-def save_users(users):
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(users, f, indent=2)
-
-# LOGO BASE64 (örnek, ufak bir icon gibi)
-LOGO_BASE64 = (
-    "file:///C:/Users/maymu/OneDrive/Desktop/CappyBeamServicesiz.png"
-)
-
-# ---------- TEMPLATE ----------
-
-LOGIN_PAGE = """
+LOGIN_HTML = """
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CappyBeamServices - Giriş</title>
-<style>
-  body {
-    margin:0; background:#121212; color:#eee; font-family: Arial, sans-serif;
-    display:flex; justify-content:center; align-items:center; height:100vh;
-  }
-  .login-box {
-    background:#1f1f1f; padding:30px 40px; border-radius:10px;
-    box-shadow: 0 0 15px #66aaffaa;
-    width:320px;
-    text-align:center;
-  }
-  h1 {
-    color:#66aaff;
-    margin-bottom:20px;
-    font-size:26px;
-    letter-spacing:2px;
-    display:flex; justify-content:center; align-items:center;
-  }
-  h1 img {
-    width:24px; height:24px; margin-right:8px;
-  }
-  input[type=text], input[type=password] {
-    width:100%; padding:10px; margin:12px 0; border:none; border-radius:5px;
-    font-size:16px;
-    background:#2b2b2b; color:#eee;
-  }
-  button {
-    width:100%; padding:10px; background:#66aaff; border:none;
-    border-radius:5px; font-weight:700; font-size:18px; color:#121212;
-    cursor:pointer; transition: background 0.3s ease;
-  }
-  button:hover {
-    background:#5599dd;
-  }
-  .error {
-    color:#ff5555; margin-top:10px; font-weight:700;
-  }
-  a {
-    color:#66aaff; font-size:14px; text-decoration:none;
-    display:block; margin-top:15px;
-  }
-  a:hover {
-    text-decoration:underline;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Giriş Yap - CBS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+    body,html{height:100%;background:#fff;display:flex;justify-content:center;align-items:center;}
+    .container {
+      width: 360px;
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      text-align:center;
+      border: 1px solid #eee;
+    }
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 25px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 30px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      font-size: 1.8rem;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+      font-size: 1rem;
+      outline:none;
+      transition: 0.3s;
+    }
+    input:focus {
+      border-color: #0a4cff;
+      box-shadow: 0 0 0 2px rgba(10,76,255,0.2);
+    }
+    button {
+      width: 100%;
+      padding: 14px 0;
+      background: #0a4cff;
+      border: none;
+      color: white;
+      font-weight: 600;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #083ecf;
+    }
+    .error {
+      margin-bottom: 15px;
+      color: #e74c3c;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .link {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .link a {
+      color: #0a4cff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .link a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <div class="login-box">
-    <h1><img src="file:///C:/Users/maymu/OneDrive/Desktop/CappyBeamServicesiz.png,{{logo}}" alt="logo" /> CappyBeamServices</h1>
-    <form method="POST" action="{{ url_for('login_page') }}">
-      <input type="text" name="username" placeholder="Kullanıcı Adı" required />
-      <input type="password" name="password" placeholder="Şifre" required />
-      <button type="submit">Giriş Yap</button>
+  <div class="container" role="main">
+    <div class="logo" aria-label="Cappy Logo">
+      <img src="https://www.coca-cola.com/content/dam/onexp/tr/tr/brands/cappy/global-cappy-logo.png" alt="Cappy Logo"/>
+    </div>
+    <h2>Giriş Yap</h2>
+    {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+    <form method="POST" action="{{ url_for('login') }}" novalidate>
+      <label for="username">Kullanıcı Adı</label>
+      <input type="text" id="username" name="username" required autocomplete="username" />
+      <label for="password">Şifre</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password" />
+      <button type="submit">Giriş</button>
     </form>
-    {% if error %}
-      <div class="error">{{ error }}</div>
-    {% endif %}
-    <a href="{{ url_for('register_page') }}">Kayıt Ol</a>
+    <div class="link" role="link" aria-label="Kayıt ol linki">
+      Henüz hesabın yok mu? <a href="{{ url_for('register') }}">Kayıt Ol</a>
+    </div>
   </div>
 </body>
 </html>
 """
 
-REGISTER_PAGE = """
+REGISTER_HTML = """
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CappyBeamServices - Kayıt Ol</title>
-<style>
-  body {
-    margin:0; background:#121212; color:#eee; font-family: Arial, sans-serif;
-    display:flex; justify-content:center; align-items:center; height:100vh;
-  }
-  .register-box {
-    background:#1f1f1f; padding:30px 40px; border-radius:10px;
-    box-shadow: 0 0 15px #66aaffaa;
-    width:320px;
-    text-align:center;
-  }
-  h1 {
-    color:#66aaff;
-    margin-bottom:20px;
-    font-size:26px;
-    letter-spacing:2px;
-    display:flex; justify-content:center; align-items:center;
-  }
-  h1 img {
-    width:24px; height:24px; margin-right:8px;
-  }
-  input[type=text], input[type=password] {
-    width:100%; padding:10px; margin:12px 0; border:none; border-radius:5px;
-    font-size:16px;
-    background:#2b2b2b; color:#eee;
-  }
-  button {
-    width:100%; padding:10px; background:#66aaff; border:none;
-    border-radius:5px; font-weight:700; font-size:18px; color:#121212;
-    cursor:pointer; transition: background 0.3s ease;
-  }
-  button:hover {
-    background:#5599dd;
-  }
-  .error {
-    color:#ff5555; margin-top:10px; font-weight:700;
-  }
-  a {
-    color:#66aaff; font-size:14px; text-decoration:none;
-    display:block; margin-top:15px;
-  }
-  a:hover {
-    text-decoration:underline;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Kayıt Ol - CBS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+    body,html{height:100%;background:#fff;display:flex;justify-content:center;align-items:center;}
+    .container {
+      width: 360px;
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      text-align:center;
+      border: 1px solid #eee;
+    }
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 25px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 30px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      font-size: 1.8rem;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+      font-size: 1rem;
+      outline:none;
+      transition: 0.3s;
+    }
+    input:focus {
+      border-color: #0a4cff;
+      box-shadow: 0 0 0 2px rgba(10,76,255,0.2);
+    }
+    button {
+      width: 100%;
+      padding: 14px 0;
+      background: #0a4cff;
+      border: none;
+      color: white;
+      font-weight: 600;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #083ecf;
+    }
+    .error {
+      margin-bottom: 15px;
+      color: #e74c3c;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .link {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .link a {
+      color: #0a4cff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .link a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <div class="register-box">
-    <h1><img src="file:///C:/Users/maymu/OneDrive/Desktop/CappyBeamServicesiz.png,{{logo}}" alt="logo" /> CappyBeamServices</h1>
-    <form method="POST" action="{{ url_for('register_page') }}">
-      <input type="text" name="username" placeholder="Kullanıcı Adı" required />
-      <input type="password" name="password" placeholder="Şifre (min 4 karakter)" required />
+  <div class="container" role="main">
+    <div class="logo" aria-label="Cappy Logo">
+      <img src="https://www.coca-cola.com/content/dam/onexp/tr/tr/brands/cappy/global-cappy-logo.png" alt="Cappy Logo"/>
+    </div>
+    <h2>Kayıt Ol</h2>
+    {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+    <form method="POST" action="{{ url_for('register') }}" novalidate>
+      <label for="username">Kullanıcı Adı</label>
+      <input type="text" id="username" name="username" required autocomplete="username" />
+      <label for="password">Şifre</label>
+      <input type="password" id="password" name="password" required autocomplete="new-password" />
+      <label for="password2">Şifre Tekrar</label>
+      <input type="password" id="password2" name="password2" required autocomplete="new-password" />
       <button type="submit">Kayıt Ol</button>
     </form>
-    {% if error %}
-      <div class="error">{{ error }}</div>
-    {% endif %}
-    <a href="{{ url_for('login_page') }}">Giriş Yap</a>
+    <div class="link" role="link" aria-label="Giriş yap linki">
+      Zaten hesabın var mı? <a href="{{ url_for('login') }}">Giriş Yap</a>
+    </div>
   </div>
 </body>
 </html>
 """
 
-MAIN_PAGE = """
+PANEL_HTML = """
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CappyBeamServices</title>
-<style>
-  /* Genel düzen */
-  body {
-    margin: 0;
-    background: #121212;
-    color: #eee;
-    font-family: Arial, sans-serif;
-  }
-  /* Header ve logo */
-  header {
-    background: #1f1f1f;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    font-weight: bold;
-    font-size: 18px;
-    letter-spacing: 2px;
-    color: #66aaff;
-  }
-  header img {
-    height: 30px;
-    margin-right: 10px;
-  }
-  /* Layout */
-  #container {
-    display: flex;
-    height: calc(100vh - 50px);
-  }
-  /* Sidebar menu */
-  #sidebar {
-    background: #1f1f1f;
-    width: 230px;
-    min-width: 230px;
-    transition: width 0.3s ease;
-    overflow-y: auto;
-    flex-shrink: 0;
-  }
-  #sidebar.open {
-    width: 60px;
-  }
-  #sidebar nav button {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    background: none;
-    border: none;
-    color: #eee;
-    padding: 12px 15px;
-    text-align: left;
-    cursor: pointer;
-    font-size: 14px;
-    border-left: 4px solid transparent;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  #sidebar nav button:hover,
-  #sidebar nav button.active {
-    background: #66aaff;
-    color: #121212;
-    border-left-color: #5599dd;
-  }
-  #sidebar nav button span {
-    margin-left: 10px;
-  }
-  #sidebar nav #menu-logo {
-    font-weight: 900;
-    font-size: 16px;
-    padding: 15px 15px 10px 15px;
-    color: #66aaff;
-    white-space: nowrap;
-  }
-  /* Burger menü (mobil için) */
-  #burger {
-    display: none;
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 30px;
-    height: 25px;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-  }
-  #burger div {
-    width: 100%;
-    height: 4px;
-    background: #66aaff;
-    border-radius: 2px;
-  }
-  @media (max-width: 768px) {
-    #sidebar {
-      position: fixed;
-      left: -230px;
-      height: 100vh;
-      z-index: 10;
-      width: 230px;
-    }
-    #sidebar.open {
-      left: 0;
-    }
-    #burger {
+  <meta charset="UTF-8" />
+  <title>CAPPYBEAMSERVICES! Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+    body,html {
+      height: 100%;
+      background: #fff;
+      color: #333;
       display: flex;
-    }
-    #container {
       flex-direction: column;
-      height: auto;
+      font-size: 15px;
     }
-  }
-  /* İçerik */
-  #content {
-    flex-grow: 1;
-    padding: 20px;
-    overflow-y: auto;
-  }
-  /* Sectionlar gizli */
-  section {
-    display: none;
-  }
-  section.active {
-    display: block;
-  }
-  /* Form alanları */
-  form input[type=text] {
-    width: 220px;
-    max-width: 100%;
-    padding: 8px;
-    margin-right: 10px;
-    border-radius: 5px;
-    border: none;
-    font-size: 15px;
-    background: #2b2b2b;
-    color: #eee;
-  }
-  form button.submit-btn {
-    padding: 9px 18px;
-    font-weight: 700;
-    background: #66aaff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: #121212;
-    font-size: 15px;
-    transition: background 0.3s ease;
-  }
-  form button.submit-btn:hover {
-    background: #5599dd;
-  }
-  /* Sonuç kutuları */
-  .result-box {
-    margin-top: 12px;
-    background: #222;
-    padding: 15px;
-    border-radius: 8px;
-    max-height: 350px;
-    overflow-y: auto;
-    font-size: 14px;
-  }
-  /* Listeleme stili */
-  ul, li {
-    list-style: none;
-    padding-left: 0;
-    margin: 3px 0;
-  }
-  ul ul {
-    padding-left: 15px;
-    border-left: 1px solid #444;
-  }
-  /* Küçük logo sidebar üstte */
-  #sidebar-logo {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    justify-content: center;
-  }
-  #sidebar-logo img {
-    height: 28px;
-  }
-  /* Hoşgeldin sayfası */
-  #hosgeldin {
-    text-align: center;
-    font-size: 18px;
-    margin-top: 120px;
-    color: #999;
-  }
-</style>
+    header {
+      background: #fff;
+      color: #333;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 {
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      user-select:none;
+      color: #0a4cff;
+    }
+    #logout-btn {
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      color: #333;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    #logout-btn:hover {
+      background: #e9ecef;
+      border-color: #ccc;
+    }
+    main {
+      flex-grow: 1;
+      display: flex;
+      height: calc(100vh - 64px);
+      overflow: hidden;
+      background: #fff;
+    }
+    nav {
+      width: 240px;
+      background: #fff;
+      border-right: 1px solid #eee;
+      padding: 1.2rem 1rem;
+      overflow-y: auto;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+      transition: transform 0.3s ease;
+    }
+    nav.hide {
+      transform: translateX(-100%);
+    }
+    nav h2 {
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #555;
+      user-select:none;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #eee;
+      font-size: 1.1rem;
+    }
+    nav ul {
+      list-style: none;
+    }
+    nav ul li {
+      margin-bottom: 0.5rem;
+    }
+    nav ul li button {
+      width: 100%;
+      background: transparent;
+      border: none;
+      text-align: left;
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+      font-weight: 500;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+    }
+    nav ul li button i {
+      margin-right: 8px;
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+    }
+    nav ul li button:hover,
+    nav ul li button.active {
+      background: #f0f5ff;
+      color: #0a4cff;
+    }
+    nav ul li button.active {
+      font-weight: 600;
+    }
+    #hamburger {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      width: 30px;
+      height: 24px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      z-index: 1001;
+    }
+    #hamburger div {
+      height: 3px;
+      background: #333;
+      border-radius: 3px;
+      transition: 0.3s ease;
+    }
+    #hamburger.active div:nth-child(1) {
+      transform: translateY(10px) rotate(45deg);
+    }
+    #hamburger.active div:nth-child(2) {
+      opacity: 0;
+    }
+    #hamburger.active div:nth-child(3) {
+      transform: translateY(-10px) rotate(-45deg);
+    }
+    section#content {
+      flex-grow: 1;
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      background: #fff;
+      user-select:none;
+    }
+    .home-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      padding: 2rem;
+    }
+    .home-logo {
+      width: 180px;
+      height: 180px;
+      margin-bottom: 2rem;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      border: 5px solid #f0f5ff;
+    }
+    .home-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+    .home-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #0a4cff;
+      margin-bottom: 1rem;
+    }
+    .home-subtitle {
+      font-size: 1.1rem;
+      color: #666;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+    form {
+      max-width: 500px;
+      margin-top: 1rem;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      border: 1px solid #eee;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #555;
+      font-size: 0.95rem;
+    }
+    input[type="text"],
+    input[type="tel"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.95rem;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: 0.3s;
+      color: #333;
+      background: #f9f9f9;
+    }
+    input[type="text"]:focus,
+    input[type="tel"]:focus {
+      border-color: #0a4cff;
+      box-shadow: 0 0 0 2px rgba(10,76,255,0.1);
+      background: #fff;
+    }
+    button.submit-btn {
+      background: #0a4cff;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      color: white;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;
+    }
+    button.submit-btn:hover {
+      background: #083ecf;
+    }
+    .result-container {
+      margin-top: 1.5rem;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 0;
+      background: #fff;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      color: #333;
+      max-height: 500px;
+      overflow-y: auto;
+      user-select: text;
+    }
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .result-table th {
+      background: #f5f5f5;
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #555;
+      border-bottom: 1px solid #eee;
+    }
+    .result-table td {
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid #eee;
+      font-size: 0.85rem;
+    }
+    .result-table tr:last-child td {
+      border-bottom: none;
+    }
+    .result-table tr:hover td {
+      background: #f9f9f9;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(10,76,255,0.2);
+      border-radius: 50%;
+      border-top-color: #0a4cff;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @media (max-width: 850px) {
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        z-index: 1000;
+        transform: translateX(-100%);
+        background: #fff;
+        box-shadow: 3px 0 15px rgba(0,0,0,0.1);
+      }
+      nav.show {
+        transform: translateX(0);
+      }
+      #hamburger {
+        display: flex;
+      }
+      main {
+        flex-direction: column;
+        height: auto;
+      }
+      section#content {
+        padding: 1.2rem;
+      }
+      .home-logo {
+        width: 140px;
+        height: 140px;
+      }
+      .home-title {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 <header>
-  <img src="file:///C:/Users/maymu/OneDrive/Desktop/CappyBeamServicesiz.png,{{logo}}" alt="Logo" />
-  <div>CappyBeamServices</div>
+  <h1>CAPPYBEAMSERVICES</h1>
+  <button id="logout-btn" aria-label="Çıkış yap"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</button>
+  <div id="hamburger" aria-label="Menüyü aç/kapat" role="button" tabindex="0" aria-expanded="false">
+    <div></div><div></div><div></div>
+  </div>
 </header>
-
-<div id="burger" onclick="toggleMenu()">
-  <div></div><div></div><div></div>
-</div>
-
-<div id="container">
-  <aside id="sidebar">
-    <div id="sidebar-logo"><img src="file:///C:/Users/maymu/OneDrive/Desktop/CappyBeamServicesiz.png,{{logo}}" alt="Logo" /></div>
-    <nav>
-      <button id="btn-hosgeldin" onclick="showSection('hosgeldin')" class="active">Hoşgeldin</button>
-      <button id="btn-tcpro" onclick="showSection('tcpro')">TC Pro Sorgu</button>
-      <button id="btn-adsoyadilice" onclick="showSection('adsoyadilice')">Ad Soyad İl İlçe</button>
-      <button id="btn-tcgsm" onclick="showSection('tcgsm')">TC GSM Sorgu</button>
-      <button id="btn-tapu" onclick="showSection('tapu')">Tapu Sorgu</button>
-      <button id="btn-sulale" onclick="showSection('sulale')">Sülale Sorgu</button>
-      <button id="btn-okulno" onclick="showSection('okulno')">Okul No Sorgu</button>
-      <button id="btn-isyeriyetkili" onclick="showSection('isyeriyetkili')">İşyeri Yetkili Sorgu</button>
-      <button id="btn-gsmdetay" onclick="showSection('gsmdetay')">GSM Detay Sorgu</button>
-      <button id="btn-gsm" onclick="showSection('gsm')">GSM Sorgu</button>
-      <button id="btn-adres" onclick="showSection('adres')">Adres Sorgu</button>
-      <form method="POST" action="{{ url_for('logout') }}" style="margin:15px;">
-        <button type="submit" style="width:100%; background:#ff5555; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Çıkış Yap</button>
-      </form>
-    </nav>
-  </aside>
-  
-  <main id="content">
-    <section id="hosgeldin" class="active">
-      <h2>Hoşgeldiniz</h2>
-      <p>CAPPYBEAMSERVİCES'E HOŞGELDİNİZ SORGULARINIZI GÜVENLİ BİR ŞEKİLDE YAPABİLİRSİNİZ.</p>
-      <p>Başarılar!</p>
-    </section>
-
-    <!-- TC Pro -->
-    <section id="tcpro">
-      <h2>TC Pro Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('tcpro');">
-        <input type="text" name="tc" placeholder="TC Kimlik No" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="tcpro-result" class="result-box"></div>
-    </section>
-
-    <!-- Ad Soyad İl İlçe -->
-    <section id="adsoyadilice">
-      <h2>Ad Soyad İl İlçe Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('adsoyadilice');">
-        <input type="text" name="ad" placeholder="Ad" required />
-        <input type="text" name="soyad" placeholder="Soyad" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="adsoyadilice-result" class="result-box"></div>
-    </section>
-
-    <!-- TC GSM -->
-    <section id="tcgsm">
-      <h2>TC GSM Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('tcgsm');">
-        <input type="text" name="tc" placeholder="TC Kimlik No" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="tcgsm-result" class="result-box"></div>
-    </section>
-
-    <!-- Tapu -->
-    <section id="tapu">
-      <h2>Tapu Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('tapu');">
-        <input type="text" name="tc" placeholder="TC Kimlik No" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="tapu-result" class="result-box"></div>
-    </section>
-
-    <!-- Sülale -->
-    <section id="sulale">
-      <h2>Sülale Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('sulale');">
-        <input type="text" name="tc" placeholder="TC Kimlik No" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="sulale-result" class="result-box"></div>
-    </section>
-
-    <!-- Okul No -->
-    <section id="okulno">
-      <h2>Okul No Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('okulno');">
-        <input type="text" name="tc" placeholder="TC Kimlik No" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="okulno-result" class="result-box"></div>
-    </section>
-
-    <!-- İşyeri Yetkili -->
-    <section id="isyeriyetkili">
-      <h2>İşyeri Yetkili Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('isyeriyetkili');">
-        <input type="text" name="tc" placeholder="TC Kimlik No" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="isyeriyetkili-result" class="result-box"></div>
-    </section>
-
-    <!-- GSM Detay -->
-    <section id="gsmdetay">
-      <h2>GSM Detay Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('gsmdetay');">
-        <input type="text" name="gsm" placeholder="GSM Numarası" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="gsmdetay-result" class="result-box"></div>
-    </section>
-
-    <!-- GSM -->
-    <section id="gsm">
-      <h2>GSM Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('gsm');">
-        <input type="text" name="gsm" placeholder="GSM Numarası" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="gsm-result" class="result-box"></div>
-    </section>
-
-    <!-- Adres -->
-    <section id="adres">
-      <h2>Adres Sorgu</h2>
-      <form onsubmit="event.preventDefault(); submitForm('adres');">
-        <input type="text" name="tc" placeholder="TC Kimlik No" maxlength="11" required />
-        <button class="submit-btn" type="submit">Sorgula</button>
-      </form>
-      <div id="adres-result" class="result-box"></div>
-    </section>
-  </main>
-</div>
+<main>
+  <nav aria-label="Sorgu menüsü">
+    <h2>Sorgular</h2>
+    <ul>
+      <li><button class="query-btn active" data-query="home"><i class="fas fa-home"></i> Anasayfa</button></li>
+      <li><button class="query-btn" data-query="adsoyad"><i class="fas fa-user"></i> Ad Soyad</button></li>
+      <li><button class="query-btn" data-query="adsoyadil"><i class="fas fa-user-tag"></i> Ad Soyad İl</button></li>
+      <li><button class="query-btn" data-query="tcpro"><i class="fas fa-id-card"></i> TC Kimlik No</button></li>
+      <li><button class="query-btn" data-query="tcgsm"><i class="fas fa-phone"></i> TC GSM</button></li>
+      <li><button class="query-btn" data-query="tapu"><i class="fas fa-home"></i> Tapu</button></li>
+      <li><button class="query-btn" data-query="sulale"><i class="fas fa-users"></i> Sülale</button></li>
+      <li><button class="query-btn" data-query="okulno"><i class="fas fa-school"></i> Okul No</button></li>
+      <li><button class="query-btn" data-query="isyeriyetkili"><i class="fas fa-briefcase"></i> İşyeri Yetkili</button></li>
+      <li><button class="query-btn" data-query="gsmdetay"><i class="fas fa-mobile-alt"></i> GSM Detay</button></li>
+      <li><button class="query-btn" data-query="gsm"><i class="fas fa-phone-alt"></i> GSM</button></li>
+      <li><button class="query-btn" data-query="adres"><i class="fas fa-map-marker-alt"></i> Adres</button></li>
+    </ul>
+  </nav>
+  <section id="content" tabindex="0" aria-live="polite" aria-atomic="true">
+    <div class="home-container" id="home-container">
+      <div class="home-logo">
+        <img src="https://www.coca-cola.com/content/dam/onexp/tr/tr/brands/cappy/global-cappy-logo.png" alt="Cappy Logo"/>
+      </div>
+      <h1 class="home-title">CAPPYBEAMSERVICES</h1>
+      <p class="home-subtitle">
+        Hoşgeldin, {{ session['user'] }}!<br />
+        Sol menüden sorgu seçip sorgularınızı güvenli bir şekilde yapabilirsiniz.
+      </p>
+    </div>
+    <form id="query-form" style="display:none;" aria-label="Sorgu formu">
+      <label id="label1" for="input1">Ad:</label>
+      <input type="text" id="input1" name="input1" required autocomplete="off" />
+      <label id="label2" for="input2">Soyad/İl (Opsiyonel):</label>
+      <input type="text" id="input2" name="input2" autocomplete="off" placeholder="Sadece soyad veya 'soyad il' şeklinde girin" />
+      <button type="submit" class="submit-btn" aria-label="Sorguyu çalıştır"><i class="fas fa-search"></i> Sorgula</button>
+    </form>
+    <div class="result-container" id="result-container" aria-live="polite" aria-atomic="true" style="display:none;"></div>
+  </section>
+</main>
 
 <script>
-  // Menü toggle (burger)
-  const sidebar = document.getElementById("sidebar");
-  const burger = document.getElementById("burger");
-  function toggleMenu() {
-    sidebar.classList.toggle("open");
-  }
-  burger.onclick = toggleMenu;
-
-  // Menü butonları ile sayfa değiştirme
-  const buttons = document.querySelectorAll("#sidebar nav button");
-  const sections = document.querySelectorAll("#content section");
-
-  function showSection(id){
-    sections.forEach(s => {
-      s.classList.remove("active");
-      s.style.display = "none";
-    });
-    buttons.forEach(b=>{
-      b.classList.remove("active");
-    });
-    document.getElementById(id).style.display = "block";
-    document.getElementById(id).classList.add("active");
-
-    // Aktif butonu işaretle
-    document.querySelector(`#btn-${id}`).classList.add("active");
-
-    if(window.innerWidth <= 768){
-      sidebar.classList.remove("open");
+  const hamburger = document.getElementById('hamburger');
+  const nav = document.querySelector('nav');
+  hamburger.addEventListener('click', () => {
+    nav.classList.toggle('show');
+    hamburger.classList.toggle('active');
+    const expanded = hamburger.getAttribute('aria-expanded') === 'true' || false;
+    hamburger.setAttribute('aria-expanded', !expanded);
+  });
+  hamburger.addEventListener('keydown', e => {
+    if(e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      hamburger.click();
     }
+  });
+
+  const queryButtons = document.querySelectorAll('.query-btn');
+  const form = document.getElementById('query-form');
+  const label1 = document.getElementById('label1');
+  const label2 = document.getElementById('label2');
+  const input1 = document.getElementById('input1');
+  const input2 = document.getElementById('input2');
+  const resultContainer = document.getElementById('result-container');
+  const homeContainer = document.getElementById('home-container');
+
+  const queryLabels = {
+    "adsoyad": ["Ad", "Soyad"],
+    "adsoyadil": ["Ad", "Soyad veya Soyad+İl (Opsiyonel)"],
+    "tcpro": ["TC Kimlik No", ""],
+    "tcgsm": ["TC Kimlik No", ""],
+    "tapu": ["TC Kimlik No", ""],
+    "sulale": ["TC Kimlik No", ""],
+    "okulno": ["TC Kimlik No", ""],
+    "isyeriyetkili": ["TC Kimlik No", ""],
+    "gsmdetay": ["GSM Numarası", ""],
+    "gsm": ["GSM Numarası", ""],
+    "adres": ["TC Kimlik No", ""]
+  };
+
+  function updateFormFields(queryKey) {
+    if(queryKey === "home") {
+      homeContainer.style.display = "flex";
+      form.style.display = "none";
+      resultContainer.style.display = "none";
+      return;
+    }
+    
+    const labels = queryLabels[queryKey] || ["Input1","Input2"];
+    label1.textContent = labels[0];
+    label2.textContent = labels[1];
+    input1.value = "";
+    input2.value = "";
+    if(labels[1] === "") {
+      label2.style.display = "none";
+      input2.style.display = "none";
+      input2.required = false;
+    } else {
+      label2.style.display = "block";
+      input2.style.display = "block";
+      input2.required = false; // Ad Soyad İl için opsiyonel yapıldı
+      if(queryKey === "adsoyadil") {
+        input2.placeholder = "Sadece soyad veya 'soyad il' şeklinde girin";
+      } else {
+        input2.placeholder = "";
+      }
+    }
+    resultContainer.textContent = "";
+    resultContainer.style.display = "none";
+    homeContainer.style.display = "none";
+    form.style.display = "block";
+    input1.focus();
   }
 
-  // Başlangıçta hoşgeldin sayfası göster
-  showSection("hosgeldin");
+  let currentQuery = "home";
+  updateFormFields(currentQuery);
 
-  // JSON verisini güzel HTML listeye dönüştürür (sadece data kısmı gösterilir)
-  function renderData(data) {
-    if (data === null) return "null";
-    if (typeof data !== 'object') return data;
+  queryButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      queryButtons.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentQuery = btn.dataset.query;
+      updateFormFields(currentQuery);
+      if(window.innerWidth <= 850){
+        nav.classList.remove('show');
+        hamburger.classList.remove('active');
+        hamburger.setAttribute('aria-expanded', false);
+      }
+    });
+  });
 
+  function createTableFromData(data) {
+    if (!data) return "<p>Sonuç bulunamadı.</p>";
+    
+    // API'den direkt dizi geliyorsa (sülale sorgusu gibi)
     if (Array.isArray(data)) {
-      let html = "<ul>";
+      if (data.length === 0) return "<p>Sonuç bulunamadı.</p>";
+      
+      // Tüm olası sütunları bul
+      const allColumns = new Set();
       data.forEach(item => {
-        html += `<li>${renderData(item)}</li>`;
+        Object.keys(item).forEach(key => allColumns.add(key));
       });
-      html += "</ul>";
+      const columns = Array.from(allColumns);
+      
+      let html = '<table class="result-table"><thead><tr>';
+      
+      // Başlıkları oluştur
+      columns.forEach(column => {
+        html += `<th>${column.toUpperCase()}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+      
+      // Veri satırlarını oluştur
+      data.forEach(row => {
+        html += '<tr>';
+        columns.forEach(column => {
+          html += `<td>${row[column] || ''}</td>`;
+        });
+        html += '</tr>';
+      });
+      
+      html += '</tbody></table>';
       return html;
     }
+    
+    // Tek bir nesne geliyorsa
+    if (typeof data === 'object') {
+      let html = '<table class="result-table"><tbody>';
+      for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+          // Eğer value bir nesne ise, string'e çevir
+          const value = typeof data[key] === 'object' ? JSON.stringify(data[key]) : data[key];
+          html += `<tr><th>${key.toUpperCase()}</th><td>${value || ''}</td></tr>`;
+        }
+      }
+      html += '</tbody></table>';
+      return html;
+    }
+    
+    // Diğer durumlar (string, number vs.)
+    return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+  }
 
-    let html = "<ul>";
-    for (const key in data) {
-      if (!data.hasOwnProperty(key)) continue;
-      if(key === "api_ismi" || key === "author" || key === "success" || key === "telegram") continue; // Bunları gösterme
-      let val = data[key];
-      if(val === null) val = "null";
-      else if(typeof val === "object"){
-        html += `<li><b>${key}:</b> ${renderData(val)}</li>`;
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    resultContainer.innerHTML = '<div style="padding:1rem;text-align:center;"><span class="loading"></span> Sorgulanıyor, lütfen bekleyin...</div>';
+    resultContainer.style.display = "block";
+    
+    const val1 = input1.value.trim();
+    const val2 = input2.value.trim();
+    
+    if(val1 === "" || (input2.required && val2 === "")) {
+      resultContainer.innerHTML = '<div style="padding:1rem;color:#e74c3c;font-weight:600;">Lütfen tüm zorunlu alanları doldurunuz.</div>';
+      return;
+    }
+    
+    fetch("/api/query", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        query: currentQuery,
+        val1: val1,
+        val2: val2
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('API hatası');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        resultContainer.innerHTML = `<div style="padding:1rem;color:#e74c3c;font-weight:600;">Hata: ${data.error}</div>`;
       } else {
-        html += `<li><b>${key}:</b> ${val}</li>`;
+        resultContainer.innerHTML = createTableFromData(data.result);
       }
-    }
-    html += "</ul>";
-    return html;
-  }
+    })
+    .catch(error => {
+      resultContainer.innerHTML = `<div style="padding:1rem;color:#e74c3c;font-weight:600;">İstek sırasında hata oluştu: ${error.message}</div>`;
+    });
+  });
 
-  // Form gönderimi ve API çağrısı
-  async function submitForm(apiName){
-    const form = document.querySelector(`#${apiName} form`);
-    const resultDiv = document.getElementById(`${apiName}-result`);
-    resultDiv.innerHTML = "Yükleniyor...";
-
-    let url = `/api/${apiName}`;
-    let params = {};
-    const formData = new FormData(form);
-    for(const [key,value] of formData.entries()){
-      params[key] = value.trim();
-    }
-
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(params)
-      });
-      // API bazen JSON değil string dönebilir, önce JSON dene, olmazsa string döndür.
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        data = await res.text();
-      }
-
-      if(data.error){
-        resultDiv.innerHTML = "<b>Hata:</b> " + data.error;
-        return;
-      }
-
-      if(typeof data === "string"){
-        resultDiv.innerHTML = data;
-        return;
-      }
-
-      resultDiv.innerHTML = renderData(data);
-
-    } catch(e){
-      resultDiv.innerHTML = "<b>Hata:</b> Bağlantı hatası";
-    }
-  }
+  // Çıkış butonu
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    window.location.href = "/logout";
+  });
 </script>
+
 </body>
 </html>
 """
 
-# ------------- Flask ROUTES -------------------
-
-@app.route("/", methods=["GET"])
-def home():
+@app.route("/")
+def index():
     if "user" in session:
         return redirect(url_for("panel"))
-    else:
-        return redirect(url_for("login_page"))
+    return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
-def login_page():
-    if "user" in session:
-        return redirect(url_for("panel"))
+def login():
     error = None
     if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
         users = load_users()
-        username = request.form.get("username")
-        password = request.form.get("password")
         if username in users and check_password_hash(users[username]["password"], password):
             session["user"] = username
             return redirect(url_for("panel"))
         else:
-            error = "Kullanıcı adı veya şifre yanlış."
-    return render_template_string(LOGIN_PAGE, logo=LOGO_BASE64, error=error)
+            error = "Kullanıcı adı veya şifre hatalı."
+    return render_template_string(LOGIN_HTML, error=error)
 
 @app.route("/register", methods=["GET", "POST"])
-def register_page():
-    if "user" in session:
-        return redirect(url_for("panel"))
+def register():
     error = None
     if request.method == "POST":
-        users = load_users()
-        username = request.form.get("username").strip()
-        password = request.form.get("password").strip()
-        if len(password) < 4:
-            error = "Şifre en az 4 karakter olmalı."
-        elif username in users:
-            error = "Kullanıcı adı zaten kayıtlı."
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        password2 = request.form.get("password2", "")
+        if not username or not password or not password2:
+            error = "Tüm alanları doldurun."
+        elif password != password2:
+            error = "Şifreler eşleşmiyor."
         else:
-            users[username] = {"password": generate_password_hash(password)}
-            save_users(users)
-            return redirect(url_for("login_page"))
-    return render_template_string(REGISTER_PAGE, logo=LOGO_BASE64, error=error)
+            users = load_users()
+            if username in users:
+                error = "Bu kullanıcı adı zaten alınmış."
+            else:
+                users[username] = {
+                    "password": generate_password_hash(password)
+                }
+                save_users(users)
+                session["user"] = username
+                return redirect(url_for("panel"))
+    return render_template_string(REGISTER_HTML, error=error)
 
-@app.route("/logout", methods=["POST"])
+@app.route("/logout")
+@login_required
 def logout():
-    session.pop("user", None)
-    return redirect(url_for("login_page"))
+    session.clear()
+    return redirect(url_for("login"))
 
 @app.route("/panel")
+@login_required
 def panel():
-    if "user" not in session:
-        return redirect(url_for("login_page"))
-    return render_template_string(MAIN_PAGE, logo=LOGO_BASE64)
+    return render_template_string(PANEL_HTML)
 
-# API Proxy: Sunucudan api.hexnox pro ya istek yapıp cevabı döndürür
-@app.route("/api/<api_name>", methods=["POST"])
-def api_proxy(api_name):
-    if "user" not in session:
-        return jsonify({"error": "Giriş yapmalısınız."})
-
-    if api_name not in API_ENDPOINTS:
-        return jsonify({"error": "Geçersiz API adı."})
-
+@app.route("/api/query", methods=["POST"])
+@login_required
+def api_query():
     data = request.get_json()
-    url = API_ENDPOINTS[api_name]
+    query = data.get("query")
+    val1 = data.get("val1")
+    val2 = data.get("val2")
 
-    # parametreleri uygun şekilde ekle
+    if query not in API_URLS:
+        return jsonify({"error": "Geçersiz sorgu tipi."})
+
+    url_func = API_URLS[query]
+
     try:
-        if api_name == "adsoyadilice":
-            ad = data.get("ad", "").strip()
-            soyad = data.get("soyad", "").strip()
-            if not ad or not soyad:
-                return jsonify({"error": "Ad ve soyad boş olamaz."})
-            url = url.format(ad=ad, soyad=soyad)
-        elif api_name in ["gsmdetay", "gsm"]:
-            gsm = data.get("gsm", "").strip()
-            if not gsm:
-                return jsonify({"error": "GSM boş olamaz."})
-            url += gsm
+        # Ad Soyad İl sorgusu için özel işleme
+        if query == "adsoyadil":
+            # Eğer val2 boş değilse ve içinde boşluk varsa, soyad ve il olarak ayır
+            if val2 and ' ' in val2:
+                parts = val2.split(' ')
+                soyad = parts[0]
+                il = ' '.join(parts[1:])  # Birden fazla kelimeli iller için
+                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}&soyad={soyad}&il={il}"
+            elif val2:
+                # Sadece soyad girilmişse
+                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}&soyad={val2}"
+            else:
+                # Sadece ad girilmişse
+                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}"
         else:
-            tc = data.get("tc", "").strip()
-            if not tc:
-                return jsonify({"error": "TC boş olamaz."})
-            url += tc
-
-        # API çağrısı
-        resp = requests.get(url, timeout=10)
-        # Json dönüşü sağlamaya çalış
+            url = url_func(val1, val2)
+            
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+        
+        # API yanıtını işle
         try:
-            response_data = resp.json()
-        except:
-            response_data = resp.text
-
-        return jsonify(response_data)
-
+            result = r.json()
+            # Eğer API'den direkt dizi geliyorsa (sülale sorgusu gibi)
+            if isinstance(result, list):
+                return jsonify({"result": result})
+            # Eğer bir obje geliyorsa ve içinde data veya results gibi bir anahtar varsa
+            elif isinstance(result, dict) and ("data" in result or "results" in result):
+                return jsonify({"result": result.get("data", result.get("results"))})
+            else:
+                return jsonify({"result": result})
+        except ValueError:
+            return jsonify({"result": r.text})
     except Exception as e:
-        return jsonify({"error": "API çağrısında hata oluştu."})
+        return jsonify({"error": f"API sorgusu başarısız: {str(e)}"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
