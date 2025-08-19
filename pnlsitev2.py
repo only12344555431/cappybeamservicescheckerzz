@@ -4,6 +4,8 @@ from flask import Flask, render_template_string, request, jsonify, session, redi
 import requests
 import json
 import os
+import time
+import threading
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 
@@ -11,6 +13,7 @@ app = Flask(__name__)
 app.secret_key = "cappybeam_secret_key_1234"
 
 USERS_FILE = "users.json"
+SMS_APIS_FILE = "sms_apis.json"
 
 def load_users():
     if not os.path.exists(USERS_FILE):
@@ -21,6 +24,24 @@ def load_users():
 def save_users(users):
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, indent=2, ensure_ascii=False)
+
+def load_sms_apis():
+    if not os.path.exists(SMS_APIS_FILE):
+        # Varsayılan SMS API'leri
+        default_apis = [
+            {"name": "Service 1", "url": "https://api.example1.com/sms?number={phone}&message={message}"},
+            {"name": "Service 2", "url": "https://api.example2.com/send?to={phone}&text={message}"},
+            {"name": "Service 3", "url": "https://api.example3.com/api?phone={phone}&sms={message}"}
+        ]
+        with open(SMS_APIS_FILE, "w", encoding="utf-8") as f:
+            json.dump(default_apis, f, indent=2, ensure_ascii=False)
+        return default_apis
+    with open(SMS_APIS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_sms_apis(apis):
+    with open(SMS_APIS_FILE, "w", encoding="utf-8") as f:
+        json.dump(apis, f, indent=2, ensure_ascii=False)
 
 def login_required(func):
     @wraps(func)
@@ -47,6 +68,10 @@ API_URLS = {
     "gsm": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsm.php?gsm={gsm}",
     "adres": lambda tc, _: f"https://api.hexnox.pro/sowixapi/adres.php?tc={tc}",
 }
+
+# SMS bomber durumunu takip etmek için global değişken
+sms_bomber_active = False
+sms_bomber_thread = None
 
 LOGIN_HTML = """
 <!DOCTYPE html>
@@ -493,7 +518,8 @@ PANEL_HTML = """
       font-size: 0.95rem;
     }
     input[type="text"],
-    input[type="tel"] {
+    input[type="tel"],
+    input[type="number"] {
       width: 100%;
       padding: 0.6rem 0.8rem;
       font-size: 0.95rem;
@@ -506,7 +532,8 @@ PANEL_HTML = """
       background: #f9f9f9;
     }
     input[type="text"]:focus,
-    input[type="tel"]:focus {
+    input[type="tel"]:focus,
+    input[type="number"]:focus {
       border-color: #0a4cff;
       box-shadow: 0 0 0 2px rgba(10,76,255,0.1);
       background: #fff;
@@ -578,6 +605,54 @@ PANEL_HTML = """
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    .sms-bomber-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .sms-bomber-controls button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #start-bomber {
+      background: #e74c3c;
+      color: white;
+    }
+    #stop-bomber {
+      background: #2ecc71;
+      color: white;
+    }
+    #sms-api-manager {
+      background: #3498db;
+      color: white;
+    }
+    .bomber-status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .bomber-status.active {
+      background: #2ecc71;
+      color: white;
+    }
+    .bomber-status.inactive {
+      background: #e74c3c;
+      color: white;
+    }
+    .warning {
+      background: #f39c12;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
     @media (max-width: 850px) {
       nav {
         position: fixed;
@@ -641,6 +716,8 @@ PANEL_HTML = """
       <li><button class="query-btn" data-query="gsmdetay"><i class="fas fa-mobile-alt"></i> GSM Detay</button></li>
       <li><button class="query-btn" data-query="gsm"><i class="fas fa-phone-alt"></i> GSM</button></li>
       <li><button class="query-btn" data-query="adres"><i class="fas fa-map-marker-alt"></i> Adres</button></li>
+      <li><button class="query-btn" data-query="smsbomber"><i class="fas fa-bomb"></i> SMS Bomber</button></li>
+      <li><button class="query-btn" data-query="smsapi"><i class="fas fa-cog"></i> SMS API Yönetimi</button></li>
     </ul>
   </nav>
   <section id="content" tabindex="0" aria-live="polite" aria-atomic="true">
@@ -661,6 +738,43 @@ PANEL_HTML = """
       <input type="text" id="input2" name="input2" autocomplete="off" placeholder="Sadece soyad veya 'soyad il' şeklinde girin" />
       <button type="submit" class="submit-btn" aria-label="Sorguyu çalıştır"><i class="fas fa-search"></i> Sorgula</button>
     </form>
+    <div id="sms-bomber-form" style="display:none;">
+      <div class="warning">
+        <i class="fas fa-exclamation-triangle"></i> UYARI: SMS Bomber etik olmayan amaçlar için kullanılmamalıdır. Sadece kendi telefonunuza test amaçlı kullanın.
+      </div>
+      <form id="bomber-form">
+        <label for="phone-number">Telefon Numarası:</label>
+        <input type="tel" id="phone-number" name="phone" required placeholder="5XX XXX XX XX" pattern="5[0-9]{2} [0-9]{3} [0-9]{2} [0-9]{2}" />
+        <label for="request-count">İstek Sayısı:</label>
+        <input type="number" id="request-count" name="count" required min="1" max="100" value="10" />
+        <label for="message">Mesaj (Opsiyonel):</label>
+        <input type="text" id="message" name="message" placeholder="Varsayılan mesaj kullanılacak" />
+        <button type="submit" class="submit-btn" id="start-bomber"><i class="fas fa-play"></i> Başlat</button>
+      </form>
+      <div class="sms-bomber-controls">
+        <button id="stop-bomber" disabled><i class="fas fa-stop"></i> Durdur</button>
+        <button id="sms-api-manager"><i class="fas fa-cog"></i> API Yönetimi</button>
+      </div>
+      <div class="bomber-status inactive" id="bomber-status">
+        Durum: Hazır
+      </div>
+      <div class="result-container" id="bomber-result" style="display:none;"></div>
+    </div>
+    <div id="sms-api-management" style="display:none;">
+      <h2>SMS API Yönetimi</h2>
+      <div class="warning">
+        <i class="fas fa-exclamation-triangle"></i> UYARI: SMS API'leri çalışma zamanında değiştirilebilir. Geçerli API'lerin çalıştığından emin olun.
+      </div>
+      <div id="api-list"></div>
+      <form id="add-api-form">
+        <h3>Yeni API Ekle</h3>
+        <label for="api-name">API Adı:</label>
+        <input type="text" id="api-name" name="name" required />
+        <label for="api-url">API URL ({{phone}} ve {{message}} yer tutucularını içermeli):</label>
+        <input type="text" id="api-url" name="url" required placeholder="https://api.example.com/sms?number={{phone}}&text={{message}}" />
+        <button type="submit" class="submit-btn"><i class="fas fa-plus"></i> API Ekle</button>
+      </form>
+    </div>
     <div class="result-container" id="result-container" aria-live="polite" aria-atomic="true" style="display:none;"></div>
   </section>
 </main>
@@ -683,12 +797,22 @@ PANEL_HTML = """
 
   const queryButtons = document.querySelectorAll('.query-btn');
   const form = document.getElementById('query-form');
+  const smsBomberForm = document.getElementById('sms-bomber-form');
+  const smsApiManagement = document.getElementById('sms-api-management');
   const label1 = document.getElementById('label1');
   const label2 = document.getElementById('label2');
   const input1 = document.getElementById('input1');
   const input2 = document.getElementById('input2');
   const resultContainer = document.getElementById('result-container');
   const homeContainer = document.getElementById('home-container');
+  const bomberForm = document.getElementById('bomber-form');
+  const bomberResult = document.getElementById('bomber-result');
+  const bomberStatus = document.getElementById('bomber-status');
+  const startBomberBtn = document.getElementById('start-bomber');
+  const stopBomberBtn = document.getElementById('stop-bomber');
+  const smsApiManagerBtn = document.getElementById('sms-api-manager');
+  const apiList = document.getElementById('api-list');
+  const addApiForm = document.getElementById('add-api-form');
 
   const queryLabels = {
     "adsoyad": ["Ad", "Soyad"],
@@ -705,17 +829,40 @@ PANEL_HTML = """
     "isyeriyetkili": ["TC Kimlik No", ""],
     "gsmdetay": ["GSM Numarası", ""],
     "gsm": ["GSM Numarası", ""],
-    "adres": ["TC Kimlik No", ""]
+    "adres": ["TC Kimlik No", ""],
+    "smsbomber": ["SMS Bomber", ""],
+    "smsapi": ["SMS API Yönetimi", ""]
   };
 
   function updateFormFields(queryKey) {
     if(queryKey === "home") {
       homeContainer.style.display = "flex";
       form.style.display = "none";
+      smsBomberForm.style.display = "none";
+      smsApiManagement.style.display = "none";
       resultContainer.style.display = "none";
       return;
     }
-    
+
+    if(queryKey === "smsbomber") {
+      homeContainer.style.display = "none";
+      form.style.display = "none";
+      smsBomberForm.style.display = "block";
+      smsApiManagement.style.display = "none";
+      resultContainer.style.display = "none";
+      return;
+    }
+
+    if(queryKey === "smsapi") {
+      homeContainer.style.display = "none";
+      form.style.display = "none";
+      smsBomberForm.style.display = "none";
+      smsApiManagement.style.display = "block";
+      resultContainer.style.display = "none";
+      loadApiList();
+      return;
+    }
+
     const labels = queryLabels[queryKey] || ["Input1","Input2"];
     label1.textContent = labels[0];
     label2.textContent = labels[1];
@@ -738,6 +885,8 @@ PANEL_HTML = """
     resultContainer.textContent = "";
     resultContainer.style.display = "none";
     homeContainer.style.display = "none";
+    smsBomberForm.style.display = "none";
+    smsApiManagement.style.display = "none";
     form.style.display = "block";
     input1.focus();
   }
@@ -761,23 +910,23 @@ PANEL_HTML = """
 
   function createTableFromData(data) {
     if (!data) return "<p>Sonuç bulunamadı.</p>";
-    
+
     if (Array.isArray(data)) {
       if (data.length === 0) return "<p>Sonuç bulunamadı.</p>";
-      
+
       const allColumns = new Set();
       data.forEach(item => {
         Object.keys(item).forEach(key => allColumns.add(key));
       });
       const columns = Array.from(allColumns);
-      
+
       let html = '<table class="result-table"><thead><tr>';
-      
+
       columns.forEach(column => {
         html += `<th>${column.toUpperCase()}</th>`;
       });
       html += '</tr></thead><tbody>';
-      
+
       data.forEach(row => {
         html += '<tr>';
         columns.forEach(column => {
@@ -785,11 +934,11 @@ PANEL_HTML = """
         });
         html += '</tr>';
       });
-      
+
       html += '</tbody></table>';
       return html;
     }
-    
+
     if (typeof data === 'object') {
       let html = '<table class="result-table"><tbody>';
       for (const key in data) {
@@ -801,7 +950,7 @@ PANEL_HTML = """
       html += '</tbody></table>';
       return html;
     }
-    
+
     return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
   }
 
@@ -809,15 +958,15 @@ PANEL_HTML = """
     e.preventDefault();
     resultContainer.innerHTML = '<div style="padding:1rem;text-align:center;"><span class="loading"></span> Sorgulanıyor, lütfen bekleyin...</div>';
     resultContainer.style.display = "block";
-    
+
     const val1 = input1.value.trim();
     const val2 = input2.value.trim();
-    
+
     if(val1 === "" || (input2.required && val2 === "")) {
       resultContainer.innerHTML = '<div style="padding:1rem;color:#e74c3c;font-weight:600;">Lütfen tüm zorunlu alanları doldurunuz.</div>';
       return;
     }
-    
+
     fetch("/api/query", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -842,6 +991,178 @@ PANEL_HTML = """
     })
     .catch(error => {
       resultContainer.innerHTML = `<div style="padding:1rem;color:#e74c3c;font-weight:600;">İstek sırasında hata oluştu: ${error.message}</div>`;
+    });
+  });
+
+  // SMS Bomber fonksiyonları
+  let bomberInterval = null;
+  let bomberActive = false;
+
+  bomberForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const phone = document.getElementById('phone-number').value.trim();
+    const count = parseInt(document.getElementById('request-count').value);
+    const message = document.getElementById('message').value.trim() || "Test mesajı";
+
+    if(!phone) {
+      alert("Lütfen telefon numarası girin.");
+      return;
+    }
+
+    startBomberBtn.disabled = true;
+    stopBomberBtn.disabled = false;
+    bomberStatus.textContent = "Durum: Çalışıyor...";
+    bomberStatus.className = "bomber-status active";
+    bomberResult.style.display = "block";
+    bomberResult.innerHTML = "<div style='padding:1rem;text-align:center;'><span class='loading'></span> SMS gönderiliyor...</div>";
+
+    bomberActive = true;
+    let sentCount = 0;
+    let successCount = 0;
+    let errorCount = 0;
+
+    bomberInterval = setInterval(async () => {
+      if(!bomberActive || sentCount >= count) {
+        clearInterval(bomberInterval);
+        startBomberBtn.disabled = false;
+        stopBomberBtn.disabled = true;
+        bomberStatus.textContent = "Durum: Tamamlandı";
+        bomberStatus.className = "bomber-status inactive";
+        bomberResult.innerHTML = `
+          <div style="padding:1rem;">
+            <h3>SMS Bomber Sonuçları</h3>
+            <p>Toplam İstek: ${sentCount}</p>
+            <p>Başarılı: ${successCount}</p>
+            <p>Başarısız: ${errorCount}</p>
+          </div>
+        `;
+        return;
+      }
+
+      sentCount++;
+
+      try {
+        const response = await fetch("/api/sms-bomber", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({phone, message})
+        });
+
+        const data = await response.json();
+        if(data.success) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+
+        bomberResult.innerHTML = `
+          <div style="padding:1rem;">
+            <h3>SMS Bomber Çalışıyor</h3>
+            <p>Gönderilen: ${sentCount}/${count}</p>
+            <p>Başarılı: ${successCount}</p>
+            <p>Başarısız: ${errorCount}</p>
+          </div>
+        `;
+      } catch (error) {
+        errorCount++;
+        bomberResult.innerHTML = `
+          <div style="padding:1rem;">
+            <h3>SMS Bomber Çalışıyor</h3>
+            <p>Gönderilen: ${sentCount}/${count}</p>
+            <p>Başarılı: ${successCount}</p>
+            <p>Başarısız: ${errorCount}</p>
+            <p style="color:#e74c3c;">Son hata: ${error.message}</p>
+          </div>
+        `;
+      }
+    }, 1000);
+  });
+
+  stopBomberBtn.addEventListener('click', () => {
+    bomberActive = false;
+    clearInterval(bomberInterval);
+    startBomberBtn.disabled = false;
+    stopBomberBtn.disabled = true;
+    bomberStatus.textContent = "Durum: Durduruldu";
+    bomberStatus.className = "bomber-status inactive";
+  });
+
+  smsApiManagerBtn.addEventListener('click', () => {
+    updateFormFields("smsapi");
+  });
+
+  // API yönetimi fonksiyonları
+  function loadApiList() {
+    fetch("/api/sms-apis")
+      .then(response => response.json())
+      .then(apis => {
+        let html = "<h3>Mevcut API'ler</h3>";
+        if(apis.length === 0) {
+          html += "<p>Henüz API eklenmemiş.</p>";
+        } else {
+          html += "<ul style='list-style:none;padding:0;'>";
+          apis.forEach((api, index) => {
+            html += `
+              <li style='padding:10px;border:1px solid #eee;margin-bottom:10px;border-radius:6px;'>
+                <strong>${api.name}</strong>: ${api.url}
+                <button style='margin-left:10px;padding:5px 10px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;' onclick='deleteApi(${index})'>Sil</button>
+              </li>
+            `;
+          });
+          html += "</ul>";
+        }
+        apiList.innerHTML = html;
+      });
+  }
+
+  window.deleteApi = function(index) {
+    if(confirm("Bu API'yi silmek istediğinize emin misiniz?")) {
+      fetch("/api/sms-apis", {
+        method: "DELETE",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({index})
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.success) {
+          loadApiList();
+        } else {
+          alert("API silinirken hata oluştu: " + data.error);
+        }
+      });
+    }
+  };
+
+  addApiForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('api-name').value.trim();
+    const url = document.getElementById('api-url').value.trim();
+
+    if(!name || !url) {
+      alert("Lütfen tüm alanları doldurun.");
+      return;
+    }
+
+    if(!url.includes("{{phone}}") || !url.includes("{{message}}")) {
+      alert("API URL'si {{phone}} ve {{message}} yer tutucularını içermelidir.");
+      return;
+    }
+
+    fetch("/api/sms-apis", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({name, url})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if(data.success) {
+        document.getElementById('api-name').value = "";
+        document.getElementById('api-url').value = "";
+        loadApiList();
+        alert("API başarıyla eklendi.");
+      } else {
+        alert("API eklenirken hata oluştu: " + data.error);
+      }
     });
   });
 
@@ -935,13 +1256,13 @@ def api_query():
                 url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}"
         else:
             url = url_func(val1, val2)
-            
+
         r = requests.get(url, timeout=15)
         r.raise_for_status()
-        
+
         try:
             result = r.json()
-            
+
             if query in ["vesika", "allvesika", "okulsicil", "kizlik", "sulale"]:
                 if isinstance(result, list):
                     return jsonify({"result": result})
@@ -949,7 +1270,7 @@ def api_query():
                     return jsonify({"result": [result]})
                 else:
                     return jsonify({"result": result})
-            
+
             if isinstance(result, list):
                 return jsonify({"result": result})
             elif isinstance(result, dict) and ("data" in result or "results" in result):
@@ -961,10 +1282,76 @@ def api_query():
     except Exception as e:
         return jsonify({"error": f"API sorgusu başarısız: {str(e)}"})
 
+# SMS Bomber API endpoint'leri
+@app.route("/api/sms-bomber", methods=["POST"])
+@login_required
+def sms_bomber():
+    data = request.get_json()
+    phone = data.get("phone")
+    message = data.get("message", "Test mesajı")
+
+    if not phone:
+        return jsonify({"success": False, "error": "Telefon numarası gerekli"})
+
+    sms_apis = load_sms_apis()
+    results = []
+
+    for api in sms_apis:
+        try:
+            url = api["url"].replace("{{phone}}", phone).replace("{{message}}", message)
+            response = requests.get(url, timeout=10)
+            results.append({
+                "api": api["name"],
+                "status": response.status_code,
+                "success": response.status_code == 200
+            })
+        except Exception as e:
+            results.append({
+                "api": api["name"],
+                "error": str(e),
+                "success": False
+            })
+
+    # Başarılı olan herhangi bir istek varsa başarılı dön
+    success = any(result["success"] for result in results)
+    return jsonify({"success": success, "results": results})
+
+@app.route("/api/sms-apis", methods=["GET", "POST", "DELETE"])
+@login_required
+def manage_sms_apis():
+    if request.method == "GET":
+        apis = load_sms_apis()
+        return jsonify(apis)
+
+    elif request.method == "POST":
+        data = request.get_json()
+        name = data.get("name")
+        url = data.get("url")
+
+        if not name or not url:
+            return jsonify({"success": False, "error": "Name and URL are required"})
+
+        apis = load_sms_apis()
+        apis.append({"name": name, "url": url})
+        save_sms_apis(apis)
+
+        return jsonify({"success": True})
+
+    elif request.method == "DELETE":
+        data = request.get_json()
+        index = data.get("index")
+
+        if index is None:
+            return jsonify({"success": False, "error": "Index is required"})
+
+        apis = load_sms_apis()
+        if 0 <= index < len(apis):
+            apis.pop(index)
+            save_sms_apis(apis)
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Invalid index"})
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True)
-
-
-
-
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
