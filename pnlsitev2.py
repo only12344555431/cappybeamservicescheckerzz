@@ -83,15 +83,15 @@ LOGIN_HTML = """
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-    body,html{height:100%;background:#fff;display:flex;justify-content:center;align-items:center;}
+    body,html{height:100%;background:#2c2c2c;display:flex;justify-content:center;align-items:center;}
     .container {
       width: 360px;
-      background: #fff;
+      background: #3a3a3a;
       padding: 40px 30px;
       border-radius: 25px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
       text-align:center;
-      border: 1px solid #eee;
+      border: 1px solid #555;
     }
     .logo {
       width: 120px;
@@ -99,7 +99,7 @@ LOGIN_HTML = """
       margin: 0 auto 25px;
       border-radius: 50%;
       overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
     }
     .logo img {
       width: 100%;
@@ -108,7 +108,7 @@ LOGIN_HTML = """
       border-radius: 50%;
     }
     h2 {
-      color: #333;
+      color: #e0e0e0;
       margin-bottom: 30px;
       font-weight: 600;
       letter-spacing: 1px;
@@ -119,17 +119,19 @@ LOGIN_HTML = """
       text-align: left;
       margin-bottom: 8px;
       font-weight: 600;
-      color: #555;
+      color: #ccc;
     }
     input {
       width: 100%;
       padding: 12px 15px;
       border-radius: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid #555;
       margin-bottom: 20px;
       font-size: 1rem;
       outline:none;
       transition: 0.3s;
+      background: #4a4a4a;
+      color: #e0e0e0;
     }
     input:focus {
       border-color: #0a4cff;
@@ -152,14 +154,14 @@ LOGIN_HTML = """
     }
     .error {
       margin-bottom: 15px;
-      color: #e74c3c;
+      color: #ff6b6b;
       font-weight: 600;
       font-size: 0.9rem;
     }
     .link {
       margin-top: 15px;
       font-size: 0.9rem;
-      color: #666;
+      color: #aaa;
     }
     .link a {
       color: #0a4cff;
@@ -203,15 +205,15 @@ REGISTER_HTML = """
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-    body,html{height:100%;background:#fff;display:flex;justify-content:center;align-items:center;}
+    body,html{height:100%;background:#2c2c2c;display:flex;justify-content:center;align-items:center;}
     .container {
       width: 360px;
-      background: #fff;
+      background: #3a3a3a;
       padding: 40px 30px;
       border-radius: 25px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
       text-align:center;
-      border: 1px solid #eee;
+      border: 1px solid #555;
     }
     .logo {
       width: 120px;
@@ -219,7 +221,7 @@ REGISTER_HTML = """
       margin: 0 auto 25px;
       border-radius: 50%;
       overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
     }
     .logo img {
       width: 100%;
@@ -228,7 +230,7 @@ REGISTER_HTML = """
       border-radius: 50%;
     }
     h2 {
-      color: #333;
+      color: #e0e0e0;
       margin-bottom: 30px;
       font-weight: 600;
       letter-spacing: 1px;
@@ -239,17 +241,19 @@ REGISTER_HTML = """
       text-align: left;
       margin-bottom: 8px;
       font-weight: 600;
-      color: #555;
+      color: #ccc;
     }
     input {
       width: 100%;
       padding: 12px 15px;
       border-radius: 8px;
-      border: 1px solid #ddd;
+      border: 1px solid #555;
       margin-bottom: 20px;
       font-size: 1rem;
       outline:none;
       transition: 0.3s;
+      background: #4a4a4a;
+      color: #e0e0e0;
     }
     input:focus {
       border-color: #0a4cff;
@@ -272,14 +276,14 @@ REGISTER_HTML = """
     }
     .error {
       margin-bottom: 15px;
-      color: #e74c3c;
+      color: #ff6b6b;
       font-weight: 600;
       font-size: 0.9rem;
     }
     .link {
       margin-top: 15px;
       font-size: 0.9rem;
-      color: #666;
+      color: #aaa;
     }
     .link a {
       color: #0a4cff;
@@ -327,21 +331,21 @@ PANEL_HTML = """
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
     body,html {
       height: 100%;
-      background: #fff;
-      color: #333;
+      background: #2c2c2c;
+      color: #e0e0e0;
       display: flex;
       flex-direction: column;
       font-size: 15px;
     }
     header {
-      background: #fff;
-      color: #333;
+      background: #3a3a3a;
+      color: #e0e0e0;
       padding: 1rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      border-bottom: 1px solid #eee;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      border-bottom: 1px solid #555;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -354,34 +358,34 @@ PANEL_HTML = """
       color: #0a4cff;
     }
     #logout-btn {
-      background: #f8f9fa;
-      border: 1px solid #ddd;
+      background: #4a4a4a;
+      border: 1px solid #666;
       padding: 0.5rem 1rem;
       border-radius: 6px;
-      color: #333;
+      color: #e0e0e0;
       font-weight: 600;
       cursor: pointer;
       font-size: 0.9rem;
       transition: all 0.3s ease;
     }
     #logout-btn:hover {
-      background: #e9ecef;
-      border-color: #ccc;
+      background: #5a5a5a;
+      border-color: #777;
     }
     main {
       flex-grow: 1;
       display: flex;
       height: calc(100vh - 64px);
       overflow: hidden;
-      background: #fff;
+      background: #2c2c2c;
     }
     nav {
       width: 240px;
-      background: #fff;
-      border-right: 1px solid #eee;
+      background: #3a3a3a;
+      border-right: 1px solid #555;
       padding: 1.2rem 1rem;
       overflow-y: auto;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
       transition: transform 0.3s ease;
     }
     nav.hide {
@@ -390,10 +394,10 @@ PANEL_HTML = """
     nav h2 {
       font-weight: 600;
       margin-bottom: 1rem;
-      color: #555;
+      color: #ccc;
       user-select:none;
       padding-bottom: 0.5rem;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #555;
       font-size: 1.1rem;
     }
     nav ul {
@@ -410,7 +414,7 @@ PANEL_HTML = """
       padding: 0.5rem 0.8rem;
       border-radius: 6px;
       font-weight: 500;
-      color: #555;
+      color: #ccc;
       cursor: pointer;
       transition: all 0.3s ease;
       font-size: 0.95rem;
@@ -425,7 +429,7 @@ PANEL_HTML = """
     }
     nav ul li button:hover,
     nav ul li button.active {
-      background: #f0f5ff;
+      background: #4a4a4a;
       color: #0a4cff;
     }
     nav ul li button.active {
@@ -445,7 +449,7 @@ PANEL_HTML = """
     }
     #hamburger div {
       height: 3px;
-      background: #333;
+      background: #e0e0e0;
       border-radius: 3px;
       transition: 0.3s ease;
     }
@@ -462,7 +466,7 @@ PANEL_HTML = """
       flex-grow: 1;
       padding: 1.5rem 2rem;
       overflow-y: auto;
-      background: #fff;
+      background: #2c2c2c;
       user-select:none;
     }
     .home-container {
@@ -480,8 +484,8 @@ PANEL_HTML = """
       margin-bottom: 2rem;
       border-radius: 50%;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      border: 5px solid #f0f5ff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      border: 5px solid #4a4a4a;
     }
     .home-logo img {
       width: 100%;
@@ -497,24 +501,24 @@ PANEL_HTML = """
     }
     .home-subtitle {
       font-size: 1.1rem;
-      color: #666;
+      color: #aaa;
       max-width: 600px;
       line-height: 1.6;
     }
     form {
       max-width: 500px;
       margin-top: 1rem;
-      background: #fff;
+      background: #3a3a3a;
       padding: 1.5rem;
       border-radius: 10px;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-      border: 1px solid #eee;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+      border: 1px solid #555;
     }
     label {
       display: block;
       font-weight: 600;
       margin-bottom: 0.5rem;
-      color: #555;
+      color: #ccc;
       font-size: 0.95rem;
     }
     input[type="text"],
@@ -524,19 +528,19 @@ PANEL_HTML = """
       padding: 0.6rem 0.8rem;
       font-size: 0.95rem;
       border-radius: 6px;
-      border: 1px solid #ddd;
+      border: 1px solid #555;
       margin-bottom: 1rem;
       outline: none;
       transition: 0.3s;
-      color: #333;
-      background: #f9f9f9;
+      color: #e0e0e0;
+      background: #4a4a4a;
     }
     input[type="text"]:focus,
     input[type="tel"]:focus,
     input[type="number"]:focus {
       border-color: #0a4cff;
       box-shadow: 0 0 0 2px rgba(10,76,255,0.1);
-      background: #fff;
+      background: #5a5a5a;
     }
     button.submit-btn {
       background: #0a4cff;
@@ -555,14 +559,14 @@ PANEL_HTML = """
     }
     .result-container {
       margin-top: 1.5rem;
-      border: 1px solid #eee;
+      border: 1px solid #555;
       border-radius: 8px;
       padding: 0;
-      background: #fff;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      background: #3a3a3a;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.2);
       font-family: 'Courier New', Courier, monospace;
       font-size: 0.9rem;
-      color: #333;
+      color: #e0e0e0;
       max-height: 500px;
       overflow-y: auto;
       user-select: text;
@@ -572,24 +576,25 @@ PANEL_HTML = """
       border-collapse: collapse;
     }
     .result-table th {
-      background: #f5f5f5;
+      background: #4a4a4a;
       padding: 0.6rem 0.8rem;
       text-align: left;
       font-weight: 600;
       font-size: 0.85rem;
-      color: #555;
-      border-bottom: 1px solid #eee;
+      color: #ccc;
+      border-bottom: 1px solid #555;
     }
     .result-table td {
       padding: 0.6rem 0.8rem;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid #555;
       font-size: 0.85rem;
+      color: #e0e0e0;
     }
     .result-table tr:last-child td {
       border-bottom: none;
     }
     .result-table tr:hover td {
-      background: #f9f9f9;
+      background: #4a4a4a;
     }
     .loading {
       display: inline-block;
@@ -661,8 +666,8 @@ PANEL_HTML = """
         height: 100%;
         z-index: 1000;
         transform: translateX(-100%);
-        background: #fff;
-        box-shadow: 3px 0 15px rgba(0,0,0,0.1);
+        background: #3a3a3a;
+        box-shadow: 3px 0 15px rgba(0,0,0,0.3);
       }
       nav.show {
         transform: translateX(0);
@@ -963,7 +968,7 @@ PANEL_HTML = """
     const val2 = input2.value.trim();
 
     if(val1 === "" || (input2.required && val2 === "")) {
-      resultContainer.innerHTML = '<div style="padding:1rem;color:#e74c3c;font-weight:600;">Lütfen tüm zorunlu alanları doldurunuz.</div>';
+      resultContainer.innerHTML = '<div style="padding:1rem;color:#ff6b6b;font-weight:600;">Lütfen tüm zorunlu alanları doldurunuz.</div>';
       return;
     }
 
@@ -984,13 +989,13 @@ PANEL_HTML = """
     })
     .then(data => {
       if (data.error) {
-        resultContainer.innerHTML = `<div style="padding:1rem;color:#e74c3c;font-weight:600;">Hata: ${data.error}</div>`;
+        resultContainer.innerHTML = `<div style="padding:1rem;color:#ff6b6b;font-weight:600;">Hata: ${data.error}</div>`;
       } else {
         resultContainer.innerHTML = createTableFromData(data.result);
       }
     })
     .catch(error => {
-      resultContainer.innerHTML = `<div style="padding:1rem;color:#e74c3c;font-weight:600;">İstek sırasında hata oluştu: ${error.message}</div>`;
+      resultContainer.innerHTML = `<div style="padding:1rem;color:#ff6b6b;font-weight:600;">İstek sırasında hata oluştu: ${error.message}</div>`;
     });
   });
 
@@ -1071,7 +1076,7 @@ PANEL_HTML = """
             <p>Gönderilen: ${sentCount}/${count}</p>
             <p>Başarılı: ${successCount}</p>
             <p>Başarısız: ${errorCount}</p>
-            <p style="color:#e74c3c;">Son hata: ${error.message}</p>
+            <p style="color:#ff6b6b;">Son hata: ${error.message}</p>
           </div>
         `;
       }
@@ -1103,8 +1108,8 @@ PANEL_HTML = """
           html += "<ul style='list-style:none;padding:0;'>";
           apis.forEach((api, index) => {
             html += `
-              <li style='padding:10px;border:1px solid #eee;margin-bottom:10px;border-radius:6px;'>
-                <strong>${api.name}</strong>: ${api.url}
+              <li style='padding:10px;border:1px solid #555;margin-bottom:10px;border-radius:6px;background:#4a4a4a;'>
+                <strong style='color:#ccc;'>${api.name}</strong>: <span style='color:#aaa;'>${api.url}</span>
                 <button style='margin-left:10px;padding:5px 10px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;' onclick='deleteApi(${index})'>Sil</button>
               </li>
             `;
@@ -1162,7 +1167,7 @@ PANEL_HTML = """
         alert("API başarıyla eklendi.");
       } else {
         alert("API eklenirken hata oluştu: " + data.error);
-      }
+        }
     });
   });
 
