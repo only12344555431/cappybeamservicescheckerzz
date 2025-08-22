@@ -51,7 +51,49 @@ def login_required(func):
         return func(*args, **kwargs)
     return wrapper
 
+# Tüm API'lerin tanımlandığı sözlük
 API_URLS = {
+    "telegram": lambda username, _: f"https://api.hexnox.pro/sowixapi/telegram_sorgu.php?username={username}",
+    "isyeri": lambda tc, _: f"https://api.hexnox.pro/sowixapi/isyeri.php?tc={tc}",
+    "hane": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hane.php?tc={tc}",
+    "baba": lambda tc, _: f"https://api.hexnox.pro/sowixapi/baba.php?tc={tc}",
+    "anne": lambda tc, _: f"https://api.hexnox.pro/sowixapi/anne.php?tc={tc}",
+    "ayak": lambda tc, _: f"http://api.hexnox.pro/sowixapi/ayak.php?tc={tc}",
+    "boy": lambda tc, _: f"http://api.hexnox.pro/sowixapi/boy.php?tc={tc}",
+    "burc": lambda tc, _: f"http://api.hexnox.pro/sowixapi/burc.php?tc={tc}",
+    "cm": lambda tc, _: f"http://api.hexnox.pro/sowixapi/cm.php?tc={tc}",
+    "cocuk": lambda tc, _: f"http://api.hexnox.pro/sowixapi/cocuk.php?tc={tc}",
+    "ehlt": lambda tc, _: f"http://api.hexnox.pro/sowixapi/ehlt.php?tc={tc}",
+    "email_sorgu": lambda email, _: f"http://api.hexnox.pro/sowixapi/email_sorgu.php?email={email}",
+    "havadurumu": lambda sehir, _: f"http://api.hexnox.pro/sowixapi/havadurumu.php?sehir={sehir}",
+    "imei": lambda imei, _: f"https://api.hexnox.pro/sowixapi/imei.php?imei={imei}",
+    "operator": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/operator.php?gsm={gsm}",
+    "hikaye": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hikaye.php?tc={tc}",
+    "hanepro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hanepro.php?tc={tc}",
+    "muhallev": lambda tc, _: f"https://api.hexnox.pro/sowixapi/muhallev.php?tc={tc}",
+    "lgs": lambda tc, _: f"http://hexnox.pro/sowixfree/lgs/lgs.php?tc={tc}",
+    "plaka": lambda plaka, _: f"http://hexnox.pro/sowixfree/plaka.php?plaka={plaka}",
+    "nude": lambda _, __: f"http://hexnox.pro/sowixfree/nude.php",
+    "sertifika": lambda tc, _: f"http://hexnox.pro/sowixfree/sertifika.php?tc={tc}",
+    "aracparca": lambda plaka, _: f"https://hexnox.pro/sowixfree/aracparca.php?plaka={plaka}",
+    "şehit": lambda ad_soyad, _: f"https://hexnox.pro/sowixfree/şehit.php?Ad={ad_soyad.split(' ')[0] if ad_soyad else ''}&Soyad={ad_soyad.split(' ')[1] if ad_soyad and ' ' in ad_soyad else ''}",
+    "interpol": lambda ad_soyad, _: f"https://hexnox.pro/sowixfree/interpol.php?ad={ad_soyad.split(' ')[0] if ad_soyad else ''}&soyad={ad_soyad.split(' ')[1] if ad_soyad and ' ' in ad_soyad else ''}",
+    "personel": lambda tc, _: f"https://hexnox.pro/sowixfree/personel.php?tc={tc}",
+    "internet": lambda tc, _: f"https://hexnox.pro/sowixfree/internet.php?tc={tc}",
+    "nvi": lambda tc, _: f"https://hexnox.pro/sowixfree/nvi.php?tc={tc}",
+    "nezcane": lambda il_ilce, _: f"https://hexnox.pro/sowixfree/nezcane.php?il={il_ilce.split(' ')[0] if il_ilce else ''}&ilce={il_ilce.split(' ')[1] if il_ilce and ' ' in il_ilce else ''}",
+    "basvuru": lambda tc, _: f"https://hexnox.pro/sowixfree/basvuru/basvuru.php?tc={tc}",
+    "diploma": lambda tc, _: f"https://hexnox.pro/sowixfree/diploma/diploma.php?tc={tc}",
+    "facebook": lambda numara, _: f"https://hexnox.pro/sowixfree/facebook.php?numara={numara}",
+    "vergi": lambda tc, _: f"https://hexnox.pro/sowixfree/vergi/vergi.php?tc={tc}",
+    "premadres": lambda tc, _: f"https://hexnox.pro/sowixfree/premadres.php?tc={tc}",
+    "sgkpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/sgkpro.php?tc={tc}",
+    "mhrs": lambda tc, _: f"https://hexnox.pro/sowixfree/mhrs/mhrs.php?tc={tc}",
+    "premad": lambda ad_il_ilce, _: f"https://api.hexnox.pro/sowixapi/premad.php?ad={ad_il_ilce.split(' ')[0] if ad_il_ilce else ''}&il={ad_il_ilce.split(' ')[1] if ad_il_ilce and len(ad_il_ilce.split(' ')) > 1 else ''}&ilce={ad_il_ilce.split(' ')[2] if ad_il_ilce and len(ad_il_ilce.split(' ')) > 2 else ''}",
+    "fatura": lambda tc, _: f"https://hexnox.pro/sowixfree/fatura.php?tc={tc}",
+    "subdomain": lambda url, _: f"https://api.hexnox.pro/sowixapi/subdomain.php?url={url}",
+    "sexgörsel": lambda soru, _: f"https://hexnox.pro/sowixfree/sexgörsel.php?soru={soru}",
+    "meslek": lambda tc, _: f"https://api.hexnox.pro/sowixapi/meslek.php?tc={tc}",
     "adsoyad": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}",
     "adsoyadil": lambda ad, soyad_il: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad_il.split(' ')[0] if soyad_il else ''}&il={soyad_il.split(' ')[1] if soyad_il and ' ' in soyad_il else ''}",
     "tcpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcpro.php?tc={tc}",
@@ -614,6 +656,7 @@ PANEL_HTML = """
       display: flex;
       gap: 10px;
       margin-top: 15px;
+      flex-wrap: wrap;
     }
     .sms-bomber-controls button {
       flex: 1;
@@ -622,6 +665,7 @@ PANEL_HTML = """
       border-radius: 6px;
       font-weight: 600;
       cursor: pointer;
+      min-width: 120px;
     }
     #start-bomber {
       background: #e74c3c;
@@ -658,6 +702,13 @@ PANEL_HTML = """
       margin-bottom: 15px;
       text-align: center;
     }
+    .category {
+      margin-top: 20px;
+      padding: 10px;
+      border-bottom: 1px solid #555;
+      color: #0a4cff;
+      font-weight: 600;
+    }
     @media (max-width: 850px) {
       nav {
         position: fixed;
@@ -689,6 +740,10 @@ PANEL_HTML = """
       .home-title {
         font-size: 1.8rem;
       }
+      .sms-bomber-controls button {
+        min-width: 100px;
+        font-size: 0.8rem;
+      }
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -706,6 +761,8 @@ PANEL_HTML = """
     <h2>Sorgular</h2>
     <ul>
       <li><button class="query-btn active" data-query="home"><i class="fas fa-home"></i> Anasayfa</button></li>
+      
+      <div class="category">Kişisel Sorgular</div>
       <li><button class="query-btn" data-query="adsoyad"><i class="fas fa-user"></i> Ad Soyad</button></li>
       <li><button class="query-btn" data-query="adsoyadil"><i class="fas fa-user-tag"></i> Ad Soyad İl</button></li>
       <li><button class="query-btn" data-query="tcpro"><i class="fas fa-id-card"></i> TC Kimlik No</button></li>
@@ -721,6 +778,50 @@ PANEL_HTML = """
       <li><button class="query-btn" data-query="gsmdetay"><i class="fas fa-mobile-alt"></i> GSM Detay</button></li>
       <li><button class="query-btn" data-query="gsm"><i class="fas fa-phone-alt"></i> GSM</button></li>
       <li><button class="query-btn" data-query="adres"><i class="fas fa-map-marker-alt"></i> Adres</button></li>
+      <li><button class="query-btn" data-query="hane"><i class="fas fa-house-user"></i> Hane</button></li>
+      <li><button class="query-btn" data-query="baba"><i class="fas fa-male"></i> Baba</button></li>
+      <li><button class="query-btn" data-query="anne"><i class="fas fa-female"></i> Anne</button></li>
+      <li><button class="query-btn" data-query="ayak"><i class="fas fa-shoe-prints"></i> Ayak No</button></li>
+      <li><button class="query-btn" data-query="boy"><i class="fas fa-ruler-vertical"></i> Boy</button></li>
+      <li><button class="query-btn" data-query="burc"><i class="fas fa-star"></i> Burç</button></li>
+      <li><button class="query-btn" data-query="cm"><i class="fas fa-ruler"></i> CM</button></li>
+      <li><button class="query-btn" data-query="cocuk"><i class="fas fa-child"></i> Çocuk</button></li>
+      <li><button class="query-btn" data-query="ehlt"><i class="fas fa-users"></i> EHLT</button></li>
+      <li><button class="query-btn" data-query="hanepro"><i class="fas fa-house-user"></i> Hane Pro</button></li>
+      <li><button class="query-btn" data-query="muhallev"><i class="fas fa-building"></i> Muhallev</button></li>
+      <li><button class="query-btn" data-query="personel"><i class="fas fa-user-tie"></i> Personel</button></li>
+      <li><button class="query-btn" data-query="internet"><i class="fas fa-wifi"></i> Internet</button></li>
+      <li><button class="query-btn" data-query="nvi"><i class="fas fa-address-card"></i> NVI</button></li>
+      <li><button class="query-btn" data-query="sgkpro"><i class="fas fa-file-medical"></i> SGK Pro</button></li>
+      <li><button class="query-btn" data-query="mhrs"><i class="fas fa-hospital"></i> MHRS</button></li>
+      <li><button class="query-btn" data-query="fatura"><i class="fas fa-file-invoice"></i> Fatura</button></li>
+      <li><button class="query-btn" data-query="meslek"><i class="fas fa-briefcase"></i> Meslek</button></li>
+      
+      <div class="category">Diğer Sorgular</div>
+      <li><button class="query-btn" data-query="telegram"><i class="fab fa-telegram"></i> Telegram</button></li>
+      <li><button class="query-btn" data-query="email_sorgu"><i class="fas fa-envelope"></i> Email</button></li>
+      <li><button class="query-btn" data-query="havadurumu"><i class="fas fa-cloud-sun"></i> Hava Durumu</button></li>
+      <li><button class="query-btn" data-query="imei"><i class="fas fa-mobile"></i> IMEI</button></li>
+      <li><button class="query-btn" data-query="operator"><i class="fas fa-sim-card"></i> Operatör</button></li>
+      <li><button class="query-btn" data-query="hikaye"><i class="fas fa-book"></i> Hikaye</button></li>
+      <li><button class="query-btn" data-query="lgs"><i class="fas fa-graduation-cap"></i> LGS</button></li>
+      <li><button class="query-btn" data-query="plaka"><i class="fas fa-car"></i> Plaka</button></li>
+      <li><button class="query-btn" data-query="nude"><i class="fas fa-ban"></i> Nude</button></li>
+      <li><button class="query-btn" data-query="sertifika"><i class="fas fa-certificate"></i> Sertifika</button></li>
+      <li><button class="query-btn" data-query="aracparca"><i class="fas fa-car-side"></i> Araç Parça</button></li>
+      <li><button class="query-btn" data-query="şehit"><i class="fas fa-star-of-life"></i> Şehit</button></li>
+      <li><button class="query-btn" data-query="interpol"><i class="fas fa-globe"></i> Interpol</button></li>
+      <li><button class="query-btn" data-query="nezcane"><i class="fas fa-gavel"></i> Nezcane</button></li>
+      <li><button class="query-btn" data-query="basvuru"><i class="fas fa-file-alt"></i> Başvuru</button></li>
+      <li><button class="query-btn" data-query="diploma"><i class="fas fa-graduation-cap"></i> Diploma</button></li>
+      <li><button class="query-btn" data-query="facebook"><i class="fab fa-facebook"></i> Facebook</button></li>
+      <li><button class="query-btn" data-query="vergi"><i class="fas fa-receipt"></i> Vergi</button></li>
+      <li><button class="query-btn" data-query="premadres"><i class="fas fa-address-book"></i> Premadres</button></li>
+      <li><button class="query-btn" data-query="premad"><i class="fas fa-user-plus"></i> Premad</button></li>
+      <li><button class="query-btn" data-query="subdomain"><i class="fas fa-globe"></i> Subdomain</button></li>
+      <li><button class="query-btn" data-query="sexgörsel"><i class="fas fa-image"></i> Sex Görsel</button></li>
+      
+      <div class="category">Araçlar</div>
       <li><button class="query-btn" data-query="smsbomber"><i class="fas fa-bomb"></i> SMS Bomber</button></li>
       <li><button class="query-btn" data-query="smsapi"><i class="fas fa-cog"></i> SMS API Yönetimi</button></li>
     </ul>
@@ -737,10 +838,10 @@ PANEL_HTML = """
       </p>
     </div>
     <form id="query-form" style="display:none;" aria-label="Sorgu formu">
-      <label id="label1" for="input1">Ad:</label>
+      <label id="label1" for="input1">Değer 1:</label>
       <input type="text" id="input1" name="input1" required autocomplete="off" />
-      <label id="label2" for="input2">Soyad/İl (Opsiyonel):</label>
-      <input type="text" id="input2" name="input2" autocomplete="off" placeholder="Sadece soyad veya 'soyad il' şeklinde girin" />
+      <label id="label2" for="input2">Değer 2 (Opsiyonel):</label>
+      <input type="text" id="input2" name="input2" autocomplete="off" placeholder="İkinci değer (gerekirse)" />
       <button type="submit" class="submit-btn" aria-label="Sorguyu çalıştır"><i class="fas fa-search"></i> Sorgula</button>
     </form>
     <div id="sms-bomber-form" style="display:none;">
@@ -820,6 +921,48 @@ PANEL_HTML = """
   const addApiForm = document.getElementById('add-api-form');
 
   const queryLabels = {
+    "home": ["", ""],
+    "telegram": ["Kullanıcı Adı", ""],
+    "isyeri": ["TC Kimlik No", ""],
+    "hane": ["TC Kimlik No", ""],
+    "baba": ["TC Kimlik No", ""],
+    "anne": ["TC Kimlik No", ""],
+    "ayak": ["TC Kimlik No", ""],
+    "boy": ["TC Kimlik No", ""],
+    "burc": ["TC Kimlik No", ""],
+    "cm": ["TC Kimlik No", ""],
+    "cocuk": ["TC Kimlik No", ""],
+    "ehlt": ["TC Kimlik No", ""],
+    "email_sorgu": ["Email Adresi", ""],
+    "havadurumu": ["Şehir", ""],
+    "imei": ["IMEI Numarası", ""],
+    "operator": ["GSM Numarası", ""],
+    "hikaye": ["TC Kimlik No", ""],
+    "hanepro": ["TC Kimlik No", ""],
+    "muhallev": ["TC Kimlik No", ""],
+    "lgs": ["TC Kimlik No", ""],
+    "plaka": ["Plaka", ""],
+    "nude": ["", ""],
+    "sertifika": ["TC Kimlik No", ""],
+    "aracparca": ["Plaka", ""],
+    "şehit": ["Ad Soyad", ""],
+    "interpol": ["Ad Soyad", ""],
+    "personel": ["TC Kimlik No", ""],
+    "internet": ["TC Kimlik No", ""],
+    "nvi": ["TC Kimlik No", ""],
+    "nezcane": ["İl İlçe", ""],
+    "basvuru": ["TC Kimlik No", ""],
+    "diploma": ["TC Kimlik No", ""],
+    "facebook": ["Telefon Numarası", ""],
+    "vergi": ["TC Kimlik No", ""],
+    "premadres": ["TC Kimlik No", ""],
+    "sgkpro": ["TC Kimlik No", ""],
+    "mhrs": ["TC Kimlik No", ""],
+    "premad": ["Ad İl İlçe", ""],
+    "fatura": ["TC Kimlik No", ""],
+    "subdomain": ["URL", ""],
+    "sexgörsel": ["Soru", ""],
+    "meslek": ["TC Kimlik No", ""],
     "adsoyad": ["Ad", "Soyad"],
     "adsoyadil": ["Ad", "Soyad veya Soyad+İl (Opsiyonel)"],
     "tcpro": ["TC Kimlik No", ""],
@@ -873,6 +1016,7 @@ PANEL_HTML = """
     label2.textContent = labels[1];
     input1.value = "";
     input2.value = "";
+    
     if(labels[1] === "") {
       label2.style.display = "none";
       input2.style.display = "none";
@@ -880,13 +1024,21 @@ PANEL_HTML = """
     } else {
       label2.style.display = "block";
       input2.style.display = "block";
-      input2.required = false;
+      input2.required = true;
+      
       if(queryKey === "adsoyadil") {
         input2.placeholder = "Sadece soyad veya 'soyad il' şeklinde girin";
+      } else if(queryKey === "şehit" || queryKey === "interpol") {
+        input2.placeholder = "Ad Soyad (örn: Ahmet Yılmaz)";
+      } else if(queryKey === "nezcane") {
+        input2.placeholder = "İl İlçe (örn: İstanbul Kadıköy)";
+      } else if(queryKey === "premad") {
+        input2.placeholder = "Ad İl İlçe (örn: Mehmet İstanbul Üsküdar)";
       } else {
-        input2.placeholder = "";
+        input2.placeholder = "İkinci değer";
       }
     }
+    
     resultContainer.textContent = "";
     resultContainer.style.display = "none";
     homeContainer.style.display = "none";
@@ -1249,16 +1401,44 @@ def api_query():
     url_func = API_URLS[query]
 
     try:
-        if query == "adsoyadil":
-            if val2 and ' ' in val2:
-                parts = val2.split(' ')
-                soyad = parts[0]
-                il = ' '.join(parts[1:])
-                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}&soyad={soyad}&il={il}"
-            elif val2:
-                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}&soyad={val2}"
+        if query == "nude":
+            # Özel durum: nude sorgusu için ikinci parametre gerekmez
+            url = url_func("", "")
+        elif query in ["şehit", "interpol"]:
+            # Ad Soyad sorguları
+            if val1 and ' ' in val1:
+                parts = val1.split(' ')
+                ad = parts[0]
+                soyad = ' '.join(parts[1:])
+                url = url_func(f"{ad} {soyad}", val2)
             else:
-                url = f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={val1}"
+                url = url_func(val1, val2)
+        elif query == "nezcane":
+            # İl İlçe sorgusu
+            if val1 and ' ' in val1:
+                parts = val1.split(' ')
+                il = parts[0]
+                ilce = ' '.join(parts[1:])
+                url = url_func(f"{il} {ilce}", val2)
+            else:
+                url = url_func(val1, val2)
+        elif query == "premad":
+            # Ad İl İlçe sorgusu
+            if val1 and ' ' in val1:
+                parts = val1.split(' ')
+                if len(parts) >= 3:
+                    ad = parts[0]
+                    il = parts[1]
+                    ilce = ' '.join(parts[2:])
+                    url = url_func(f"{ad} {il} {ilce}", val2)
+                elif len(parts) == 2:
+                    ad = parts[0]
+                    il = parts[1]
+                    url = url_func(f"{ad} {il}", val2)
+                else:
+                    url = url_func(val1, val2)
+            else:
+                url = url_func(val1, val2)
         else:
             url = url_func(val1, val2)
 
@@ -1267,14 +1447,6 @@ def api_query():
 
         try:
             result = r.json()
-
-            if query in ["vesika", "allvesika", "okulsicil", "kizlik", "sulale"]:
-                if isinstance(result, list):
-                    return jsonify({"result": result})
-                elif isinstance(result, dict):
-                    return jsonify({"result": [result]})
-                else:
-                    return jsonify({"result": result})
 
             if isinstance(result, list):
                 return jsonify({"result": result})
@@ -1296,7 +1468,7 @@ def sms_bomber():
     message = data.get("message", "Test mesajı")
 
     if not phone:
-        return jsonify({"success": False, "error": "Telefon numarası gerekli"})
+                return jsonify({"success": False, "error": "Telefon numarası gerekli"})
 
     sms_apis = load_sms_apis()
     results = []
