@@ -123,6 +123,33 @@ LOGIN_HTML = """
   <title>Giriş Yap - CBS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    /* Özel kaydırma çubuğu stilleri */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #3a3a3a;
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 6px;
+      border: 2px solid #3a3a3a;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #666;
+    }
+
+    /* Firefox için */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #555 #3a3a3a;
+    }
+    
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
     body,html{height:100%;background:#2c2c2c;display:flex;justify-content:center;align-items:center;}
@@ -245,6 +272,33 @@ REGISTER_HTML = """
   <title>Kayıt Ol - CBS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    /* Özel kaydırma çubuğu stilleri */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #3a3a3a;
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 6px;
+      border: 2px solid #3a3a3a;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #666;
+    }
+
+    /* Firefox için */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #555 #3a3a3a;
+    }
+    
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
     body,html{height:100%;background:#2c2c2c;display:flex;justify-content:center;align-items:center;}
@@ -369,6 +423,33 @@ PANEL_HTML = """
   <title>CAPPYBEAMSERVICES! Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    /* Özel kaydırma çubuğu stilleri */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #3a3a3a;
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 6px;
+      border: 2px solid #3a3a3a;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #666;
+    }
+
+    /* Firefox için */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #555 #3a3a3a;
+    }
+    
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
     body,html {
