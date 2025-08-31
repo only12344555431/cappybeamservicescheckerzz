@@ -8,18 +8,25 @@ import time
 import threading
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+import os
+from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "cappybeam_secret_key_1234"
+app.secret_key = "cappybeam_premium_secret_key_2023"
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600
 
 USERS_FILE = "users.json"
 SMS_APIS_FILE = "sms_apis.json"
+QUERY_LOGS_FILE = "query_logs.json"
 
 def load_users():
     if not os.path.exists(USERS_FILE):
         return {}
-    with open(USERS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {}
 
 def save_users(users):
     with open(USERS_FILE, "w", encoding="utf-8") as f:
@@ -27,7 +34,6 @@ def save_users(users):
 
 def load_sms_apis():
     if not os.path.exists(SMS_APIS_FILE):
-        # Varsayılan SMS API'leri
         default_apis = [
             {"name": "Service 1", "url": "https://api.example1.com/sms?number={phone}&message={message}"},
             {"name": "Service 2", "url": "https://api.example2.com/send?to={phone}&text={message}"},
@@ -36,12 +42,41 @@ def load_sms_apis():
         with open(SMS_APIS_FILE, "w", encoding="utf-8") as f:
             json.dump(default_apis, f, indent=2, ensure_ascii=False)
         return default_apis
-    with open(SMS_APIS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(SMS_APIS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return []
 
 def save_sms_apis(apis):
     with open(SMS_APIS_FILE, "w", encoding="utf-8") as f:
         json.dump(apis, f, indent=2, ensure_ascii=False)
+
+def load_query_logs():
+    if not os.path.exists(QUERY_LOGS_FILE):
+        return []
+    try:
+        with open(QUERY_LOGS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return []
+
+def save_query_logs(logs):
+    if len(logs) > 1000:
+        logs = logs[-1000:]
+    with open(QUERY_LOGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(logs, f, indent=2, ensure_ascii=False)
+
+def log_query(username, query_type, parameters, result_status):
+    logs = load_query_logs()
+    logs.append({
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "username": username,
+        "query_type": query_type,
+        "parameters": parameters,
+        "result_status": result_status
+    })
+    save_query_logs(logs)
 
 def login_required(func):
     @wraps(func)
@@ -51,7 +86,6 @@ def login_required(func):
         return func(*args, **kwargs)
     return wrapper
 
-# Tüm API'lerin tanımlandığı sözlük
 API_URLS = {
     "telegram": lambda username, _: f"https://api.hexnox.pro/sowixapi/telegram_sorgu.php?username={username}",
     "isyeri": lambda tc, _: f"https://api.hexnox.pro/sowixapi/isyeri.php?tc={tc}",
@@ -65,13 +99,13 @@ API_URLS = {
     "cocuk": lambda tc, _: f"http://api.hexnox.pro/sowixapi/cocuk.php?tc={tc}",
     "ehlt": lambda tc, _: f"http://api.hexnox.pro/sowixapi/ehlt.php?tc={tc}",
     "email_sorgu": lambda email, _: f"http://api.hexnox.pro/sowixapi/email_sorgu.php?email={email}",
-    "havadurumu": lambda sehir, _: f"http://api.hexnox.pro/sowixapi/havadurumu.php?sehir={sehir}",
+    "havadurumu": lambda sehir, _: f"http://api.hexnox.pro/sow极速飞艇开奖直播api/havadurumu.php?sehir={sehir}",
     "imei": lambda imei, _: f"https://api.hexnox.pro/sowixapi/imei.php?imei={imei}",
     "operator": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/operator.php?gsm={gsm}",
     "hikaye": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hikaye.php?tc={tc}",
-    "hanepro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hanepro.php?tc={tc}",
+    "hanep极速飞艇开奖直播": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hanepro.php?tc={tc}",
     "muhallev": lambda tc, _: f"https://api.hexnox.pro/sowixapi/muhallev.php?tc={tc}",
-    "lgs": lambda tc, _: f"http://hexnox.pro/sowixfree/lgs/lgs.php?tc={tc}",
+    "lgs": lambda tc, _: f"http://hexnox.pro/sowixfree/lgs/lgs极速飞艇开奖直播?tc={tc}",
     "plaka": lambda plaka, _: f"http://hexnox.pro/sowixfree/plaka.php?plaka={plaka}",
     "nude": lambda _, __: f"http://hexnox.pro/sowixfree/nude.php",
     "sertifika": lambda tc, _: f"http://hexnox.pro/sowixfree/sertifika.php?tc={tc}",
@@ -84,7 +118,7 @@ API_URLS = {
     "nezcane": lambda il_ilce, _: f"https://hexnox.pro/sowixfree/nezcane.php?il={il_ilce.split(' ')[0] if il_ilce else ''}&ilce={il_ilce.split(' ')[1] if il_ilce and ' ' in il_ilce else ''}",
     "basvuru": lambda tc, _: f"https://hexnox.pro/sowixfree/basvuru/basvuru.php?tc={tc}",
     "diploma": lambda tc, _: f"https://hexnox.pro/sowixfree/diploma/diploma.php?tc={tc}",
-    "facebook": lambda numara, _: f"https://hexnox.pro/sowixfree/facebook.php?numara={numara}",
+    "facebook": lambda numara, _: f"极速飞艇开奖直播://hexnox.pro/sowixfree/facebook.php?numara={numara}",
     "vergi": lambda tc, _: f"https://hexnox.pro/sowixfree/vergi/vergi.php?tc={tc}",
     "premadres": lambda tc, _: f"https://hexnox.pro/sowixfree/premadres.php?tc={tc}",
     "sgkpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/sgkpro.php?tc={tc}",
@@ -93,13 +127,13 @@ API_URLS = {
     "fatura": lambda tc, _: f"https://hexnox.pro/sowixfree/fatura.php?tc={tc}",
     "subdomain": lambda url, _: f"https://api.hexnox.pro/sowixapi/subdomain.php?url={url}",
     "sexgörsel": lambda soru, _: f"https://hexnox.pro/sowixfree/sexgörsel.php?soru={soru}",
-    "meslek": lambda tc, _: f"https://api.hexnox.pro/sowixapi/meslek.php?tc={tc}",
+    "meslek": lambda tc, _: f"https://api.hexnox.pro/sowixapi/meslek极速飞艇开奖直播?tc={tc}",
     "adsoyad": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}",
     "adsoyadil": lambda ad, soyad_il: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad_il.split(' ')[0] if soyad_il else ''}&il={soyad_il.split(' ')[1] if soyad_il and ' ' in soyad_il else ''}",
     "tcpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcpro.php?tc={tc}",
     "tcgsm": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcgsm.php?tc={tc}",
     "tapu": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tapu.php?tc={tc}",
-    "sulale": lambda tc, _: f"https://api.hexnox.pro/sowixapi/sulale.php?tc={tc}",
+    "sulale": lambda tc, _: f"https://api.hexnox极速飞艇开奖直播/sowixapi/sulale.php?tc={tc}",
     "vesika": lambda tc, _: f"http://20.122.193.203/apiservice/woxy/tc.php?tc={tc}&auth=woxynindaramcigi",
     "allvesika": lambda tc, _: f"http://84.32.15.160/apiservice/woxy/allvesika.php?tc={tc}&auth=cyberinsikimemesiamigotu",
     "okulsicil": lambda tc, _: f"https://merial.cfd/Daimon/freePeker/okulsicil.php?tc={tc}",
@@ -111,898 +145,7 @@ API_URLS = {
     "adres": lambda tc, _: f"https://api.hexnox.pro/sowixapi/adres.php?tc={tc}",
 }
 
-# SMS bomber durumunu takip etmek için global değişken
-sms_bomber_active = False
-sms_bomber_thread = None
-
-LOGIN_HTML = """
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Giriş Yap - CBS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    /* Özel kaydırma çubuğu stilleri */
-    ::-webkit-scrollbar {
-      width: 12px;
-      height: 12px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #3a3a3a;
-      border-radius: 6px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #555;
-      border-radius: 6px;
-      border: 2px solid #3a3a3a;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #666;
-    }
-
-    /* Firefox için */
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: #555 #3a3a3a;
-    }
-    
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-    body,html{height:100%;background:#2c2c2c;display:flex;justify-content:center;align-items:center;}
-    .container {
-      width: 360px;
-      background: #3a3a3a;
-      padding: 40px 30px;
-      border-radius: 25px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      text-align:center;
-      border: 1px solid #555;
-    }
-    .logo {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 25px;
-      border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    }
-    .logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      border-radius: 50%;
-    }
-    h2 {
-      color: #e0e0e0;
-      margin-bottom: 30px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      font-size: 1.8rem;
-    }
-    label {
-      display: block;
-      text-align: left;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #ccc;
-    }
-    input {
-      width: 100%;
-      padding: 12px 15px;
-      border-radius: 8px;
-      border: 1px solid #555;
-      margin-bottom: 20px;
-      font-size: 1rem;
-      outline:none;
-      transition: 0.3s;
-      background: #4a4a4a;
-      color: #e0e0e0;
-    }
-    input:focus {
-      border-color: #0a4cff;
-      box-shadow: 0 0 0 2px rgba(10,76,255,0.2);
-    }
-    button {
-      width: 100%;
-      padding: 14px 0;
-      background: #0a4cff;
-      border: none;
-      color: white;
-      font-weight: 600;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #083ecf;
-    }
-    .error {
-      margin-bottom: 15px;
-      color: #ff6b6b;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .link {
-      margin-top: 15px;
-      font-size: 0.9rem;
-      color: #aaa;
-    }
-    .link a {
-      color: #0a4cff;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .link a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <div class="container" role="main">
-    <div class="logo" aria-label="Cappy Logo">
-      <img src="https://www.coca-cola.com/content/dam/onexp/tr/tr/brands/cappy/global-cappy-logo.png" alt="Cappy Logo"/>
-    </div>
-    <h2>Giriş Yap</h2>
-    {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
-    <form method="POST" action="{{ url_for('login') }}" novalidate>
-      <label for="username">Kullanıcı Adı</label>
-      <input type="text" id="username" name="username" required autocomplete="username" />
-      <label for="password">Şifre</label>
-      <input type="password" id="password" name="password" required autocomplete="current-password" />
-      <button type="submit">Giriş</button>
-    </form>
-    <div class="link" role="link" aria-label="Kayıt ol linki">
-      Henüz hesabın yok mu? <a href="{{ url_for('register') }}">Kayıt Ol</a>
-    </div>
-  </div>
-</body>
-</html>
-"""
-
-REGISTER_HTML = """
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Kayıt Ol - CBS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    /* Özel kaydırma çubuğu stilleri */
-    ::-webkit-scrollbar {
-      width: 12px;
-      height: 12px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #3a3a3a;
-      border-radius: 6px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #555;
-      border-radius: 6px;
-      border: 2px solid #3a3a3a;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #666;
-    }
-
-    /* Firefox için */
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: #555 #3a3a3a;
-    }
-    
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-    body,html{height:100%;background:#2c2c2c;display:flex;justify-content:center;align-items:center;}
-    .container {
-      width: 360px;
-      background: #3a3a3a;
-      padding: 40px 30px;
-      border-radius: 25px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      text-align:center;
-      border: 1px solid #555;
-    }
-    .logo {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto 25px;
-      border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    }
-    .logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      border-radius: 50%;
-    }
-    h2 {
-      color: #e0e0e0;
-      margin-bottom: 30px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      font-size: 1.8rem;
-    }
-    label {
-      display: block;
-      text-align: left;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #ccc;
-    }
-    input {
-      width: 100%;
-      padding: 12px 15px;
-      border-radius: 8px;
-      border: 1px solid #555;
-      margin-bottom: 20px;
-      font-size: 1rem;
-      outline:none;
-      transition: 0.3s;
-      background: #4a4a4a;
-      color: #e0e0e0;
-    }
-    input:focus {
-      border-color: #0a4cff;
-      box-shadow: 0 0 0 2px rgba(10,76,255,0.2);
-    }
-    button {
-      width: 100%;
-      padding: 14px 0;
-      background: #0a4cff;
-      border: none;
-      color: white;
-      font-weight: 600;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #083ecf;
-    }
-    .error {
-      margin-bottom: 15px;
-      color: #ff6b6b;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .link {
-      margin-top: 15px;
-      font-size: 0.9rem;
-      color: #aaa;
-    }
-    .link a {
-      color: #0a4cff;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .link a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <div class="container" role="main">
-    <div class="logo" aria-label="Cappy Logo">
-      <img src="https://www.coca-cola.com/content/dam/onexp/tr/tr/brands/cappy/global-cappy-logo.png" alt="Cappy Logo"/>
-    </div>
-    <h2>Kayıt Ol</h2>
-    {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
-    <form method="POST" action="{{ url_for('register') }}" novalidate>
-      <label for="username">Kullanıcı Adı</label>
-      <input type="text" id="username" name="username" required autocomplete="username" />
-      <label for="password">Şifre</label>
-      <input type="password" id="password" name="password" required autocomplete="new-password" />
-      <label for="password2">Şifre Tekrar</label>
-      <input type="password" id="password2" name="password2" required autocomplete="new-password" />
-      <button type="submit">Kayıt Ol</button>
-    </form>
-    <div class="link" role="link" aria-label="Giriş yap linki">
-      Zaten hesabın var mı? <a href="{{ url_for('login') }}">Giriş Yap</a>
-    </div>
-  </div>
-</body>
-</html>
-"""
-
-PANEL_HTML = """
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <title>CAPPYBEAMSERVICES! Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    /* Özel kaydırma çubuğu stilleri */
-    ::-webkit-scrollbar {
-      width: 12px;
-      height: 12px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #3a3a3a;
-      border-radius: 6px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #555;
-      border-radius: 6px;
-      border: 2px solid #3a3a3a;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #666;
-    }
-
-    /* Firefox için */
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: #555 #3a3a3a;
-    }
-    
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-    body,html {
-      height: 100%;
-      background: #2c2c2c;
-      color: #e0e0e0;
-      display: flex;
-      flex-direction: column;
-      font-size: 15px;
-    }
-    header {
-      background: #3a3a3a;
-      color: #e0e0e0;
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      border-bottom: 1px solid #555;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    header h1 {
-      font-weight: 700;
-      font-size: 1.4rem;
-      letter-spacing: 1px;
-      user-select:none;
-      color: #0a4cff;
-    }
-    #logout-btn {
-      background: #4a4a4a;
-      border: 1px solid #666;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      color: #e0e0e0;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
-    }
-    #logout-btn:hover {
-      background: #5a5a5a;
-      border-color: #777;
-    }
-    main {
-      flex-grow: 1;
-      display: flex;
-      height: calc(100vh - 64px);
-      overflow: hidden;
-      background: #2c2c2c;
-    }
-    nav {
-      width: 240px;
-      background: #3a3a3a;
-      border-right: 1px solid #555;
-      padding: 1.2rem 1rem;
-      overflow-y: auto;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-      transition: transform 0.3s ease;
-    }
-    nav.hide {
-      transform: translateX(-100%);
-    }
-    nav h2 {
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: #ccc;
-      user-select:none;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #555;
-      font-size: 1.1rem;
-    }
-    nav ul {
-      list-style: none;
-    }
-    nav ul li {
-      margin-bottom: 0.5rem;
-    }
-    nav ul li button {
-      width: 100%;
-      background: transparent;
-      border: none;
-      text-align: left;
-      padding: 0.5rem 0.8rem;
-      border-radius: 6px;
-      font-weight: 500;
-      color: #ccc;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-    }
-    nav ul li button i {
-      margin-right: 8px;
-      font-size: 1rem;
-      width: 20px;
-      text-align: center;
-    }
-    nav ul li button:hover,
-    nav ul li button.active {
-      background: #4a4a4a;
-      color: #0a4cff;
-    }
-    nav ul li button.active {
-      font-weight: 600;
-    }
-    #hamburger {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      width: 30px;
-      height: 24px;
-      display: none;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
-      z-index: 1001;
-    }
-    #hamburger div {
-      height: 3px;
-      background: #e0e0e0;
-      border-radius: 3px;
-      transition: 0.3s ease;
-    }
-    #hamburger.active div:nth-child(1) {
-      transform: translateY(10px) rotate(45deg);
-    }
-    #hamburger.active div:nth-child(2) {
-      opacity: 0;
-    }
-    #hamburger.active div:nth-child(3) {
-      transform: translateY(-10px) rotate(-45deg);
-    }
-    section#content {
-      flex-grow: 1;
-      padding: 1.5rem 2rem;
-      overflow-y: auto;
-      background: #2c2c2c;
-      user-select:none;
-    }
-    .home-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-      padding: 2rem;
-    }
-    .home-logo {
-      width: 180px;
-      height: 180px;
-      margin-bottom: 2rem;
-      border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      border: 5px solid #4a4a4a;
-    }
-    .home-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      border-radius: 50%;
-    }
-    .home-title {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: #0a4cff;
-      margin-bottom: 1rem;
-    }
-    .home-subtitle {
-      font-size: 1.1rem;
-      color: #aaa;
-      max-width: 600px;
-      line-height: 1.6;
-    }
-    form {
-      max-width: 500px;
-      margin-top: 1rem;
-      background: #3a3a3a;
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.2);
-      border: 1px solid #555;
-    }
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #ccc;
-      font-size: 0.95rem;
-    }
-    input[type="text"],
-    input[type="tel"],
-    input[type="number"] {
-      width: 100%;
-      padding: 0.6rem 0.8rem;
-      font-size: 0.95rem;
-      border-radius: 6px;
-      border: 1px solid #555;
-      margin-bottom: 1rem;
-      outline: none;
-      transition: 0.3s;
-      color: #e0e0e0;
-      background: #4a4a4a;
-    }
-    input[type="text"]:focus,
-    input[type="tel"]:focus,
-    input[type="number"]:focus {
-      border-color: #0a4cff;
-      box-shadow: 0 0 0 2px rgba(10,76,255,0.1);
-      background: #5a5a5a;
-    }
-    button.submit-btn {
-      background: #0a4cff;
-      border: none;
-      padding: 0.7rem 1.2rem;
-      border-radius: 6px;
-      font-weight: 600;
-      color: white;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      width: 100%;
-    }
-    button.submit-btn:hover {
-      background: #083ecf;
-    }
-    .result-container {
-      margin-top: 1.5rem;
-      border: 1px solid #555;
-      border-radius: 8px;
-      padding: 0;
-      background: #3a3a3a;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.2);
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.9rem;
-      color: #e0e0e0;
-      max-height: 500px;
-      overflow-y: auto;
-      user-select: text;
-    }
-    .result-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .result-table th {
-      background: #4a4a4a;
-      padding: 0.6rem 0.8rem;
-      text-align: left;
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: #ccc;
-      border-bottom: 1px solid #555;
-    }
-    .result-table td {
-      padding: 0.6rem 0.8rem;
-      border-bottom: 1px solid #555;
-      font-size: 0.85rem;
-      color: #e0e0e0;
-    }
-    .result-table tr:last-child td {
-      border-bottom: none;
-    }
-    .result-table tr:hover td {
-      background: #4a4a4a;
-    }
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(10,76,255,0.2);
-      border-radius: 50%;
-      border-top-color: #0a4cff;
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 10px;
-      vertical-align: middle;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .sms-bomber-controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-      flex-wrap: wrap;
-    }
-    .sms-bomber-controls button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      min-width: 120px;
-    }
-    #start-bomber {
-      background: #e74c3c;
-      color: white;
-    }
-    #stop-bomber {
-      background: #2ecc71;
-      color: white;
-    }
-    #sms-api-manager {
-      background: #3498db;
-      color: white;
-    }
-    .bomber-status {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 6px;
-      text-align: center;
-      font-weight: 600;
-    }
-    .bomber-status.active {
-      background: #2ecc71;
-      color: white;
-    }
-    .bomber-status.inactive {
-      background: #e74c3c;
-      color: white;
-    }
-    .warning {
-      background: #f39c12;
-      color: white;
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    .category {
-      margin-top: 20px;
-      padding: 10px;
-      border-bottom: 1px solid #555;
-      color: #0a4cff;
-      font-weight: 600;
-    }
-    @media (max-width: 850px) {
-      nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100%;
-        z-index: 1000;
-        transform: translateX(-100%);
-        background: #3a3a3a;
-        box-shadow: 3px 0 15px rgba(0,0,0,0.3);
-      }
-      nav.show {
-        transform: translateX(0);
-      }
-      #hamburger {
-        display: flex;
-      }
-      main {
-        flex-direction: column;
-        height: auto;
-      }
-      section#content {
-        padding: 1.2rem;
-      }
-      .home-logo {
-        width: 140px;
-        height: 140px;
-      }
-      .home-title {
-        font-size: 1.8rem;
-      }
-      .sms-bomber-controls button {
-        min-width: 100px;
-        font-size: 0.8rem;
-      }
-    }
-  </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-<header>
-  <h1>CAPPYBEAMSERVICES</h1>
-  <button id="logout-btn" aria-label="Çıkış yap"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</button>
-  <div id="hamburger" aria-label="Menüyü aç/kapat" role="button" tabindex="0" aria-expanded="false">
-    <div></div><div></div><div></div>
-  </div>
-</header>
-<main>
-  <nav aria-label="Sorgu menüsü">
-    <h2>Sorgular</h2>
-    <ul>
-      <li><button class="query-btn active" data-query="home"><i class="fas fa-home"></i> Anasayfa</button></li>
-      
-      <div class="category">Kişisel Sorgular</div>
-      <li><button class="query-btn" data-query="adsoyad"><i class="fas fa-user"></i> Ad Soyad</button></li>
-      <li><button class="query-btn" data-query="adsoyadil"><i class="fas fa-user-tag"></i> Ad Soyad İl</button></li>
-      <li><button class="query-btn" data-query="tcpro"><i class="fas fa-id-card"></i> TC Kimlik No</button></li>
-      <li><button class="query-btn" data-query="tcgsm"><i class="fas fa-phone"></i> TC GSM</button></li>
-      <li><button class="query-btn" data-query="tapu"><i class="fas fa-home"></i> Tapu</button></li>
-      <li><button class="query-btn" data-query="sulale"><i class="fas fa-users"></i> Sülale</button></li>
-      <li><button class="query-btn" data-query="vesika"><i class="fas fa-id-badge"></i> Vesika</button></li>
-      <li><button class="query-btn" data-query="allvesika"><i class="fas fa-id-card-alt"></i> Tüm Vesika</button></li>
-      <li><button class="query-btn" data-query="okulsicil"><i class="fas fa-graduation-cap"></i> Okul Sicil</button></li>
-      <li><button class="query-btn" data-query="kizlik"><i class="fas fa-female"></i> Kızlık Soyadı</button></li>
-      <li><button class="query-btn" data-query="okulno"><i class="fas fa-school"></i> Okul No</button></li>
-      <li><button class="query-btn" data-query="isyeriyetkili"><i class="fas fa-briefcase"></i> İşyeri Yetkili</button></li>
-      <li><button class="query-btn" data-query="gsmdetay"><i class="fas fa-mobile-alt"></i> GSM Detay</button></li>
-      <li><button class="query-btn" data-query="gsm"><i class="fas fa-phone-alt"></i> GSM</button></li>
-      <li><button class="query-btn" data-query="adres"><i class="fas fa-map-marker-alt"></i> Adres</button></li>
-      <li><button class="query-btn" data-query="hane"><i class="fas fa-house-user"></i> Hane</button></li>
-      <li><button class="query-btn" data-query="baba"><i class="fas fa-male"></i> Baba</button></li>
-      <li><button class="query-btn" data-query="anne"><i class="fas fa-female"></i> Anne</button></li>
-      <li><button class="query-btn" data-query="ayak"><i class="fas fa-shoe-prints"></i> Ayak No</button></li>
-      <li><button class="query-btn" data-query="boy"><i class="fas fa-ruler-vertical"></i> Boy</button></li>
-      <li><button class="query-btn" data-query="burc"><i class="fas fa-star"></i> Burç</button></li>
-      <li><button class="query-btn" data-query="cm"><i class="fas fa-ruler"></i> CM</button></li>
-      <li><button class="query-btn" data-query="cocuk"><i class="fas fa-child"></i> Çocuk</button></li>
-      <li><button class="query-btn" data-query="ehlt"><i class="fas fa-users"></i> EHLT</button></li>
-      <li><button class="query-btn" data-query="hanepro"><i class="fas fa-house-user"></i> Hane Pro</button></li>
-      <li><button class="query-btn" data-query="muhallev"><i class="fas fa-building"></i> Muhallev</button></li>
-      <li><button class="query-btn" data-query="personel"><i class="fas fa-user-tie"></i> Personel</button></li>
-      <li><button class="query-btn" data-query="internet"><i class="fas fa-wifi"></i> Internet</button></li>
-      <li><button class="query-btn" data-query="nvi"><i class="fas fa-address-card"></i> NVI</button></li>
-      <li><button class="query-btn" data-query="sgkpro"><i class="fas fa-file-medical"></i> SGK Pro</button></li>
-      <li><button class="query-btn" data-query="mhrs"><i class="fas fa-hospital"></i> MHRS</button></li>
-      <li><button class="query-btn" data-query="fatura"><i class="fas fa-file-invoice"></i> Fatura</button></li>
-      <li><button class="query-btn" data-query="meslek"><i class="fas fa-briefcase"></i> Meslek</button></li>
-      
-      <div class="category">Diğer Sorgular</div>
-      <li><button class="query-btn" data-query="telegram"><i class="fab fa-telegram"></i> Telegram</button></li>
-      <li><button class="query-btn" data-query="email_sorgu"><i class="fas fa-envelope"></i> Email</button></li>
-      <li><button class="query-btn" data-query="havadurumu"><i class="fas fa-cloud-sun"></i> Hava Durumu</button></li>
-      <li><button class="query-btn" data-query="imei"><i class="fas fa-mobile"></i> IMEI</button></li>
-      <li><button class="query-btn" data-query="operator"><i class="fas fa-sim-card"></i> Operatör</button></li>
-      <li><button class="query-btn" data-query="hikaye"><i class="fas fa-book"></i> Hikaye</button></li>
-      <li><button class="query-btn" data-query="lgs"><i class="fas fa-graduation-cap"></i> LGS</button></li>
-      <li><button class="query-btn" data-query="plaka"><i class="fas fa-car"></i> Plaka</button></li>
-      <li><button class="query-btn" data-query="nude"><i class="fas fa-ban"></i> Nude</button></li>
-      <li><button class="query-btn" data-query="sertifika"><i class="fas fa-certificate"></i> Sertifika</button></li>
-      <li><button class="query-btn" data-query="aracparca"><i class="fas fa-car-side"></i> Araç Parça</button></li>
-      <li><button class="query-btn" data-query="şehit"><i class="fas fa-star-of-life"></i> Şehit</button></li>
-      <li><button class="query-btn" data-query="interpol"><i class="fas fa-globe"></i> Interpol</button></li>
-      <li><button class="query-btn" data-query="nezcane"><i class="fas fa-gavel"></i> Nezcane</button></li>
-      <li><button class="query-btn" data-query="basvuru"><i class="fas fa-file-alt"></i> Başvuru</button></li>
-      <li><button class="query-btn" data-query="diploma"><i class="fas fa-graduation-cap"></i> Diploma</button></li>
-      <li><button class="query-btn" data-query="facebook"><i class="fab fa-facebook"></i> Facebook</button></li>
-      <li><button class="query-btn" data-query="vergi"><i class="fas fa-receipt"></i> Vergi</button></li>
-      <li><button class="query-btn" data-query="premadres"><i class="fas fa-address-book"></i> Premadres</button></li>
-      <li><button class="query-btn" data-query="premad"><i class="fas fa-user-plus"></i> Premad</button></li>
-      <li><button class="query-btn" data-query="subdomain"><i class="fas fa-globe"></i> Subdomain</button></li>
-      <li><button class="query-btn" data-query="sexgörsel"><i class="fas fa-image"></i> Sex Görsel</button></li>
-      
-      <div class="category">Araçlar</div>
-      <li><button class="query-btn" data-query="smsbomber"><i class="fas fa-bomb"></i> SMS Bomber</button></li>
-      <li><button class="query-btn" data-query="smsapi"><i class="fas fa-cog"></i> SMS API Yönetimi</button></li>
-    </ul>
-  </nav>
-  <section id="content" tabindex="0" aria-live="polite" aria-atomic="true">
-    <div class="home-container" id="home-container">
-      <div class="home-logo">
-        <img src="https://www.coca-cola.com/content/dam/onexp/tr/tr/brands/cappy/global-cappy-logo.png" alt="Cappy Logo"/>
-      </div>
-      <h1 class="home-title">CAPPYBEAMSERVICES</h1>
-      <p class="home-subtitle">
-        Hoşgeldin, {{ session['user'] }}!<br />
-        Sol menüden sorgu seçip sorgularınızı güvenli bir şekilde yapabilirsiniz.
-      </p>
-    </div>
-    <form id="query-form" style="display:none;" aria-label="Sorgu formu">
-      <label id="label1" for="input1">Değer 1:</label>
-      <input type="text" id="input1" name="input1" required autocomplete="off" />
-      <label id="label2" for="input2">Değer 2 (Opsiyonel):</label>
-      <input type="text" id="input2" name="input2" autocomplete="off" placeholder="İkinci değer (gerekirse)" />
-      <button type="submit" class="submit-btn" aria-label="Sorguyu çalıştır"><i class="fas fa-search"></i> Sorgula</button>
-    </form>
-    <div id="sms-bomber-form" style="display:none;">
-      <div class="warning">
-        <i class="fas fa-exclamation-triangle"></i> UYARI: SMS Bomber etik olmayan amaçlar için kullanılmamalıdır. Sadece kendi telefonunuza test amaçlı kullanın.
-      </div>
-      <form id="bomber-form">
-        <label for="phone-number">Telefon Numarası:</label>
-        <input type="tel" id="phone-number" name="phone" required placeholder="5XX XXX XX XX" pattern="5[0-9]{2} [0-9]{3} [0-9]{2} [0-9]{2}" />
-        <label for="request-count">İstek Sayısı:</label>
-        <input type="number" id="request-count" name="count" required min="1" max="100" value="10" />
-        <label for="message">Mesaj (Opsiyonel):</label>
-        <input type="text" id="message" name="message" placeholder="Varsayılan mesaj kullanılacak" />
-        <button type="submit" class="submit-btn" id="start-bomber"><i class="fas fa-play"></i> Başlat</button>
-      </form>
-      <div class="sms-bomber-controls">
-        <button id="stop-bomber" disabled><i class="fas fa-stop"></i> Durdur</button>
-        <button id="sms-api-manager"><i class="fas fa-cog"></i> API Yönetimi</button>
-      </div>
-      <div class="bomber-status inactive" id="bomber-status">
-        Durum: Hazır
-      </div>
-      <div class="result-container" id="bomber-result" style="display:none;"></div>
-    </div>
-    <div id="sms-api-management" style="display:none;">
-      <h2>SMS API Yönetimi</h2>
-      <div class="warning">
-        <i class="fas fa-exclamation-triangle"></i> UYARI: SMS API'leri çalışma zamanında değiştirilebilir. Geçerli API'lerin çalıştığından emin olun.
-      </div>
-      <div id="api-list"></div>
-      <form id="add-api-form">
-        <h3>Yeni API Ekle</h3>
-        <label for="api-name">API Adı:</label>
-        <input type="text" id="api-name" name="name" required />
-        <label for="api-url">API URL ({{phone}} ve {{message}} yer tutucularını içermeli):</label>
-        <input type="text" id="api-url" name="url" required placeholder="https://api.example.com/sms?number={{phone}}&text={{message}}" />
-        <button type="submit" class="submit-btn"><i class="fas fa-plus"></i> API Ekle</button>
-      </form>
-    </div>
-    <div class="result-container" id="result-container" aria-live="polite" aria-atomic="true" style="display:none;"></div>
-  </section>
-</main>
-
-<script>
-  const hamburger = document.getElementById('hamburger');
-  const nav = document.querySelector('nav');
-  hamburger.addEventListener('click', () => {
-    nav.classList.toggle('show');
-    hamburger.classList.toggle('active');
-    const expanded = hamburger.getAttribute('aria-expanded') === 'true' || false;
-    hamburger.setAttribute('aria-expanded', !expanded);
-  });
-  hamburger.addEventListener('keydown', e => {
-    if(e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      hamburger.click();
-    }
-  });
-
-  const queryButtons = document.querySelectorAll('.query-btn');
-  const form = document.getElementById('query-form');
-  const smsBomberForm = document.getElementById('sms-bomber-form');
-  const smsApiManagement = document.getElementById('sms-api-management');
-  const label1 = document.getElementById('label1');
-  const label2 = document.getElementById('label2');
-  const input1 = document.getElementById('input1');
-  const input2 = document.getElementById('input2');
-  const resultContainer = document.getElementById('result-container');
-  const homeContainer = document.getElementById('home-container');
-  const bomberForm = document.getElementById('bomber-form');
-  const bomberResult = document.getElementById('bomber-result');
-  const bomberStatus = document.getElementById('bomber-status');
-  const startBomberBtn = document.getElementById('start-bomber');
-  const stopBomberBtn = document.getElementById('stop-bomber');
-  const smsApiManagerBtn = document.getElementById('sms-api-manager');
-  const apiList = document.getElementById('api-list');
-  const addApiForm = document.getElementById('add-api-form');
-
-  const queryLabels = {
-    "home": ["", ""],
+QUERY_LABELS = {
     "telegram": ["Kullanıcı Adı", ""],
     "isyeri": ["TC Kimlik No", ""],
     "hane": ["TC Kimlik No", ""],
@@ -1033,7 +176,7 @@ PANEL_HTML = """
     "nvi": ["TC Kimlik No", ""],
     "nezcane": ["İl İlçe", ""],
     "basvuru": ["TC Kimlik No", ""],
-    "diploma": ["TC Kimlik No", ""],
+    "hanepro": ["TC Kimlik No", ""],
     "facebook": ["Telefon Numarası", ""],
     "vergi": ["TC Kimlik No", ""],
     "premadres": ["TC Kimlik No", ""],
@@ -1045,7 +188,7 @@ PANEL_HTML = """
     "sexgörsel": ["Soru", ""],
     "meslek": ["TC Kimlik No", ""],
     "adsoyad": ["Ad", "Soyad"],
-    "adsoyadil": ["Ad", "Soyad veya Soyad+İl (Opsiyonel)"],
+    "adsoyadil": ["Ad", "Soyad veya Soyad+İl"],
     "tcpro": ["TC Kimlik No", ""],
     "tcgsm": ["TC Kimlik No", ""],
     "tapu": ["TC Kimlik No", ""],
@@ -1058,357 +201,1726 @@ PANEL_HTML = """
     "isyeriyetkili": ["TC Kimlik No", ""],
     "gsmdetay": ["GSM Numarası", ""],
     "gsm": ["GSM Numarası", ""],
-    "adres": ["TC Kimlik No", ""],
-    "smsbomber": ["SMS Bomber", ""],
-    "smsapi": ["SMS API Yönetimi", ""]
-  };
+    "adres": ["TC Kimlik No", ""]
+}
 
-  function updateFormFields(queryKey) {
-    if(queryKey === "home") {
-      homeContainer.style.display = "flex";
-      form.style.display = "none";
-      smsBomberForm.style.display = "none";
-      smsApiManagement.style.display = "none";
-      resultContainer.style.display = "none";
-      return;
+QUERY_DESCRIPTIONS = {
+    "telegram": "Telegram kullanıcı adı sorgulama",
+    "isyeri": "İşyeri bilgileri sorgulama",
+    "hane": "Hane bilgileri sorgulama",
+    "baba": "Baba bilgisi sorgulama",
+    "anne": "Anne bilgisi sorgulama",
+    "ayak": "Ayak numarası sorgulama",
+    "boy": "Boy bilgisi sorgulama",
+    "burc": "Burç sorgulama",
+    "cm": "CM sorgulama",
+    "cocuk": "Çocuk bilgileri sorgulama",
+    "ehlt": "EHLT sorgulama",
+    "email_sorgu": "E-posta adresi sorgulama",
+    "havadurumu": "Hava durumu sorgulama",
+    "imei": "IMEI sorgulama",
+    "operator": "Operatör sorgulama",
+    "hikaye": "Hikaye sorgulama",
+    "hanepro": "Hane Pro sorgulama",
+    "muhallev": "Muhallev sorgulama",
+    "lgs": "LGS sorgulama",
+    "plaka": "Plaka sorgulama",
+    "nude": "Nude sorgulama",
+    "sertifika": "Sertifika sorgulama",
+    "aracparca": "Araç parça sorgulama",
+    "şehit": "Şehit sorgulama",
+    "interpol": "Interpol sorgulama",
+    "personel": "Personel sorgulama",
+    "internet": "Internet sorgulama",
+    "nvi": "NVI sorgulama",
+    "nezcane": "Nezcane sorgulama",
+    "basvuru": "Başvuru sorgulama",
+    "diploma": "Diploma sorgulama",
+    "facebook": "Facebook sorgulama",
+    "vergi": "Vergi sorgulama",
+    "premadres": "Premadres sorgulama",
+    "sgkpro": "SGK Pro sorgulama",
+    "mhrs": "MHRS sorgulama",
+    "premad": "Premad sorgulama",
+    "fatura": "Fatura sorgulama",
+    "subdomain": "Subdomain sorgulama",
+    "sexgörsel": "Sex görsel sorgulama",
+    "meslek": "Meslek sorgulama",
+    "adsoyad": "Ad Soyad sorgulama",
+    "adsoyadil": "Ad Soyad İl sorgulama",
+    "tcpro": "TC Kimlik sorgulama",
+    "tcgsm": "TC GSM sorgulama",
+    "tapu": "Tapu sorgulama",
+    "sulale": "Sülale sorgulama",
+    "vesika": "Vesika sorgulama",
+    "allvesika": "Tüm vesika sorgulama",
+    "okulsicil": "Okul sicil sorgulama",
+    "kizlik": "Kızlık soyadı sorgulama",
+    "okulno": "Okul numarası sorgulama",
+    "isyeriyetkili": "İşyeri yetkili sorgulama",
+    "gsmdetay": "GSM detay sorgulama",
+    "gsm": "GSM sorgulama",
+    "adres": "Adres sorgulama"
+}
+
+LOGIN_HTML = """
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAPPYBEAM | Giriş Yap</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --primary-dark: #5649c9;
+      --secondary: #a29bfe;
+      --accent: #fd79a8;
+      --dark: #2d3436;
+      --darker: #1e272e;
+      --light: #dfe6e9;
+      --success: #00b894;
+      --warning: #fdcb6e;
+      --danger: #d63031;
+      --gray: #636e72;
+      --light-gray: #b2bec3;
     }
-
-    if(queryKey === "smsbomber") {
-      homeContainer.style.display = "none";
-      form.style.display = "none";
-      smsBomberForm.style.display = "block";
-      smsApiManagement.style.display = "none";
-      resultContainer.style.display = "none";
-      return;
-    }
-
-    if(queryKey === "smsapi") {
-      homeContainer.style.display = "none";
-      form.style.display = "none";
-      smsBomberForm.style.display = "none";
-      smsApiManagement.style.display = "block";
-      resultContainer.style.display = "none";
-      loadApiList();
-      return;
-    }
-
-    const labels = queryLabels[queryKey] || ["Input1","Input2"];
-    label1.textContent = labels[0];
-    label2.textContent = labels[1];
-    input1.value = "";
-    input2.value = "";
     
-    if(labels[1] === "") {
-      label2.style.display = "none";
-      input2.style.display = "none";
-      input2.required = false;
-    } else {
-      label2.style.display = "block";
-      input2.style.display = "block";
-      input2.required = true;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--light);
+    }
+    
+    .login-container {
+      background: rgba(45, 52, 54, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 440px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .login-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: 30px 20px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .login-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.1"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="10" fill="none" /></svg>');
+      background-size: 200px;
+      opacity: 0.1;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 15px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .logo i {
+      font-size: 40px;
+      color: var(--primary);
+    }
+    
+    .login-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 5px;
+      background: linear-gradient(45deg, #fff, #e0e0e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .login-header p {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .login-form {
+      padding: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--light-gray);
+    }
+    
+    .input-with-icon {
+      position: relative;
+    }
+    
+    .input-with-icon i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--light-gray);
+      font-size: 18px;
+    }
+    
+    .input-with-icon input {
+      width: 100%;
+      padding: 15px 15px 15px 50px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--light);
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .input-with-icon input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+    }
+    
+    .input-with-icon input::placeholder {
+      color: var(--light-gray);
+    }
+    
+    .btn-login {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+    }
+    
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.6);
+    }
+    
+    .btn-login:active {
+      transform: translateY(0);
+    }
+    
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--light-gray);
+    }
+    
+    .login-footer a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    .alert {
+      padding: 12px 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .alert-error {
+      background: rgba(214, 48, 49, 0.2);
+      border: 1px solid rgba(214, 48, 49, 0.3);
+      color: #ff7675;
+    }
+    
+    .alert i {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+    
+    @media (max-width: 480px) {
+      .login-container {
+        border-radius: 15px;
+      }
       
-      if(queryKey === "adsoyadil") {
-        input2.placeholder = "Sadece soyad veya 'soyad il' şeklinde girin";
-      } else if(queryKey === "şehit" || queryKey === "interpol") {
-        input2.placeholder = "Ad Soyad (örn: Ahmet Yılmaz)";
-      } else if(queryKey === "nezcane") {
-        input2.placeholder = "İl İlçe (örn: İstanbul Kadıköy)";
-      } else if(queryKey === "premad") {
-        input2.placeholder = "Ad İl İlçe (örn: Mehmet İstanbul Üsküdar)";
-      } else {
-        input2.placeholder = "İkinci değer";
+      .login-header {
+        padding: 25px 15px;
       }
+      
+      .login-form {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <div class="logo">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h1>CAPPYBEAM</h1>
+      <p>Premium Sorgu Sistemi</p>
+    </div>
+    
+    <div class="login-form">
+      {% if error %}
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+      </div>
+      {% endif %}
+      
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+          <label for="username">Kullanıcı Adı</label>
+          <div class="input-with-icon">
+            <i class="fas fa-user"></i>
+            <input type="text" id="username" name="username" placeholder="Kullanıcı adınız" required autocomplete="username">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Şifre</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="Şifreniz" required autocomplete="current-password">
+          </div>
+        </div>
+        
+        <button type="submit" class="btn-login">Giriş Yap</button>
+      </form>
+      
+      <div class="login-footer">
+        Hesabınız yok mu? <a href="{{ url_for('register') }}">Kayıt Ol</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
+REGISTER_HTML = """
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAPPYBEAM | Kayıt Ol</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --primary-dark: #5649c9;
+      --secondary: #a29bfe;
+      --accent: #fd79a8;
+      --dark: #2d3436;
+      --darker: #1e272e;
+      --light: #dfe6e9;
+      --success: #00b894;
+      --warning: #fdcb6e;
+      --danger: #d63031;
+      --gray: #636e72;
+      --light-gray: #b2bec3;
     }
     
-    resultContainer.textContent = "";
-    resultContainer.style.display = "none";
-    homeContainer.style.display = "none";
-    smsBomberForm.style.display = "none";
-    smsApiManagement.style.display = "none";
-    form.style.display = "block";
-    input1.focus();
-  }
-
-  let currentQuery = "home";
-  updateFormFields(currentQuery);
-
-  queryButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      queryButtons.forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      currentQuery = btn.dataset.query;
-      updateFormFields(currentQuery);
-      if(window.innerWidth <= 850){
-        nav.classList.remove('show');
-        hamburger.classList.remove('active');
-        hamburger.setAttribute('aria-expanded', false);
-      }
-    });
-  });
-
-  function createTableFromData(data) {
-    if (!data) return "<p>Sonuç bulunamadı.</p>";
-
-    if (Array.isArray(data)) {
-      if (data.length === 0) return "<p>Sonuç bulunamadı.</p>";
-
-      const allColumns = new Set();
-      data.forEach(item => {
-        Object.keys(item).forEach(key => allColumns.add(key));
-      });
-      const columns = Array.from(allColumns);
-
-      let html = '<table class="result-table"><thead><tr>';
-
-      columns.forEach(column => {
-        html += `<th>${column.toUpperCase()}</th>`;
-      });
-      html += '</tr></thead><tbody>';
-
-      data.forEach(row => {
-        html += '<tr>';
-        columns.forEach(column => {
-          html += `<td>${row[column] || ''}</td>`;
-        });
-        html += '</tr>';
-      });
-
-      html += '</tbody></table>';
-      return html;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
     }
+    
+    body {
+      background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--light);
+    }
+    
+    .register-container {
+      background: rgba(45, 52, 54, 0.8);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 440px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .register-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: 30px 20px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .register-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.1"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="10" fill="none" /></svg>');
+      background-size: 200px;
+      opacity: 0.1;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 15px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .logo i {
+      font-size: 40px;
+      color: var(--primary);
+    }
+    
+    .register-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 5px;
+      background: linear-gradient(45deg, #fff, #e0e0e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .register-header p {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .register-form {
+      padding: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--light-gray);
+    }
+    
+    .input-with-icon {
+      position: relative;
+    }
+    
+    .input-with-icon i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--light-gray);
+      font-size: 18px;
+    }
+    
+    .input-with-icon input {
+      width: 100%;
+      padding: 15px 15px 15px 50px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--light);
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .input-with-icon input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+    }
+    
+    .input-with-icon input::placeholder {
+      color: var(--light-gray);
+    }
+    
+    .btn-register {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+    }
+    
+    .btn-register:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.6);
+    }
+    
+    .btn-register:active {
+      transform: translateY(0);
+    }
+    
+    .register-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--light-gray);
+    }
+    
+    .register-footer a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .register-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    .alert {
+      padding: 12px 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .alert-error {
+      background: rgba(214, 48, 49, 0.2);
+      border: 1px solid rgba(214, 48, 49, 0.3);
+      color: #ff7675;
+    }
+    
+    .alert i {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+    
+    .password-strength {
+      margin-top: 8px;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--gray);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .password-strength::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .password-strength.weak::before {
+      width: 33%;
+      background: var(--danger);
+    }
+    
+    .password-strength.medium::before {
+      width: 66%;
+      background: var(--warning);
+    }
+    
+    .password-strength.strong::before {
+      width: 100%;
+      background: var(--success);
+    }
+    
+    @media (max-width: 480px) {
+      .register-container {
+        border-radius: 15px;
+      }
+      
+      .register-header {
+        padding: 25px 15px;
+      }
+      
+      .register-form {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <div class="register-header">
+      <div class="logo">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h1>Yeni Hesap</h1>
+      <p>CAPPYBEAM Premium Sorgu Sistemi</p>
+    </div>
+    
+    <div class="register-form">
+      {% if error %}
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+      </div>
+      {% endif %}
+      
+      <form method="POST" action="{{ url_for('register') }}">
+        <div class="form-group">
+          <label for="username">Kullanıcı Adı</label>
+          <div class="input-with-icon">
+            <i class="fas fa-user"></i>
+            <input type="text" id="username" name="username" placeholder="Kullanıcı adınız" required autocomplete="username">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Şifre</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="Şifreniz" required autocomplete="new-password">
+          </div>
+          <div class="password-strength" id="password-strength"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password2">Şifre Tekrar</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password2" name="password2" placeholder="Şifrenizi tekrar girin" required autocomplete="new-password">
+          </div>
+        </div>
+        
+        <button type="submit" class="btn-register">Hesap Oluştur</button>
+      </form>
+      
+      <div class="register-footer">
+        Zaten hesabınız var mı? <a href="{{ url_for('login') }}">Giriş Yap</a>
+      </div>
+    </div>
+  </div>
 
-    if (typeof data === 'object') {
-      let html = '<table class="result-table"><tbody>';
-      for (const key in data) {
-        if (data.hasOwnProperty(key)) {
-          const value = typeof data[key] === 'object' ? JSON.stringify(data[key]) : data[key];
-          html += `<tr><th>${key.toUpperCase()}</th><td>${value || ''}</td></tr>`;
+  <script>
+    const passwordInput = document.getElementById('password');
+    const strengthBar = document.getElementById('password-strength');
+    
+    passwordInput.addEventListener('input', function() {
+      const password = this.value;
+      let strength = 0;
+      
+      if (password.length > 5) strength++;
+      if (password.length > 8) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+      
+      strengthBar.className = 'password-strength';
+      if (password.length > 0) {
+        if (strength < 2) {
+          strengthBar.classList.add('weak');
+        } else if (strength < 4) {
+          strengthBar.classList.add('medium');
+        } else {
+          strengthBar.classList.add('strong');
         }
       }
-      html += '</tbody></table>';
-      return html;
-    }
-
-    return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-  }
-
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    resultContainer.innerHTML = '<div style="padding:1rem;text-align:center;"><span class="loading"></span> Sorgulanıyor, lütfen bekleyin...</div>';
-    resultContainer.style.display = "block";
-
-    const val1 = input1.value.trim();
-    const val2 = input2.value.trim();
-
-    if(val1 === "" || (input2.required && val2 === "")) {
-      resultContainer.innerHTML = '<div style="padding:1rem;color:#ff6b6b;font-weight:600;">Lütfen tüm zorunlu alanları doldurunuz.</div>';
-      return;
-    }
-
-    fetch("/api/query", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        query: currentQuery,
-        val1: val1,
-        val2: val2
-      })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('API hatası');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.error) {
-        resultContainer.innerHTML = `<div style="padding:1rem;color:#ff6b6b;font-weight:600;">Hata: ${data.error}</div>`;
-      } else {
-        resultContainer.innerHTML = createTableFromData(data.result);
-      }
-    })
-    .catch(error => {
-      resultContainer.innerHTML = `<div style="padding:1rem;color:#ff6b6b;font-weight:600;">İstek sırasında hata oluştu: ${error.message}</div>`;
     });
-  });
-
-  // SMS Bomber fonksiyonları
-  let bomberInterval = null;
-  let bomberActive = false;
-
-  bomberForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const phone = document.getElementById('phone-number').value.trim();
-    const count = parseInt(document.getElementById('request-count').value);
-    const message = document.getElementById('message').value.trim() || "Test mesajı";
-
-    if(!phone) {
-      alert("Lütfen telefon numarası girin.");
-      return;
-    }
-
-    startBomberBtn.disabled = true;
-    stopBomberBtn.disabled = false;
-    bomberStatus.textContent = "Durum: Çalışıyor...";
-    bomberStatus.className = "bomber-status active";
-    bomberResult.style.display = "block";
-    bomberResult.innerHTML = "<div style='padding:1rem;text-align:center;'><span class='loading'></span> SMS gönderiliyor...</div>";
-
-    bomberActive = true;
-    let sentCount = 0;
-    let successCount = 0;
-    let errorCount = 0;
-
-    bomberInterval = setInterval(async () => {
-      if(!bomberActive || sentCount >= count) {
-        clearInterval(bomberInterval);
-        startBomberBtn.disabled = false;
-        stopBomberBtn.disabled = true;
-        bomberStatus.textContent = "Durum: Tamamlandı";
-        bomberStatus.className = "bomber-status inactive";
-        bomberResult.innerHTML = `
-          <div style="padding:1rem;">
-            <h3>SMS Bomber Sonuçları</h3>
-            <p>Toplam İstek: ${sentCount}</p>
-            <p>Başarılı: ${successCount}</p>
-            <p>Başarısız: ${errorCount}</p>
-          </div>
-        `;
-        return;
-      }
-
-      sentCount++;
-
-      try {
-        const response = await fetch("/api/sms-bomber", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({phone, message})
-        });
-
-        const data = await response.json();
-        if(data.success) {
-          successCount++;
-        } else {
-          errorCount++;
+  </script>
+</body>
+</html>
+"""
+PANEL_HTML = """
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPPYBEAMSERVİCES | Premium Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5649c9;
+            --secondary: #a29bfe;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --darker: #1e272e;
+            --light: #dfe6e9;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --gray: #636e72;
+            --light-gray: #b2bec3;
         }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: var(--darker);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo i {
+            font-size: 20px;
+            color: var(--primary);
+        }
+        
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .user-name {
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: var(--dark);
+            padding: 20px 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 25px;
+        }
+        
+        .sidebar-title {
+            padding: 0 20px 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--light-gray);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--primary);
+        }
+        
+        .nav-item.active {
+            background: rgba(108, 92, 231, 0.1);
+            border-left-color: var(--primary);
+        }
+        
+        .nav-item i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+        
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: var(--dark);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--light-gray);
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--primary);
+        }
+        
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .card-desc {
+            font-size: 14px;
+            color: var(--light-gray);
+        }
+        
+        .query-section {
+            background: var(--dark);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--primary);
+        }
+        
+        .query-description {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--light-gray);
+        }
+        
+        .query-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--light-gray);
+        }
+        
+        .form-input {
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--light);
+            font-size: 14px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            align-self: flex-end;
+            height: 42px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        }
+        
+        .results-container {
+            background: var(--dark);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .results-content {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--light-gray);
+        }
+        
+        .loading i {
+            margin-right: 10px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .result-table th {
+            text-align: left;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .result-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .result-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        @media (max-width: 968px) {
+            .query-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .nav-item span {
+                display: none;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+            }
+            
+            .user-name {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="brand">CAPPYBEAMSERVİCES PREMİUM SERVİS</div>
+        </div>
+        
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-name">{{ session['user'] }}</div>
+            </div>
+            <button class="btn btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Çıkış
+            </button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Ana Menü</div>
+                <a href="#" class="nav-item active" onclick="setQuery('dashboard')">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('history')">
+                    <i class="fas fa-history"></i>
+                    <span>Sorgu Geçmişi</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Kişisel Sorgular</div>
+                <a href="#" class="nav-item" onclick="setQuery('tcpro')">
+                    <i class="fas fa-id-card"></i>
+                    <span>TC Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('adsoyad')">
+                    <i class="fas fa-user"></i>
+                    <span>Ad Soyad</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('gsm')">
+                    <i class="fas fa-phone"></i>
+                    <span>GSM Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('adres')">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Adres Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('vesika')">
+                    <i class="fas fa-id-badge"></i>
+                    <span>Vesika Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('allvesika')">
+                    <i class="fas fa-id-card"></i>
+                    <span>Tüm Vesika Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('anne')">
+                    <i class="fas fa-female"></i>
+                    <span>Anne Bilgisi</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('baba')">
+                    <i class="fas fa-male"></i>
+                    <span>Baba Bilgisi</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('hane')">
+                    <i class="fas fa-house-user"></i>
+                    <span>Hane Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('sulale')">
+                    <i class="fas fa-sitemap"></i>
+                    <span>Sülale Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('cocuk')">
+                    <i class="fas fa-child"></i>
+                    <span>Çocuk Bilgileri</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('isyeri')">
+                    <i class="fas fa-building"></i>
+                    <span>İşyeri Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('isyeriyetkili')">
+                    <i class="fas fa-user-tie"></i>
+                    <span>İşyeri Yetkili</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('tapu')">
+                    <i class="fas fa-home"></i>
+                    <span>Tapu Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('sgkpro')">
+                    <i class="fas fa-file-medical"></i>
+                    <span>SGK Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('vergi')">
+                    <i class="fas fa-receipt"></i>
+                    <span>Vergi Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('premadres')">
+                    <i class="fas fa-address-card"></i>
+                    <span>Premadres Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('premad')">
+                    <i class="fas fa-address-book"></i>
+                    <span>Premad Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('nvi')">
+                    <i class="fas fa-landmark"></i>
+                    <span>NVI Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('muhallev')">
+                    <i class="fas fa-file-contract"></i>
+                    <span>Muhallev Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('hanepro')">
+                    <i class="fas fa-house-damage"></i>
+                    <span>Hane Pro Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('ehlt')">
+                    <i class="fas fa-users"></i>
+                    <span>EHLT Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('ayak')">
+                    <i class="fas fa-shoe-prints"></i>
+                    <span>Ayak No Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('boy')">
+                    <i class="fas fa-ruler-vertical"></i>
+                    <span>Boy Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('burc')">
+                    <i class="fas fa-star"></i>
+                    <span>Burç Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('cm')">
+                    <i class="fas fa-ruler"></i>
+                    <span>CM Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('meslek')">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Meslek Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('tcgsm')">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>TC GSM Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('adsoyadil')">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Ad Soyad İl Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('personel')">
+                    <i class="fas fa-user-md"></i>
+                    <span>Personel Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('internet')">
+                    <i class="fas fa-wifi"></i>
+                    <span>Internet Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('fatura')">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Fatura Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('mhrs')">
+                    <i class="fas fa-hospital"></i>
+                    <span>MHRS Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('basvuru')">
+                    <i class="fas fa-file-signature"></i>
+                    <span>Başvuru Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('diploma')">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Diploma Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('okulno')">
+                    <i class="fas fa-school"></i>
+                    <span>Okul No Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('okulsicil')">
+                    <i class="fas fa-user-graduate"></i>
+                    <span>Okul Sicil Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('lgs')">
+                    <i class="fas fa-book"></i>
+                    <span>LGS Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('sertifika')">
+                    <i class="fas fa-certificate"></i>
+                    <span>Sertifika Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('kizlik')">
+                    <i class="fas fa-female"></i>
+                    <span>Kızlık Soyadı</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('hikaye')">
+                    <i class="fas fa-book-open"></i>
+                    <span>Hikaye Sorgulama</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Sosyal Medya</div>
+                <a href="#" class="nav-item" onclick="setQuery('telegram')">
+                    <i class="fab fa-telegram"></i>
+                    <span>Telegram Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('facebook')">
+                    <i class="fab fa-facebook"></i>
+                    <span>Facebook Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('email_sorgu')">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email Sorgu</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Araç & Araç Bilgileri</div>
+                <a href="#" class="nav-item" onclick="setQuery('plaka')">
+                    <i class="fas fa-car"></i>
+                    <span>Plaka Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('aracparca')">
+                    <i class="fas fa-tools"></i>
+                    <span>Araç Parça Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('imei')">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>IMEI Sorgulama</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Diğer Sorgular</div>
+                <a href="#" class="nav-item" onclick="setQuery('operator')">
+                    <i class="fas fa-sim-card"></i>
+                    <span>Operatör Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('gsmdetay')">
+                    <i class="fas fa-phone-square"></i>
+                    <span>GSM Detay Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('havadurumu')">
+                    <i class="fas fa-cloud-sun"></i>
+                    <span>Hava Durumu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('subdomain')">
+                    <i class="fas fa-globe"></i>
+                    <span>Subdomain Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('nezcane')">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Nezcane Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('şehit')">
+                    <i class="fas fa-medal"></i>
+                    <span>Şehit Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('interpol')">
+                    <i class="fas fa-globe-americas"></i>
+                    <span>Interpol Sorgulama</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('sexgörsel')">
+                    <i class="fas fa-image"></i>
+                    <span>Sex Görsel Sorgu</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('nude')">
+                    <i class="fas fa-ban"></i>
+                    <span>Nude Sorgulama</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Araçlar</div>
+                <a href="#" class="nav-item" onclick="setQuery('smsbomber')">
+                    <i class="fas fa-bomb"></i>
+                    <span>SMS Bomber</span>
+                </a>
+                <a href="#" class="nav-item" onclick="setQuery('smsapi')">
+                    <i class="fas fa-cog"></i>
+                    <span>API Yönetimi</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="dashboard-cards" id="dashboard-cards">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Toplam Sorgu</div>
+                        <div class="card-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">1,248</div>
+                    <div class="card-desc">Bugün: 42 sorgu</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Başarılı Sorgu</div>
+                        <div class="card-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">1,032</div>
+                    <div class="card-desc">%82.7 başarı oranı</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Aktif Kullanıcı</div>
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">156</div>
+                    <div class="card-desc">Şu anda çevrimiçi</div>
+                </div>
+            </div>
+            
+            <div class="query-section" id="query-section">
+                <div class="section-title">
+                    <i class="fas fa-search"></i>
+                    <span id="query-title">Sorgu Merkezi</span>
+                </div>
+                
+                <div class="query-description" id="query-description">
+                    Lütfen soldaki menüden bir sorgu tipi seçin.
+                </div>
+                
+                <div class="query-form">
+                    <div class="form-group">
+                        <label class="form-label" id="input1-label">TC Kimlik No</label>
+                        <input type="text" class="form-input" id="input1" placeholder="TC kimlik numarası">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" id="input2-label">Ek Parametre</label>
+                        <input type="text" class="form-input" id="input2" placeholder="İsteğe bağlı parametre">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="runQuery()">
+                        <i class="fas fa-play"></i> Sorgula
+                    </button>
+                </div>
+            </div>
+            
+            <div class="results-container">
+                <div class="results-header">
+                    <div class="section-title">
+                        <i class="fas fa-list"></i>
+                        <span>Sorgu Sonuçları</span>
+                    </div>
+                </div>
+                
+                <div class="results-content" id="results">
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <span>Sorgu sonuçları burada görünecek</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        bomberResult.innerHTML = `
-          <div style="padding:1rem;">
-            <h3>SMS Bomber Çalışıyor</h3>
-            <p>Gönderilen: ${sentCount}/${count}</p>
-            <p>Başarılı: ${successCount}</p>
-            <p>Başarısız: ${errorCount}</p>
-          </div>
-        `;
-      } catch (error) {
-        errorCount++;
-        bomberResult.innerHTML = `
-          <div style="padding:1rem;">
-            <h3>SMS Bomber Çalışıyor</h3>
-            <p>Gönderilen: ${sentCount}/${count}</p>
-            <p>Başarılı: ${successCount}</p>
-            <p>Başarısız: ${errorCount}</p>
-            <p style="color:#ff6b6b;">Son hata: ${error.message}</p>
-          </div>
-        `;
-      }
-    }, 1000);
-  });
-
-  stopBomberBtn.addEventListener('click', () => {
-    bomberActive = false;
-    clearInterval(bomberInterval);
-    startBomberBtn.disabled = false;
-    stopBomberBtn.disabled = true;
-    bomberStatus.textContent = "Durum: Durduruldu";
-    bomberStatus.className = "bomber-status inactive";
-  });
-
-  smsApiManagerBtn.addEventListener('click', () => {
-    updateFormFields("smsapi");
-  });
-
-  // API yönetimi fonksiyonları
-  function loadApiList() {
-    fetch("/api/sms-apis")
-      .then(response => response.json())
-      .then(apis => {
-        let html = "<h3>Mevcut API'ler</h3>";
-        if(apis.length === 0) {
-          html += "<p>Henüz API eklenmemiş.</p>";
-        } else {
-          html += "<ul style='list-style:none;padding:0;'>";
-          apis.forEach((api, index) => {
-            html += `
-              <li style='padding:10px;border:1px solid #555;margin-bottom:10px;border-radius:6px;background:#4a4a4a;'>
-                <strong style='color:#ccc;'>${api.name}</strong>: <span style='color:#aaa;'>${api.url}</span>
-                <button style='margin-left:10px;padding:5px 10px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;' onclick='deleteApi(${index})'>Sil</button>
-              </li>
+    <script>
+        let currentQuery = 'dashboard';
+        const queryDescriptions = {
+            'dashboard': 'Ana sayfa - Sistem istatistiklerini görüntüleyin',
+            'history': 'Sorgu geçmişi - Önceki sorgularınızı görüntüleyin',
+            'tcpro': 'TC Kimlik numarası ile detaylı kişi sorgulama',
+            'adsoyad': 'Ad ve soyad ile kişi sorgulama',
+            'gsm': 'Telefon numarası sorgulama',
+            'adres': 'TC Kimlik numarası ile adres sorgulama',
+            'vesika': 'TC Kimlik numarası ile vesika sorgulama',
+            'allvesika': 'TC Kimlik numarası ile tüm vesika bilgilerini sorgulama',
+            'anne': 'TC Kimlik numarası ile anne bilgisi sorgulama',
+            'baba': 'TC Kimlik numarası ile baba bilgisi sorgulama',
+            'hane': 'TC Kimlik numarası ile hane bilgileri sorgulama',
+            'sulale': 'TC Kimlik numarası ile sülale bilgileri sorgulama',
+            'cocuk': 'TC Kimlik numarası ile çocuk bilgileri sorgulama',
+            'isyeri': 'TC Kimlik numarası ile işyeri bilgileri sorgulama',
+            'isyeriyetkili': 'TC Kimlik numarası ile işyeri yetkili sorgulama',
+            'tapu': 'TC Kimlik numarası ile tapu bilgileri sorgulama',
+            'sgkpro': 'TC Kimlik numarası ile SGK bilgileri sorgulama',
+            'vergi': 'TC Kimlik numarası ile vergi bilgileri sorgulama',
+            'premadres': 'TC Kimlik numarası ile premadres sorgulama',
+            'premad': 'Ad, il ve ilçe bilgileri ile premad sorgulama',
+            'nvi': 'TC Kimlik numarası ile NVI sorgulama',
+            'muhallev': 'TC Kimlik numarası ile muhallev sorgulama',
+            'hanepro': 'TC Kimlik numarası ile hane pro sorgulama',
+            'ehlt': 'TC Kimlik numarası ile EHLT sorgulama',
+            'ayak': 'TC Kimlik numarası ile ayak numarası sorgulama',
+            'boy': 'TC Kimlik numarası ile boy bilgisi sorgulama',
+            'burc': 'TC Kimlik numarası ile burç sorgulama',
+            'cm': 'TC Kimlik numarası ile CM sorgulama',
+            'meslek': 'TC Kimlik numarası ile meslek sorgulama',
+            'tcgsm': 'TC Kimlik numarası ile GSM sorgulama',
+            'adsoyadil': 'Ad, soyad ve il bilgileri ile kişi sorgulama',
+            'personel': 'TC Kimlik numarası ile personel sorgulama',
+            'internet': 'TC Kimlik numarası ile internet sorgulama',
+            'fatura': 'TC Kimlik numarası ile fatura sorgulama',
+            'mhrs': 'TC Kimlik numarası ile MHRS sorgulama',
+            'basvuru': 'TC Kimlik numarası ile başvuru sorgulama',
+            'diploma': 'TC Kimlik numarası ile diploma sorgulama',
+            'okulno': 'TC Kimlik numarası ile okul numarası sorgulama',
+            'okulsicil': 'TC Kimlik numarası ile okul sicil sorgulama',
+            'lgs': 'TC Kimlik numarası ile LGS sorgulama',
+            'sertifika': 'TC Kimlik numarası ile sertifika sorgulama',
+            'kizlik': 'TC Kimlik numarası ile kızlık soyadı sorgulama',
+            'hikaye': 'TC Kimlik numarası ile hikaye sorgulama',
+            'telegram': 'Telegram kullanıcı adı sorgulama',
+            'facebook': 'Facebook/Telefon numarası sorgulama',
+            'email_sorgu': 'E-posta adresi sorgulama',
+            'plaka': 'Plaka sorgulama',
+            'aracparca': 'Plaka ile araç parça sorgulama',
+            'imei': 'IMEI numarası sorgulama',
+            'operator': 'GSM numarası ile operatör sorgulama',
+            'gsmdetay': 'GSM numarası ile detaylı sorgulama',
+            'havadurumu': 'Şehir ile hava durumu sorgulama',
+            'subdomain': 'URL ile subdomain sorgulama',
+            'nezcane': 'İl ve ilçe ile nezcane sorgulama',
+            'şehit': 'Ad soyad ile şehit sorgulama',
+            'interpol': 'Ad soyad ile interpol sorgulama',
+            'sexgörsel': 'Soru ile sex görsel sorgulama',
+            'nude': 'Nude sorgulama',
+            'smsbomber': 'SMS Bomber aracı - Telefon numarasına SMS gönderin',
+            'smsapi': 'API Yönetimi - SMS API ayarlarını yönetin'
+        };
+        
+        const queryLabels = {
+            "dashboard": ["", ""],
+            "history": ["", ""],
+            "telegram": ["Kullanıcı Adı", ""],
+            "isyeri": ["TC Kimlik No", ""],
+            "hane": ["TC Kimlik No", ""],
+            "baba": ["TC Kimlik No", ""],
+            "anne": ["TC Kimlik No", ""],
+            "ayak": ["TC Kimlik No", ""],
+            "boy": ["TC Kimlik No", ""],
+            "burc": ["TC Kimlik No", ""],
+            "cm": ["TC Kimlik No", ""],
+            "cocuk": ["TC Kimlik No", ""],
+            "ehlt": ["TC Kimlik No", ""],
+            "email_sorgu": ["Email Adresi", ""],
+            "havadurumu": ["Şehir", ""],
+            "imei": ["IMEI Numarası", ""],
+            "operator": ["GSM Numarası", ""],
+            "hikaye": ["TC Kimlik No", ""],
+            "hanepro": ["TC Kimlik No", ""],
+            "muhallev": ["TC Kimlik No", ""],
+            "lgs": ["TC Kimlik No", ""],
+            "plaka": ["Plaka", ""],
+            "nude": ["", ""],
+            "sertifika": ["TC Kimlik No", ""],
+            "aracparca": ["Plaka", ""],
+            "şehit": ["Ad Soyad", ""],
+            "interpol": ["Ad Soyad", ""],
+            "personel": ["TC Kimlik No", ""],
+            "internet": ["TC Kimlik No", ""],
+            "nvi": ["TC Kimlik No", ""],
+            "nezcane": ["İl İlçe", ""],
+            "basvuru": ["TC Kimlik No", ""],
+            "diploma": ["TC Kimlik No", ""],
+            "facebook": ["Telefon Numarası", ""],
+            "vergi": ["TC Kimlik No", ""],
+            "premadres": ["TC Kimlik No", ""],
+            "sgkpro": ["TC Kimlik No", ""],
+            "mhrs": ["TC Kimlik No", ""],
+            "premad": ["Ad İl İlçe", ""],
+            "fatura": ["TC Kimlik No", ""],
+            "subdomain": ["URL", ""],
+            "sexgörsel": ["Soru", ""],
+            "meslek": ["TC Kimlik No", ""],
+            "adsoyad": ["Ad", "Soyad"],
+            "adsoyadil": ["Ad", "Soyad veya Soyad+İl (Opsiyonel)"],
+            "tcpro": ["TC Kimlik No", ""],
+            "tcgsm": ["TC Kimlik No", ""],
+            "tapu": ["TC Kimlik No", ""],
+            "sulale": ["TC Kimlik No", ""],
+            "vesika": ["TC Kimlik No", ""],
+            "allvesika": ["TC Kimlik No", ""],
+            "okulsicil": ["TC Kimlik No", ""],
+            "kizlik": ["TC Kimlik No", ""],
+            "okulno": ["TC Kimlik No", ""],
+            "isyeriyetkili": ["TC Kimlik No", ""],
+            "gsmdetay": ["GSM Numarası", ""],
+            "gsm": ["GSM Numarası", ""],
+            "adres": ["TC Kimlik No", ""],
+            "smsbomber": ["Telefon Numarası", "Mesaj (Opsiyonel)"],
+            "smsapi": ["API Adı", "API URL"]
+        };
+        
+        function setQuery(queryType) {
+            currentQuery = queryType;
+            updateFormLabels();
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            event.currentTarget.classList.add('active');
+            
+            if (currentQuery === 'dashboard' || currentQuery === 'history') {
+                document.getElementById('query-section').style.display = 'none';
+                document.getElementById('dashboard-cards').style.display = 'grid';
+            } else {
+                document.getElementById('query-section').style.display = 'block';
+                document.getElementById('dashboard-cards').style.display = 'none';
+            }
+        }
+        
+        function updateFormLabels() {
+            document.getElementById('query-title').textContent = currentQuery.toUpperCase() + ' Sorgulama';
+            document.getElementById('query-description').textContent = queryDescriptions[currentQuery] || 'Sorgu açıklaması';
+            
+            document.getElementById('input1-label').textContent = queryLabels[currentQuery][0];
+            document.getElementById('input2-label').textContent = queryLabels[currentQuery][1];
+            document.getElementById('input1').placeholder = queryLabels[currentQuery][0] + ' girin';
+            document.getElementById('input2').placeholder = queryLabels[currentQuery][1] + ' girin';
+            
+            if (queryLabels[currentQuery][0] === '') {
+                document.getElementById('input1-label').style.display = 'none';
+                document.getElementById('input1').style.display = 'none';
+            } else {
+                document.getElementById('input1-label').style.display = 'block';
+                document.getElementById('input1').style.display = 'block';
+            }
+            
+            if (queryLabels[currentQuery][1] === '') {
+                document.getElementById('input2-label').style.display = 'none';
+                document.getElementById('input2').style.display = 'none';
+            } else {
+                document.getElementById('input2-label').style.display = 'block';
+                document.getElementById('input2').style.display = 'block';
+            }
+        }
+        
+        function runQuery() {
+            const input1 = document.getElementById('input1').value;
+            const input2 = document.getElementById('input2').value;
+            
+            if (currentQuery === 'dashboard' || currentQuery === 'history') {
+                document.getElementById('results').innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: var(--light-gray);">
+                        <i class="fas fa-info-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <h3>${currentQuery === 'dashboard' ? 'Dashboard' : 'Sorgu Geçmişi'} Sayfası</h3>
+                        <p>Bu sayfa henüz implemente edilmemiştir.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <span>Sorgu yapılıyor, lütfen bekleyin...</span>
+                </div>
             `;
-          });
-          html += "</ul>";
+            
+            fetch("/api/query", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    query: currentQuery,
+                    val1: input1,
+                    val2: input2
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('results').innerHTML = `
+                        <div style="color: var(--danger); padding: 20px; text-align: center;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Hata</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                } else {
+                    displayResults(data.result);
+                }
+            })
+            .catch(error => {
+                document.getElementById('results').innerHTML = `
+                    <div style="color: var(--danger); padding: 20px; text-align: center;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>İstek Hatası</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            });
         }
-        apiList.innerHTML = html;
-      });
-  }
-
-  window.deleteApi = function(index) {
-    if(confirm("Bu API'yi silmek istediğinize emin misiniz?")) {
-      fetch("/api/sms-apis", {
-        method: "DELETE",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({index})
-      })
-      .then(response => response.json())
-      .then(data => {
-        if(data.success) {
-          loadApiList();
-        } else {
-          alert("API silinirken hata oluştu: " + data.error);
+        
+        function displayResults(data) {
+            let html = '';
+            
+            if (Array.isArray(data) && data.length > 0) {
+                html = '<table class="result-table">';
+                html += '<tr>';
+                Object.keys(data[0]).forEach(key => {
+                    html += `<th>${key}</th>`;
+                });
+                html += '</tr>';
+                
+                data.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row).forEach(value => {
+                        html += `<td>${value || ''}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                
+                html += '</table>';
+            } else if (typeof data === 'object' && data !== null) {
+                html = '<table class="result-table">';
+                for (const [key, value] of Object.entries(data)) {
+                    html += `<tr><th>${key}</th><td>${value || ''}</td></tr>`;
+                }
+                html += '</table>';
+            } else {
+                html = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            document.getElementById('results').innerHTML = html;
         }
-      });
-    }
-  };
-
-  addApiForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const name = document.getElementById('api-name').value.trim();
-    const url = document.getElementById('api-url').value.trim();
-
-    if(!name || !url) {
-      alert("Lütfen tüm alanları doldurun.");
-      return;
-    }
-
-    if(!url.includes("{{phone}}") || !url.includes("{{message}}")) {
-      alert("API URL'si {{phone}} ve {{message}} yer tutucularını içermelidir.");
-      return;
-    }
-
-    fetch("/api/sms-apis", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({name, url})
-    })
-    .then(response => response.json())
-    .then(data => {
-      if(data.success) {
-        document.getElementById('api-name').value = "";
-        document.getElementById('api-url').value = "";
-        loadApiList();
-        alert("API başarıyla eklendi.");
-      } else {
-        alert("API eklenirken hata oluştu: " + data.error);
+        
+        function logout() {
+            window.location.href = "/logout";
         }
-    });
-  });
-
-  document.getElementById("logout-btn").addEventListener("click", () => {
-    window.location.href = "/logout";
-  });
-</script>
-
+        
+        updateFormLabels();
+    </script>
 </body>
 </html>
 """
@@ -1428,6 +1940,7 @@ def login():
         users = load_users()
         if username in users and check_password_hash(users[username]["password"], password):
             session["user"] = username
+            session.permanent = True
             return redirect(url_for("panel"))
         else:
             error = "Kullanıcı adı veya şifre hatalı."
@@ -1444,16 +1957,20 @@ def register():
             error = "Tüm alanları doldurun."
         elif password != password2:
             error = "Şifreler eşleşmiyor."
+        elif len(password) < 6:
+            error = "Şifre en az 6 karakter olmalıdır."
         else:
             users = load_users()
             if username in users:
                 error = "Bu kullanıcı adı zaten alınmış."
             else:
                 users[username] = {
-                    "password": generate_password_hash(password)
+                    "password": generate_password_hash(password),
+                    "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 }
                 save_users(users)
                 session["user"] = username
+                session.permanent = True
                 return redirect(url_for("panel"))
     return render_template_string(REGISTER_HTML, error=error)
 
@@ -1480,13 +1997,12 @@ def api_query():
         return jsonify({"error": "Geçersiz sorgu tipi."})
 
     url_func = API_URLS[query]
+    result_status = "error"
 
     try:
         if query == "nude":
-            # Özel durum: nude sorgusu için ikinci parametre gerekmez
             url = url_func("", "")
         elif query in ["şehit", "interpol"]:
-            # Ad Soyad sorguları
             if val1 and ' ' in val1:
                 parts = val1.split(' ')
                 ad = parts[0]
@@ -1495,7 +2011,6 @@ def api_query():
             else:
                 url = url_func(val1, val2)
         elif query == "nezcane":
-            # İl İlçe sorgusu
             if val1 and ' ' in val1:
                 parts = val1.split(' ')
                 il = parts[0]
@@ -1504,7 +2019,6 @@ def api_query():
             else:
                 url = url_func(val1, val2)
         elif query == "premad":
-            # Ad İl İlçe sorgusu
             if val1 and ' ' in val1:
                 parts = val1.split(' ')
                 if len(parts) >= 3:
@@ -1525,10 +2039,10 @@ def api_query():
 
         r = requests.get(url, timeout=15)
         r.raise_for_status()
+        result_status = "success"
 
         try:
             result = r.json()
-
             if isinstance(result, list):
                 return jsonify({"result": result})
             elif isinstance(result, dict) and ("data" in result or "results" in result):
@@ -1539,8 +2053,9 @@ def api_query():
             return jsonify({"result": r.text})
     except Exception as e:
         return jsonify({"error": f"API sorgusu başarısız: {str(e)}"})
+    finally:
+        log_query(session["user"], query, {"val1": val1, "val2": val2}, result_status)
 
-# SMS Bomber API endpoint'leri
 @app.route("/api/sms-bomber", methods=["POST"])
 @login_required
 def sms_bomber():
@@ -1549,7 +2064,7 @@ def sms_bomber():
     message = data.get("message", "Test mesajı")
 
     if not phone:
-                return jsonify({"success": False, "error": "Telefon numarası gerekli"})
+        return jsonify({"success": False, "error": "Telefon numarası gerekli"})
 
     sms_apis = load_sms_apis()
     results = []
@@ -1570,7 +2085,6 @@ def sms_bomber():
                 "success": False
             })
 
-    # Başarılı olan herhangi bir istek varsa başarılı dön
     success = any(result["success"] for result in results)
     return jsonify({"success": success, "results": results})
 
@@ -1588,6 +2102,9 @@ def manage_sms_apis():
 
         if not name or not url:
             return jsonify({"success": False, "error": "Name and URL are required"})
+
+        if "{{phone}}" not in url or "{{message}}" not in url:
+            return jsonify({"success": False, "error": "URL must contain {{phone}} and {{message}} placeholders"})
 
         apis = load_sms_apis()
         apis.append({"name": name, "url": url})
@@ -1610,7 +2127,13 @@ def manage_sms_apis():
         else:
             return jsonify({"success": False, "error": "Invalid index"})
 
+@app.route("/api/query-logs")
+@login_required
+def get_query_logs():
+    logs = load_query_logs()
+    user_logs = [log for log in logs if log["username"] == session["user"]]
+    return jsonify(user_logs[-50:])
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
-
+    app.run(host='0.0.0.0', port=port, debug=True)
