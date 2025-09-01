@@ -133,7 +133,7 @@ API_URLS = {
     "tcpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcpro.php?tc={tc}",
     "tcgsm": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcgsm.php?tc={tc}",
     "tapu": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tapu.php?tc={tc}",
-    "sulale": lambda tc, _: f"https://api.hexnox极速飞艇开奖直播/sowixapi/sulale.php?tc={tc}",
+    "sulale": lambda tc, _: f"https://api.hexnox.pro/sowixapi/sulale.php?tc={tc}",
     "vesika": lambda tc, _: f"http://20.122.193.203/apiservice/woxy/tc.php?tc={tc}&auth=woxynindaramcigi",
     "allvesika": lambda tc, _: f"http://84.32.15.160/apiservice/woxy/allvesika.php?tc={tc}&auth=cyberinsikimemesiamigotu",
     "okulsicil": lambda tc, _: f"https://merial.cfd/Daimon/freePeker/okulsicil.php?tc={tc}",
@@ -889,23 +889,32 @@ PANEL_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAPPYBEAMSERVİCES | Premium Panel</title>
+    <title>CAPPYBEAMSERVİCES | Premium Sorgu Paneli</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #6c5ce7;
             --primary-dark: #5649c9;
+            --primary-light: #7d70e9;
             --secondary: #a29bfe;
             --accent: #fd79a8;
             --dark: #2d3436;
             --darker: #1e272e;
             --light: #dfe6e9;
+            --lighter: #f5f6fa;
             --success: #00b894;
             --warning: #fdcb6e;
             --danger: #d63031;
+            --info: #0984e3;
             --gray: #636e72;
             --light-gray: #b2bec3;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
         
         * {
@@ -916,23 +925,30 @@ PANEL_HTML = """
         }
         
         body {
-            background: var(--darker);
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
             color: var(--light);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
         
+        /* Header Styles */
         .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            padding: 15px 25px;
+            background: rgba(45, 52, 54, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 0 25px;
+            height: var(--header-height);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: sticky;
+            box-shadow: var(--shadow);
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .header-left {
@@ -942,96 +958,141 @@ PANEL_HTML = """
         }
         
         .logo {
-            width: 40px;
-            height: 40px;
-            background: white;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
         }
         
         .logo i {
             font-size: 20px;
-            color: var(--primary);
+            color: white;
         }
         
         .brand {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 700;
-            background: linear-gradient(45deg, #fff, #e0e0e0);
+            background: linear-gradient(45deg, var(--light), var(--lighter));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
         }
         
         .header-right {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
         
         .user-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            transition: var(--transition);
+        }
+        
+        .user-info:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .user-avatar {
-            width: 35px;
-            height: 35px;
-            background: rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 3px 10px rgba(108, 92, 231, 0.3);
+        }
+        
+        .user-avatar i {
+            font-size: 18px;
+            color: white;
         }
         
         .user-name {
             font-weight: 500;
+            font-size: 15px;
         }
         
         .btn {
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 10px 18px;
+            border-radius: 30px;
             border: none;
             cursor: pointer;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
         }
         
         .btn-logout {
             background: rgba(255, 255, 255, 0.1);
             color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
+        /* Main Container */
         .main-container {
             display: flex;
             flex: 1;
+            margin-top: var(--header-height);
         }
         
+        /* Sidebar Styles */
         .sidebar {
-            width: 250px;
-            background: var(--dark);
-            padding: 20px 0;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            width: var(--sidebar-width);
+            background: rgba(45, 52, 54, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 25px 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
             overflow-y: auto;
+            height: calc(100vh - var(--header-height));
+            position: fixed;
+            left: 0;
+            top: var(--header-height);
+            z-index: 900;
+            transition: var(--transition);
         }
         
         .sidebar-section {
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
         
         .sidebar-title {
-            padding: 0 20px 10px;
+            padding: 0 25px 12px;
             font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             color: var(--light-gray);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-title i {
+            font-size: 14px;
+        }
+        
+        .nav-items {
+            padding: 10px 15px;
         }
         
         .nav-item {
@@ -1040,52 +1101,69 @@ PANEL_HTML = """
             padding: 12px 20px;
             color: var(--light);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             border-left: 3px solid transparent;
             cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-size: 14.5px;
         }
         
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(108, 92, 231, 0.1);
             border-left-color: var(--primary);
+            transform: translateX(5px);
         }
         
         .nav-item.active {
-            background: rgba(108, 92, 231, 0.1);
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.15) 0%, rgba(86, 73, 201, 0.15) 100%);
             border-left-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1);
         }
         
         .nav-item i {
-            margin-right: 12px;
+            margin-right: 15px;
             width: 20px;
             text-align: center;
+            font-size: 16px;
         }
         
+        /* Content Area */
         .content {
             flex: 1;
-            padding: 25px;
-            overflow-y: auto;
+            padding: 30px;
+            margin-left: var(--sidebar-width);
+            transition: var(--transition);
         }
         
+        /* Dashboard Cards */
         .dashboard-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
         }
         
         .card {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: rgba(45, 52, 54, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         }
         
         .card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .card-title {
@@ -1095,62 +1173,80 @@ PANEL_HTML = """
         }
         
         .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: rgba(108, 92, 231, 0.1);
             color: var(--primary);
+            font-size: 22px;
         }
         
         .card-value {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, var(--light), var(--lighter));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .card-desc {
             font-size: 14px;
             color: var(--light-gray);
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
+        .card-desc i {
+            color: var(--success);
+        }
+        
+        /* Query Section */
         .query-section {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            background: rgba(45, 52, 54, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .section-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            color: var(--light);
         }
         
         .section-title i {
             color: var(--primary);
+            font-size: 26px;
         }
         
         .query-description {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 18px 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            font-size: 15px;
             color: var(--light-gray);
+            line-height: 1.6;
+            border-left: 4px solid var(--primary);
         }
         
         .query-form {
             display: grid;
             grid-template-columns: 1fr 1fr auto;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 20px;
+            margin-bottom: 25px;
         }
         
         .form-group {
@@ -1160,57 +1256,81 @@ PANEL_HTML = """
         
         .form-label {
             font-size: 14px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: var(--light-gray);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-label i {
+            color: var(--primary);
+            font-size: 16px;
         }
         
         .form-input {
-            padding: 12px 15px;
+            padding: 15px 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            background: rgba(0, 0, 0, 0.15);
             color: var(--light);
-            font-size: 14px;
+            font-size: 15px;
+            transition: var(--transition);
         }
         
         .form-input:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .form-input::placeholder {
+            color: var(--light-gray);
         }
         
         .btn-primary {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             align-self: flex-end;
-            height: 42px;
+            height: 52px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
         }
         
+        /* Results Container */
         .results-container {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: rgba(45, 52, 54, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         .results-content {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 20px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: var(--border-radius);
+            padding: 25px;
             min-height: 200px;
             max-height: 500px;
             overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
         }
         
         .loading {
@@ -1219,75 +1339,176 @@ PANEL_HTML = """
             justify-content: center;
             height: 200px;
             color: var(--light-gray);
+            flex-direction: column;
+            gap: 15px;
         }
         
         .loading i {
-            margin-right: 10px;
-            animation: spin 1s linear infinite;
+            font-size: 40px;
+            color: var(--primary);
+            animation: pulse 1.5s infinite;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes pulse {
+            0% { opacity: 0.6; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.6; transform: scale(0.95); }
         }
         
         .result-table {
             width: 100%;
             border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            overflow: hidden;
         }
         
         .result-table th {
             text-align: left;
-            padding: 12px 15px;
+            padding: 15px 20px;
             background: rgba(0, 0, 0, 0.2);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            color: var(--primary-light);
         }
         
         .result-table td {
-            padding: 12px 15px;
+            padding: 15px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         
-        .result-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+        .result-table tr:last-child td {
+            border-bottom: none;
         }
         
-        @media (max-width: 968px) {
+        .result-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
             .query-form {
                 grid-template-columns: 1fr;
             }
-            
+        }
+        
+        @media (max-width: 968px) {
             .dashboard-cards {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .content {
+                margin-left: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
             }
         }
         
         @media (max-width: 768px) {
-            .sidebar {
-                width: 70px;
+            .dashboard-cards {
+                grid-template-columns: 1fr;
             }
             
-            .nav-item span {
-                display: none;
+            .header {
+                padding: 0 15px;
             }
             
-            .nav-item i {
-                margin-right: 0;
+            .brand {
+                font-size: 20px;
             }
             
             .user-name {
                 display: none;
             }
+            
+            .content {
+                padding: 20px 15px;
+            }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* Menu Toggle Button */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+        
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            background: rgba(0, 0, 0, 0.15);
+            color: var(--light);
+            font-size: 15px;
+            transition: var(--transition);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-gray);
         }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="header-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="logo">
                 <i class="fas fa-shield-alt"></i>
             </div>
-            <div class="brand">CAPPYBEAMSERVİCES PREMİUM SERVİS</div>
+            <div class="brand">CAPPYBEAMSERVİCES</div>
         </div>
         
         <div class="header-right">
@@ -1304,273 +1525,308 @@ PANEL_HTML = """
     </div>
     
     <div class="main-container">
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="menuSearch" placeholder="Menüde ara..." onkeyup="filterMenu()">
+            </div>
+            
             <div class="sidebar-section">
-                <div class="sidebar-title">Ana Menü</div>
-                <a href="#" class="nav-item active" onclick="setQuery('dashboard')">
+                <div class="sidebar-title">
                     <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('history')">
-                    <i class="fas fa-history"></i>
-                    <span>Sorgu Geçmişi</span>
-                </a>
+                    Ana Menü
+                </div>
+                <div class="nav-items">
+                    <a href="#" class="nav-item active" onclick="setQuery('dashboard')">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('history')">
+                        <i class="fas fa-history"></i>
+                        <span>Sorgu Geçmişi</span>
+                    </a>
+                </div>
             </div>
             
             <div class="sidebar-section">
-                <div class="sidebar-title">Kişisel Sorgular</div>
-                <a href="#" class="nav-item" onclick="setQuery('tcpro')">
+                <div class="sidebar-title">
                     <i class="fas fa-id-card"></i>
-                    <span>TC Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('adsoyad')">
-                    <i class="fas fa-user"></i>
-                    <span>Ad Soyad</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('gsm')">
-                    <i class="fas fa-phone"></i>
-                    <span>GSM Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('adres')">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>Adres Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('vesika')">
-                    <i class="fas fa-id-badge"></i>
-                    <span>Vesika Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('allvesika')">
-                    <i class="fas fa-id-card"></i>
-                    <span>Tüm Vesika Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('anne')">
-                    <i class="fas fa-female"></i>
-                    <span>Anne Bilgisi</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('baba')">
-                    <i class="fas fa-male"></i>
-                    <span>Baba Bilgisi</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('hane')">
-                    <i class="fas fa-house-user"></i>
-                    <span>Hane Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('sulale')">
-                    <i class="fas fa-sitemap"></i>
-                    <span>Sülale Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('cocuk')">
-                    <i class="fas fa-child"></i>
-                    <span>Çocuk Bilgileri</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('isyeri')">
-                    <i class="fas fa-building"></i>
-                    <span>İşyeri Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('isyeriyetkili')">
-                    <i class="fas fa-user-tie"></i>
-                    <span>İşyeri Yetkili</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('tapu')">
-                    <i class="fas fa-home"></i>
-                    <span>Tapu Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('sgkpro')">
-                    <i class="fas fa-file-medical"></i>
-                    <span>SGK Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('vergi')">
-                    <i class="fas fa-receipt"></i>
-                    <span>Vergi Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('premadres')">
-                    <i class="fas fa-address-card"></i>
-                    <span>Premadres Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('premad')">
-                    <i class="fas fa-address-book"></i>
-                    <span>Premad Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('nvi')">
-                    <i class="fas fa-landmark"></i>
-                    <span>NVI Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('muhallev')">
-                    <i class="fas fa-file-contract"></i>
-                    <span>Muhallev Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('hanepro')">
-                    <i class="fas fa-house-damage"></i>
-                    <span>Hane Pro Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('ehlt')">
-                    <i class="fas fa-users"></i>
-                    <span>EHLT Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('ayak')">
-                    <i class="fas fa-shoe-prints"></i>
-                    <span>Ayak No Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('boy')">
-                    <i class="fas fa-ruler-vertical"></i>
-                    <span>Boy Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('burc')">
-                    <i class="fas fa-star"></i>
-                    <span>Burç Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('cm')">
-                    <i class="fas fa-ruler"></i>
-                    <span>CM Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('meslek')">
-                    <i class="fas fa-briefcase"></i>
-                    <span>Meslek Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('tcgsm')">
-                    <i class="fas fa-phone-alt"></i>
-                    <span>TC GSM Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('adsoyadil')">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Ad Soyad İl Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('personel')">
-                    <i class="fas fa-user-md"></i>
-                    <span>Personel Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('internet')">
-                    <i class="fas fa-wifi"></i>
-                    <span>Internet Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('fatura')">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <span>Fatura Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('mhrs')">
-                    <i class="fas fa-hospital"></i>
-                    <span>MHRS Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('basvuru')">
-                    <i class="fas fa-file-signature"></i>
-                    <span>Başvuru Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('diploma')">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>Diploma Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('okulno')">
-                    <i class="fas fa-school"></i>
-                    <span>Okul No Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('okulsicil')">
-                    <i class="fas fa-user-graduate"></i>
-                    <span>Okul Sicil Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('lgs')">
-                    <i class="fas fa-book"></i>
-                    <span>LGS Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('sertifika')">
-                    <i class="fas fa-certificate"></i>
-                    <span>Sertifika Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('kizlik')">
-                    <i class="fas fa-female"></i>
-                    <span>Kızlık Soyadı</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('hikaye')">
-                    <i class="fas fa-book-open"></i>
-                    <span>Hikaye Sorgulama</span>
-                </a>
+                    Kişisel Sorgular
+                </div>
+                <div class="nav-items">
+                    <a href="#" class="nav-item" onclick="setQuery('tcpro')">
+                        <i class="fas fa-id-card"></i>
+                        <span>TC Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('adsoyad')">
+                        <i class="fas fa-user"></i>
+                        <span>Ad Soyad</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('gsm')">
+                        <i class="fas fa-phone"></i>
+                        <span>GSM Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('adres')">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Adres Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('vesika')">
+                        <i class="fas fa-id-badge"></i>
+                        <span>Vesika Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('allvesika')">
+                        <i class="fas fa-id-card-alt"></i>
+                        <span>Tüm Vesika Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('anne')">
+                        <i class="fas fa-female"></i>
+                        <span>Anne Bilgisi</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('baba')">
+                        <i class="fas fa-male"></i>
+                        <span>Baba Bilgisi</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('hane')">
+                        <i class="fas fa-house-user"></i>
+                        <span>Hane Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('sulale')">
+                        <i class="fas fa-sitemap"></i>
+                        <span>Sülale Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('cocuk')">
+                        <i class="fas fa-child"></i>
+                        <span>Çocuk Bilgileri</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('isyeri')">
+                        <i class="fas fa-building"></i>
+                        <span>İşyeri Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('isyeriyetkili')">
+                        <i class="fas fa-user-tie"></i>
+                        <span>İşyeri Yetkili</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('tapu')">
+                        <i class="fas fa-home"></i>
+                        <span>Tapu Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('sgkpro')">
+                        <i class="fas fa-file-medical"></i>
+                        <span>SGK Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('vergi')">
+                        <i class="fas fa-receipt"></i>
+                        <span>Vergi Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('premadres')">
+                        <i class="fas fa-address-card"></i>
+                        <span>Premadres Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('premad')">
+                        <i class="fas fa-address-book"></i>
+                        <span>Premad Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('nvi')">
+                        <i class="fas fa-landmark"></i>
+                        <span>NVI Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('muhallev')">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Muhallev Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('hanepro')">
+                        <i class="fas fa-house-damage"></i>
+                        <span>Hane Pro Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('ehlt')">
+                        <i class="fas fa-users"></i>
+                        <span>EHLT Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('ayak')">
+                        <i class="fas fa-shoe-prints"></i>
+                        <span>Ayak No Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('boy')">
+                        <i class="fas fa-ruler-vertical"></i>
+                        <span>Boy Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('burc')">
+                        <i class="fas fa-star"></i>
+                        <span>Burç Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('cm')">
+                        <i class="fas fa-ruler"></i>
+                        <span>CM Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('meslek')">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Meslek Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('tcgsm')">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>TC GSM Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('adsoyadil')">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Ad Soyad İl Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('personel')">
+                        <i class="fas fa-user-md"></i>
+                        <span>Personel Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('internet')">
+                        <i class="fas fa-wifi"></i>
+                        <span>Internet Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('fatura')">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>Fatura Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('mhrs')">
+                        <i class="fas fa-hospital"></i>
+                        <span>MHRS Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('basvuru')">
+                        <i class="fas fa-file-signature"></i>
+                        <span>Başvuru Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('diploma')">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Diploma Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('okulno')">
+                        <i class="fas fa-school"></i>
+                        <span>Okul No Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('okulsicil')">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Okul Sicil Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('lgs')">
+                        <i class="fas fa-book"></i>
+                        <span>LGS Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('sertifika')">
+                        <i class="fas fa-certificate"></i>
+                        <span>Sertifika Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('kizlik')">
+                        <i class="fas fa-female"></i>
+                        <span>Kızlık Soyadı</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('hikaye')">
+                        <i class="fas fa-book-open"></i>
+                        <span>Hikaye Sorgulama</span>
+                    </a>
+                </div>
             </div>
             
             <div class="sidebar-section">
-                <div class="sidebar-title">Sosyal Medya</div>
-                <a href="#" class="nav-item" onclick="setQuery('telegram')">
-                    <i class="fab fa-telegram"></i>
-                    <span>Telegram Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('facebook')">
-                    <i class="fab fa-facebook"></i>
-                    <span>Facebook Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('email_sorgu')">
-                    <i class="fas fa-envelope"></i>
-                    <span>Email Sorgu</span>
-                </a>
+                <div class="sidebar-title">
+                    <i class="fas fa-share-alt"></i>
+                    Sosyal Medya
+                </div>
+                <div class="nav-items">
+                    <a href="#" class="nav-item" onclick="setQuery('telegram')">
+                        <i class="fab fa-telegram"></i>
+                        <span>Telegram Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('facebook')">
+                        <i class="fab fa-facebook"></i>
+                        <span>Facebook Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('email_sorgu')">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email Sorgu</span>
+                    </a>
+                </div>
             </div>
             
             <div class="sidebar-section">
-                <div class="sidebar-title">Araç & Araç Bilgileri</div>
-                <a href="#" class="nav-item" onclick="setQuery('plaka')">
+                <div class="sidebar-title">
                     <i class="fas fa-car"></i>
-                    <span>Plaka Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('aracparca')">
+                    Araç & Araç Bilgileri
+                </div>
+                <div class="nav-items">
+                    <a href="#" class="nav-item" onclick="setQuery('plaka')">
+                        <i class="fas fa-car"></i>
+                        <span>Plaka Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('aracparca')">
+                        <i class="fas fa-tools"></i>
+                        <span>Araç Parça Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('imei')">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>IMEI Sorgulama</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <i class="fas fa-ellipsis-h"></i>
+                    Diğer Sorgular
+                </div>
+                <div class="nav-items">
+                    <a href="#" class="nav-item" onclick="setQuery('operator')">
+                        <i class="fas fa-sim-card"></i>
+                        <span>Operatör Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('gsmdetay')">
+                        <i class="fas fa-phone-square"></i>
+                        <span>GSM Detay Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('havadurumu')">
+                        <i class="fas fa-cloud-sun"></i>
+                        <span>Hava Durumu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('subdomain')">
+                        <i class="fas fa-globe"></i>
+                        <span>Subdomain Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('nezcane')">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>Nezcane Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('şehit')">
+                        <i class="fas fa-medal"></i>
+                        <span>Şehit Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('interpol')">
+                        <i class="fas fa-globe-americas"></i>
+                        <span>Interpol Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('sexgörsel')">
+                        <i class="fas fa-image"></i>
+                        <span>Sex Görsel Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('nude')">
+                        <i class="fas fa-ban"></i>
+                        <span>Nude Sorgulama</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">
                     <i class="fas fa-tools"></i>
-                    <span>Araç Parça Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('imei')">
-                    <i class="fas fa-mobile-alt"></i>
-                    <span>IMEI Sorgulama</span>
-                </a>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Diğer Sorgular</div>
-                <a href="#" class="nav-item" onclick="setQuery('operator')">
-                    <i class="fas fa-sim-card"></i>
-                    <span>Operatör Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('gsmdetay')">
-                    <i class="fas fa-phone-square"></i>
-                    <span>GSM Detay Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('havadurumu')">
-                    <i class="fas fa-cloud-sun"></i>
-                    <span>Hava Durumu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('subdomain')">
-                    <i class="fas fa-globe"></i>
-                    <span>Subdomain Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('nezcane')">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <span>Nezcane Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('şehit')">
-                    <i class="fas fa-medal"></i>
-                    <span>Şehit Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('interpol')">
-                    <i class="fas fa-globe-americas"></i>
-                    <span>Interpol Sorgulama</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('sexgörsel')">
-                    <i class="fas fa-image"></i>
-                    <span>Sex Görsel Sorgu</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('nude')">
-                    <i class="fas fa-ban"></i>
-                    <span>Nude Sorgulama</span>
-                </a>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Araçlar</div>
-                <a href="#" class="nav-item" onclick="setQuery('smsbomber')">
-                    <i class="fas fa-bomb"></i>
-                    <span>SMS Bomber</span>
-                </a>
-                <a href="#" class="nav-item" onclick="setQuery('smsapi')">
-                    <i class="fas fa-cog"></i>
-                    <span>API Yönetimi</span>
-                </a>
+                    Araçlar
+                </div>
+                <div class="nav-items">
+                    <a href="#" class="nav-item" onclick="setQuery('smsbomber')">
+                        <i class="fas fa-bomb"></i>
+                        <span>SMS Bomber</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('smsapi')">
+                        <i class="fas fa-cog"></i>
+                        <span>API Yönetimi</span>
+                    </a>
+                </div>
             </div>
         </div>
         
-        <div class="content">
+        <div class="content" id="content">
             <div class="dashboard-cards" id="dashboard-cards">
                 <div class="card">
                     <div class="card-header">
@@ -1580,7 +1836,10 @@ PANEL_HTML = """
                         </div>
                     </div>
                     <div class="card-value">1,248</div>
-                    <div class="card-desc">Bugün: 42 sorgu</div>
+                    <div class="card-desc">
+                        <i class="fas fa-arrow-up"></i>
+                        Bugün: 42 sorgu
+                    </div>
                 </div>
                 
                 <div class="card">
@@ -1591,7 +1850,10 @@ PANEL_HTML = """
                         </div>
                     </div>
                     <div class="card-value">1,032</div>
-                    <div class="card-desc">%82.7 başarı oranı</div>
+                    <div class="card-desc">
+                        <i class="fas fa-chart-line"></i>
+                        %82.7 başarı oranı
+                    </div>
                 </div>
                 
                 <div class="card">
@@ -1602,7 +1864,10 @@ PANEL_HTML = """
                         </div>
                     </div>
                     <div class="card-value">156</div>
-                    <div class="card-desc">Şu anda çevrimiçi</div>
+                    <div class="card-desc">
+                        <i class="fas fa-user-clock"></i>
+                        Şu anda çevrimiçi
+                    </div>
                 </div>
             </div>
             
@@ -1618,12 +1883,18 @@ PANEL_HTML = """
                 
                 <div class="query-form">
                     <div class="form-group">
-                        <label class="form-label" id="input1-label">TC Kimlik No</label>
+                        <label class="form-label" id="input1-label">
+                            <i class="fas fa-tag"></i>
+                            TC Kimlik No
+                        </label>
                         <input type="text" class="form-input" id="input1" placeholder="TC kimlik numarası">
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label" id="input2-label">Ek Parametre</label>
+                        <label class="form-label" id="input2-label">
+                            <i class="fas fa-tags"></i>
+                            Ek Parametre
+                        </label>
                         <input type="text" class="form-input" id="input2" placeholder="İsteğe bağlı parametre">
                     </div>
                     
@@ -1639,11 +1910,14 @@ PANEL_HTML = """
                         <i class="fas fa-list"></i>
                         <span>Sorgu Sonuçları</span>
                     </div>
+                    <button class="btn btn-logout" onclick="clearResults()">
+                        <i class="fas fa-trash"></i> Temizle
+                    </button>
                 </div>
                 
                 <div class="results-content" id="results">
                     <div class="loading">
-                        <i class="fas fa-spinner"></i>
+                        <i class="fas fa-search"></i>
                         <span>Sorgu sonuçları burada görünecek</span>
                     </div>
                 </div>
@@ -1779,6 +2053,32 @@ PANEL_HTML = """
             "smsapi": ["API Adı", "API URL"]
         };
         
+        // Menü arama fonksiyonu
+        function filterMenu() {
+            const input = document.getElementById('menuSearch');
+            const filter = input.value.toUpperCase();
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                const text = item.textContent || item.innerText;
+                if (text.toUpperCase().indexOf(filter) > -1) {
+                    item.style.display = '';
+                    // Vurgulama ekle
+                    if (filter) {
+                        const regex = new RegExp(filter, 'gi');
+                        item.innerHTML = item.innerHTML.replace(regex, match => `<span style="background-color: rgba(108, 92, 231, 0.3); border-radius: 3px; padding: 0 2px;">${match}</span>`);
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        // Menü toggle fonksiyonu
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+        
         function setQuery(queryType) {
             currentQuery = queryType;
             updateFormLabels();
@@ -1802,8 +2102,8 @@ PANEL_HTML = """
             document.getElementById('query-title').textContent = currentQuery.toUpperCase() + ' Sorgulama';
             document.getElementById('query-description').textContent = queryDescriptions[currentQuery] || 'Sorgu açıklaması';
             
-            document.getElementById('input1-label').textContent = queryLabels[currentQuery][0];
-            document.getElementById('input2-label').textContent = queryLabels[currentQuery][1];
+            document.getElementById('input1-label').innerHTML = `<i class="fas fa-tag"></i> ${queryLabels[currentQuery][0]}`;
+            document.getElementById('input2-label').innerHTML = `<i class="fas fa-tags"></i> ${queryLabels[currentQuery][1]}`;
             document.getElementById('input1').placeholder = queryLabels[currentQuery][0] + ' girin';
             document.getElementById('input2').placeholder = queryLabels[currentQuery][1] + ' girin';
             
@@ -1811,7 +2111,7 @@ PANEL_HTML = """
                 document.getElementById('input1-label').style.display = 'none';
                 document.getElementById('input1').style.display = 'none';
             } else {
-                document.getElementById('input1-label').style.display = 'block';
+                document.getElementById('input1-label').style.display = 'flex';
                 document.getElementById('input1').style.display = 'block';
             }
             
@@ -1819,7 +2119,7 @@ PANEL_HTML = """
                 document.getElementById('input2-label').style.display = 'none';
                 document.getElementById('input2').style.display = 'none';
             } else {
-                document.getElementById('input2-label').style.display = 'block';
+                document.getElementById('input2-label').style.display = 'flex';
                 document.getElementById('input2').style.display = 'block';
             }
         }
@@ -1836,6 +2136,17 @@ PANEL_HTML = """
                         <p>Bu sayfa henüz implemente edilmemiştir.</p>
                     </div>
                 `;
+                return;
+            }
+            
+            // Özel durumlar için validasyon
+            if ((currentQuery === 'adsoyad' || currentQuery === 'adsoyadil') && !input1) {
+                showError('Lütfen en az bir ad bilgisi girin.');
+                return;
+            }
+            
+            if (queryLabels[currentQuery][0] !== '' && !input1) {
+                showError(`Lütfen ${queryLabels[currentQuery][0]} alanını doldurun.`);
                 return;
             }
             
@@ -1860,26 +2171,24 @@ PANEL_HTML = """
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
-                    document.getElementById('results').innerHTML = `
-                        <div style="color: var(--danger); padding: 20px; text-align: center;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h3>Hata</h3>
-                            <p>${data.error}</p>
-                        </div>
-                    `;
+                    showError(data.error);
                 } else {
                     displayResults(data.result);
                 }
             })
             .catch(error => {
-                document.getElementById('results').innerHTML = `
-                    <div style="color: var(--danger); padding: 20px; text-align: center;">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>İstek Hatası</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
+                showError('İstek hatası: ' + error.message);
             });
+        }
+        
+        function showError(message) {
+            document.getElementById('results').innerHTML = `
+                <div style="color: var(--danger); padding: 20px; text-align: center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 15px;"></i>
+                    <h3>Hata</h3>
+                    <p>${message}</p>
+                </div>
+            `;
         }
         
         function displayResults(data) {
@@ -1908,6 +2217,8 @@ PANEL_HTML = """
                     html += `<tr><th>${key}</th><td>${value || ''}</td></tr>`;
                 }
                 html += '</table>';
+            } else if (typeof data === 'string') {
+                html = `<div style="white-space: pre-wrap;">${data}</div>`;
             } else {
                 html = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
             }
@@ -1915,16 +2226,40 @@ PANEL_HTML = """
             document.getElementById('results').innerHTML = html;
         }
         
+        function clearResults() {
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-search"></i>
+                    <span>Sorgu sonuçları burada görünecek</span>
+                </div>
+            `;
+        }
+        
         function logout() {
             window.location.href = "/logout";
         }
         
-        updateFormLabels();
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFormLabels();
+            
+            // Mobil menü için dışarı tıklama kapatma
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menuToggle');
+                
+                if (window.innerWidth <= 968 && 
+                    !sidebar.contains(event.target) && 
+                    !menuToggle.contains(event.target) &&
+                    sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>
 """
-
 @app.route("/")
 def index():
     if "user" in session:
