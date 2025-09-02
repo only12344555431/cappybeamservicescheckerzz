@@ -143,15 +143,6 @@ API_URLS = {
     "gsmdetay": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsmdetay.php?gsm={gsm}",
     "gsm": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsm.php?gsm={gsm}",
     "adres": lambda tc, _: f"https://api.hexnox.pro/sowixapi/adres.php?tc={tc}",
-      "instagram": lambda usr, _: f"https://keneviznewapi.onrender.com/api/insta?usr={usr}",
-    "akp": lambda ad_soyad, _: f"https://keneviznewapi.onrender.com/api/akp?ad={ad_soyad.split(' ')[0] if ad_soyad else ''}&soyad={ad_soyad.split(' ')[1] if ad_soyad and ' ' in ad_soyad else ''}",
-    "serino": lambda tc, _: f"https://keneviznewapi.onrender.com/api/serino?tc={tc}",
-    "craftrise": lambda ad, _: f"https://keneviznewapi.onrender.com/api/craftrise?ad={ad}",
-    "turknet": lambda tc, _: f"https://keneviznewapi.onrender.com/api/turknet?tc={tc}",
-    "ininal": lambda ininal_no, _: f"https://keneviznewapi.onrender.com/api/ininal?ininal_no={ininal_no}",
-    "papara": lambda paparano, _: f"https://keneviznewapi.onrender.com/api/papara?paparano={paparano}",
-    "log": lambda site, _: f"https://keneviznewapi.onrender.com/api/log?site={site}",
-    "fatura": lambda tc, _: f"https://keneviznewapi.onrender.com/api/fatura?tc={tc}",
 }
 
 QUERY_LABELS = {
@@ -210,16 +201,7 @@ QUERY_LABELS = {
     "isyeriyetkili": ["TC Kimlik No", ""],
     "gsmdetay": ["GSM Numarası", ""],
     "gsm": ["GSM Numarası", ""],
-    "adres": ["TC Kimlik No", ""],
-    "instagram": ["Kullanıcı Adı", ""],
-    "akp": ["Ad Soyad", ""],
-    "serino": ["TC Kimlik No", ""],
-    "craftrise": ["Kullanıcı Adı", ""],
-    "turknet": ["TC Kimlik No", ""],
-    "ininal": ["Ininal No", ""],
-    "papara": ["Papara No", ""],
-    "log": ["Site URL", ""],
-    "fatura": ["TC Kimlik No", ""],
+    "adres": ["TC Kimlik No", ""]
 }
 
 QUERY_DESCRIPTIONS = {
@@ -278,16 +260,7 @@ QUERY_DESCRIPTIONS = {
     "isyeriyetkili": "İşyeri yetkili sorgulama",
     "gsmdetay": "GSM detay sorgulama",
     "gsm": "GSM sorgulama",
-    "adres": "Adres sorgulama",
-    "instagram": "Instagram kullanıcı sorgulama",
-    "akp": "AKP üyelik sorgulama",
-    "serino": "Seri No sorgulama",
-    "craftrise": "Craftrise oyuncu sorgulama",
-    "turknet": "TurkNet abonelik sorgulama",
-    "ininal": "Ininal kart sorgulama",
-    "papara": "Papara hesap sorgulama",
-    "log": "Web sitesi log sorgulama",
-    "fatura": "Fatura sorgulama",
+    "adres": "Adres sorgulama"
 }
 
 LOGIN_HTML = """
@@ -916,7 +889,7 @@ PANEL_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAPPYBEAMSERVİCES | Premium Sorgu Paneli</title>
+    <title>CAPPYBEAM | Premium Sorgu Paneli</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -1535,7 +1508,7 @@ PANEL_HTML = """
             <div class="logo">
                 <i class="fas fa-shield-alt"></i>
             </div>
-            <div class="brand">CAPPYBEAMSERVİCES</div>
+            <div class="brand">CAPPYBEAM</div>
         </div>
         
         <div class="header-right">
@@ -1768,89 +1741,53 @@ PANEL_HTML = """
                     </a>
                 </div>
             </div>
- <div class="sidebar-section">
-    <div class="sidebar-title">
-        <i class="fas fa-ellipsis-h"></i>
-        Diğer Sorgular
-    </div>
-    <div class="nav-items">
-        <a href="#" class="nav-item" onclick="setQuery('instagram')">
-            <i class="fab fa-instagram"></i>
-            <span>Instagram Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('akp')">
-            <i class="fas fa-landmark"></i>
-            <span>AKP Sorgulama</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('serino')">
-            <i class="fas fa-barcode"></i>
-            <span>Seri No Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('craftrise')">
-            <i class="fas fa-gamepad"></i>
-            <span>Craftrise Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('turknet')">
-            <i class="fas fa-wifi"></i>
-            <span>TurkNet Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('ininal')">
-            <i class="fas fa-credit-card"></i>
-            <span>Ininal Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('papara')">
-            <i class="fas fa-money-bill-wave"></i>
-            <span>Papara Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('log')">
-            <i class="fas fa-scroll"></i>
-            <span>Log Sorgulama</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('fatura')">
-            <i class="fas fa-file-invoice-dollar"></i>
-            <span>Fatura Sorgulama</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('operator')">
-            <i class="fas fa-sim-card"></i>
-            <span>Operatör Sorgulama</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('gsmdetay')">
-            <i class="fas fa-phone-square"></i>
-            <span>GSM Detay Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('havadurumu')">
-            <i class="fas fa-cloud-sun"></i>
-            <span>Hava Durumu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('subdomain')">
-            <i class="fas fa-globe"></i>
-            <span>Subdomain Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('nezcane')">
-            <i class="fas fa-map-marked-alt"></i>
-            <span>Nezcane Sorgulama</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('şehit')">
-            <i class="fas fa-medal"></i>
-            <span>Şehit Sorgulama</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('interpol')">
-            <i class="fas fa-globe-americas"></i>
-            <span>Interpol Sorgulama</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('sexgörsel')">
-            <i class="fas fa-image"></i>
-            <span>Sex Görsel Sorgu</span>
-        </a>
-        <a href="#" class="nav-item" onclick="setQuery('nude')">
-            <i class="fas fa-ban"></i>
-            <span>Nude Sorgulama</span>
-        </a>
-    </div>
-                   
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <i class="fas fa-car"></i>
+                    Araç & Araç Bilgileri
+                </div>
+                <div class="nav-items">
+                    <a href="#" class="nav-item" onclick="setQuery('plaka')">
+                        <i class="fas fa-car"></i>
+                        <span>Plaka Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('aracparca')">
+                        <i class="fas fa-tools"></i>
+                        <span>Araç Parça Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('imei')">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>IMEI Sorgulama</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">
+                    <i class="fas fa-ellipsis-h"></i>
+                    Diğer Sorgular
+                </div>
+                <div class="nav-items">
+                    <a href="#" class="nav-item" onclick="setQuery('operator')">
+                        <i class="fas fa-sim-card"></i>
+                        <span>Operatör Sorgulama</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('gsmdetay')">
+                        <i class="fas fa-phone-square"></i>
+                        <span>GSM Detay Sorgu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('havadurumu')">
+                        <i class="fas fa-cloud-sun"></i>
+                        <span>Hava Durumu</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="setQuery('subdomain')">
+                        <i class="fas fa-globe"></i>
+                        <span>Subdomain Sorgu</span>
+                    </a>
                     <a href="#" class="nav-item" onclick="setQuery('nezcane')">
                         <i class="fas fa-map-marked-alt"></i>
-                        <span>Nezcane Sorgulama</span>
+                        <span>eczane Sorgulama</span>
                     </a>
                     <a href="#" class="nav-item" onclick="setQuery('şehit')">
                         <i class="fas fa-medal"></i>
@@ -2057,6 +1994,7 @@ PANEL_HTML = """
             "dashboard": ["", ""],
             "history": ["", ""],
             "telegram": ["Kullanıcı Adı", ""],
+            "history": ["", ""],"
             "isyeri": ["TC Kimlik No", ""],
             "hane": ["TC Kimlik No", ""],
             "baba": ["TC Kimlik No", ""],
@@ -2113,16 +2051,7 @@ PANEL_HTML = """
             "gsm": ["GSM Numarası", ""],
             "adres": ["TC Kimlik No", ""],
             "smsbomber": ["Telefon Numarası", "Mesaj (Opsiyonel)"],
-            "smsapi": ["API Adı", "API URL"],
-            "instagram": ["Kullanıcı Adı", ""],
-            "akp": ["Ad Soyad", ""],
-            "serino": ["TC Kimlik No", ""],
-            "craftrise": ["Kullanıcı Adı", ""],
-            "turknet": ["TC Kimlik No", ""],
-            "ininal": ["Ininal No", ""],
-            "papara": ["Papara No", ""],
-            "log": ["Site URL", ""],
-            "fatura": ["TC Kimlik No", ""],
+            "smsapi": ["API Adı", "API URL"]
         };
         
         // Menü arama fonksiyonu
