@@ -889,7 +889,7 @@ PANEL_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAPPYBEAM | Premium Sorgu Paneli</title>
+    <title>CAPPYBEAMSERVİCES | Premium Sorgu Paneli</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -1508,7 +1508,7 @@ PANEL_HTML = """
             <div class="logo">
                 <i class="fas fa-shield-alt"></i>
             </div>
-            <div class="brand">CAPPYBEAM</div>
+            <div class="brand">CAPPYBEAMSERVİCES</div>
         </div>
         
         <div class="header-right">
@@ -1787,7 +1787,7 @@ PANEL_HTML = """
                     </a>
                     <a href="#" class="nav-item" onclick="setQuery('nezcane')">
                         <i class="fas fa-map-marked-alt"></i>
-                        <span>eczane Sorgulama</span>
+                        <span>Nezcane Sorgulama</span>
                     </a>
                     <a href="#" class="nav-item" onclick="setQuery('şehit')">
                         <i class="fas fa-medal"></i>
@@ -1994,7 +1994,6 @@ PANEL_HTML = """
             "dashboard": ["", ""],
             "history": ["", ""],
             "telegram": ["Kullanıcı Adı", ""],
-            "history": ["", ""],"
             "isyeri": ["TC Kimlik No", ""],
             "hane": ["TC Kimlik No", ""],
             "baba": ["TC Kimlik No", ""],
