@@ -143,6 +143,14 @@ API_URLS = {
     "gsmdetay": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsmdetay.php?gsm={gsm}",
     "gsm": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsm.php?gsm={gsm}",
     "adres": lambda tc, _: f"https://api.hexnox.pro/sowixapi/adres.php?tc={tc}",
+    "insta": lambda username, _: f"https://keneviznewapi.onrender.com/api/insta?usr={username}",
+    "facebook_hanedan": lambda ad, soyad: f"https://keneviznewapi.onrender.com/api/facebook_hanedan?ad={ad}&soyad={soyad}",
+    "uni": lambda tc, _: f"https://keneviznewapi.onrender.com/api/uni?tc={tc}",
+    "akp": lambda ad, soyad: f"https://keneviznewapi.onrender.com/api/akp?ad={ad}&soyad={soyad}",
+    "aifoto": lambda img_url, _: f"https://keneviznewapi.onrender.com/api/aifoto?img={img_url}",
+    "papara": lambda numara, _: f"https://keneviznewapi.onrender.com/api/papara?paparano={numara}",
+    "ininal": lambda numara, _: f"https://keneviznewapi.onrender.com/api/ininal?ininal_no={numara}",
+    "smsbomber": lambda number, _: f"https://keneviznewapi.onrender.com/api/smsbomber?number={number}"
 }
 
 QUERY_LABELS = {
@@ -201,8 +209,19 @@ QUERY_LABELS = {
     "isyeriyetkili": ["TC Kimlik No", ""],
     "gsmdetay": ["GSM Numarası", ""],
     "gsm": ["GSM Numarası", ""],
-    "adres": ["TC Kimlik No", ""]
-}
+    "adres": ["TC Kimlik No", ""],
+    "insta": ["kullanıcı adı", ""],
+    "facebook hanedan": ["ad", "soyad"],
+    "uni": ["TC Kimlik No", ""],
+    "ai foto": ["ımg url", ""],
+    "papara": ["papara no", ""],
+    "ininal": ["ininal no", ""],
+    "sms bomber": ["numara", ""]
+
+
+
+
+} 
 
 QUERY_DESCRIPTIONS = {
     "telegram": "Telegram kullanıcı adı sorgulama",
@@ -260,7 +279,17 @@ QUERY_DESCRIPTIONS = {
     "isyeriyetkili": "İşyeri yetkili sorgulama",
     "gsmdetay": "GSM detay sorgulama",
     "gsm": "GSM sorgulama",
-    "adres": "Adres sorgulama"
+    "adres": "Adres sorgulama",
+    "insta": "Instagram kullanıcı adı sorgulama",
+    "facebook_hanedan": "Ad ve soyad ile Facebook hanedan sorgulama",
+    "uni": "Üniversite sorgulama",
+    "akp": "Ad ve soyad ile AKP sorgulama",
+    "aifoto": "Resim URL’si ile yapay zeka fotoğraf sorgulama",
+    "papara": "Papara numarası ile sorgulama",
+    "ininal": "İninal kart numarası ile sorgulama",
+    "turknet": "TurkNet sorgulama",
+    "smsbomber": "SMS Bomber aracı - Telefon numarasına SMS gönderin"
+
 }
 
 LOGIN_HTML = """
@@ -1764,49 +1793,88 @@ PANEL_HTML = """
             </div>
             
             <div class="sidebar-section">
-                <div class="sidebar-title">
-                    <i class="fas fa-ellipsis-h"></i>
-                    Diğer Sorgular
-                </div>
-                <div class="nav-items">
-                    <a href="#" class="nav-item" onclick="setQuery('operator')">
-                        <i class="fas fa-sim-card"></i>
-                        <span>Operatör Sorgulama</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="setQuery('gsmdetay')">
-                        <i class="fas fa-phone-square"></i>
-                        <span>GSM Detay Sorgu</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="setQuery('havadurumu')">
-                        <i class="fas fa-cloud-sun"></i>
-                        <span>Hava Durumu</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="setQuery('subdomain')">
-                        <i class="fas fa-globe"></i>
-                        <span>Subdomain Sorgu</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="setQuery('nezcane')">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <span>Nezcane Sorgulama</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="setQuery('şehit')">
-                        <i class="fas fa-medal"></i>
-                        <span>Şehit Sorgulama</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="setQuery('interpol')">
-                        <i class="fas fa-globe-americas"></i>
-                        <span>Interpol Sorgulama</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="setQuery('sexgörsel')">
-                        <i class="fas fa-image"></i>
-                        <span>Sex Görsel Sorgu</span>
-                    </a>
-                    <a href="#" class="nav-item" onclick="setQuery('nude')">
-                        <i class="fas fa-ban"></i>
-                        <span>Nude Sorgulama</span>
-                    </a>
-                </div>
-            </div>
+    <div class="sidebar-title">
+        <i class="fas fa-ellipsis-h"></i>
+        Diğer Sorgular
+    </div>
+    <div class="nav-items">
+        <a href="#" class="nav-item" onclick="setQuery('operator')">
+            <i class="fas fa-sim-card"></i>
+            <span>Operatör Sorgulama</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('gsmdetay')">
+            <i class="fas fa-phone-square"></i>
+            <span>GSM Detay Sorgu</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('havadurumu')">
+            <i class="fas fa-cloud-sun"></i>
+            <span>Hava Durumu</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('subdomain')">
+            <i class="fas fa-globe"></i>
+            <span>Subdomain Sorgu</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('nezcane')">
+            <i class="fas fa-map-marked-alt"></i>
+            <span>Nezcane Sorgulama</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('şehit')">
+            <i class="fas fa-medal"></i>
+            <span>Şehit Sorgulama</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('interpol')">
+            <i class="fas fa-globe-americas"></i>
+            <span>Interpol Sorgulama</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('sexgörsel')">
+            <i class="fas fa-image"></i>
+            <span>Sex Görsel Sorgu</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('nude')">
+            <i class="fas fa-ban"></i>
+            <span>Nude Sorgulama</span>
+        </a>
+        <!-- Yeni eklenenler -->
+        <a href="#" class="nav-item" onclick="setQuery('insta')">
+            <i class="fab fa-instagram"></i>
+            <span>Instagram Sorgulama</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('facebook_hanedan')">
+            <i class="fab fa-facebook"></i>
+            <span>Facebook Hanedan</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('uni')">
+            <i class="fas fa-university"></i>
+            <span>Üniversite Sorgu</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('akp')">
+            <i class="fas fa-landmark"></i>
+            <span>AKP Sorgulama</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('aifoto')">
+            <i class="fas fa-robot"></i>
+            <span>AI Foto</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('papara')">
+            <i class="fas fa-wallet"></i>
+            <span>Papara Sorgu</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('ininal')">
+            <i class="fas fa-credit-card"></i>
+            <span>İninal Sorgu</span>
+        </a>
+        <a href="#" class="nav-item" onclick="setQuery('turknet')">
+            <i class="fas fa-wifi"></i>
+            <span>TurkNet Sorgu</span>
+        </a>
+     </a>
+        <a href="#" class="nav-item" onclick="setQuery('discord sunucu: https://discord.gg/cngzsvsaX2')">
+            <i class="fas fa-credit-card"></i>
+            <span>/cappybeamservices</span>
+        </a>
+    </div>
+</div>
+
             
             <div class="sidebar-section">
                 <div class="sidebar-title">
@@ -1821,6 +1889,15 @@ PANEL_HTML = """
                     <a href="#" class="nav-item" onclick="setQuery('smsapi')">
                         <i class="fas fa-cog"></i>
                         <span>API Yönetimi</span>
+                    </a>
+                        </a>
+                    <a href="#" class="nav-item" onclick="setQuery('smsapi')">
+                        <i class="fas fa-cog"></i>
+                        <span>API Yönetimi</span>
+                    </a>
+                       <a href="#" class="nav-item" onclick="setQuery('smsbomber')">
+                        <i class="fas fa-cog"></i>
+                        <span>smsbomberv2</span>
                     </a>
                 </div>
             </div>
@@ -1928,7 +2005,7 @@ PANEL_HTML = """
     <script>
         let currentQuery = 'dashboard';
         const queryDescriptions = {
-            'dashboard': 'Ana sayfa - Sistem istatistiklerini görüntüleyin',
+                        'dashboard': 'Ana sayfa - Sistem istatistiklerini görüntüleyin',
             'history': 'Sorgu geçmişi - Önceki sorgularınızı görüntüleyin',
             'tcpro': 'TC Kimlik numarası ile detaylı kişi sorgulama',
             'adsoyad': 'Ad ve soyad ile kişi sorgulama',
@@ -1987,13 +2064,24 @@ PANEL_HTML = """
             'sexgörsel': 'Soru ile sex görsel sorgulama',
             'nude': 'Nude sorgulama',
             'smsbomber': 'SMS Bomber aracı - Telefon numarasına SMS gönderin',
-            'smsapi': 'API Yönetimi - SMS API ayarlarını yönetin'
+            'smsapi': 'API Yönetimi - SMS API ayarlarını yönetin',
+            'insta': 'Instagram kullanıcı adı ile sorgulama',
+            'facebook_hanedan': 'Ad ve soyad ile Facebook hanedan sorgulama',
+            'uni': 'TC Kimlik numarası ile üniversite sorgulama',
+            'akp': 'Ad ve soyad ile AKP sorgulama',
+            'aifoto': 'Resim URL’si ile yapay zeka fotoğraf sorgulama',
+            'papara': 'Papara numarası ile sorgulama',
+            'ininal': 'İninal kart numarası ile sorgulama',
+            'turknet': 'TC Kimlik numarası ile TurkNet sorgulama',
+            'smsbomber': 'SMS Bomber aracı - Telefon numarasına SMS gönderin'
+
+           
         };
         
         const queryLabels = {
             "dashboard": ["", ""],
             "history": ["", ""],
-            "telegram": ["Kullanıcı Adı", ""],
+                "telegram": ["Kullanıcı Adı", ""],
             "isyeri": ["TC Kimlik No", ""],
             "hane": ["TC Kimlik No", ""],
             "baba": ["TC Kimlik No", ""],
@@ -2023,7 +2111,7 @@ PANEL_HTML = """
             "nvi": ["TC Kimlik No", ""],
             "nezcane": ["İl İlçe", ""],
             "basvuru": ["TC Kimlik No", ""],
-            "diploma": ["TC Kimlik No", ""],
+            "hanepro": ["TC Kimlik No", ""],
             "facebook": ["Telefon Numarası", ""],
             "vergi": ["TC Kimlik No", ""],
             "premadres": ["TC Kimlik No", ""],
@@ -2035,7 +2123,7 @@ PANEL_HTML = """
             "sexgörsel": ["Soru", ""],
             "meslek": ["TC Kimlik No", ""],
             "adsoyad": ["Ad", "Soyad"],
-            "adsoyadil": ["Ad", "Soyad veya Soyad+İl (Opsiyonel)"],
+            "adsoyadil": ["Ad", "Soyad veya Soyad+İl"],
             "tcpro": ["TC Kimlik No", ""],
             "tcgsm": ["TC Kimlik No", ""],
             "tapu": ["TC Kimlik No", ""],
@@ -2049,6 +2137,13 @@ PANEL_HTML = """
             "gsmdetay": ["GSM Numarası", ""],
             "gsm": ["GSM Numarası", ""],
             "adres": ["TC Kimlik No", ""],
+            "insta": ["kullanıcı adı", ""],
+            "facebook hanedan": ["ad", "soyad"],
+            "uni": ["TC Kimlik No", ""],
+            "ai foto": ["ımg url", ""],
+            "papara": ["papara no", ""],
+            "ininal": ["ininal no", ""],
+            "sms bomber": ["numara", ""],
             "smsbomber": ["Telefon Numarası", "Mesaj (Opsiyonel)"],
             "smsapi": ["API Adı", "API URL"]
         };
