@@ -99,13 +99,13 @@ API_URLS = {
     "cocuk": lambda tc, _: f"http://api.hexnox.pro/sowixapi/cocuk.php?tc={tc}",
     "ehlt": lambda tc, _: f"http://api.hexnox.pro/sowixapi/ehlt.php?tc={tc}",
     "email_sorgu": lambda email, _: f"http://api.hexnox.pro/sowixapi/email_sorgu.php?email={email}",
-    "havadurumu": lambda sehir, _: f"http://api.hexnox.pro/sow极速飞艇开奖直播api/havadurumu.php?sehir={sehir}",
+    "havadurumu": lambda sehir, _: f"http://api.hexnox.pro/sowixapi/havadurumu.php?sehir={sehir}",
     "imei": lambda imei, _: f"https://api.hexnox.pro/sowixapi/imei.php?imei={imei}",
     "operator": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/operator.php?gsm={gsm}",
     "hikaye": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hikaye.php?tc={tc}",
-    "hanep极速飞艇开奖直播": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hanepro.php?tc={tc}",
+    "hanepro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hanepro.php?tc={tc}",
     "muhallev": lambda tc, _: f"https://api.hexnox.pro/sowixapi/muhallev.php?tc={tc}",
-    "lgs": lambda tc, _: f"http://hexnox.pro/sowixfree/lgs/lgs极速飞艇开奖直播?tc={tc}",
+    "lgs": lambda tc, _: f"http://hexnox.pro/sowixfree/lgs/lgs.php?tc={tc}",
     "plaka": lambda plaka, _: f"http://hexnox.pro/sowixfree/plaka.php?plaka={plaka}",
     "nude": lambda _, __: f"http://hexnox.pro/sowixfree/nude.php",
     "sertifika": lambda tc, _: f"http://hexnox.pro/sowixfree/sertifika.php?tc={tc}",
@@ -118,7 +118,7 @@ API_URLS = {
     "nezcane": lambda il_ilce, _: f"https://hexnox.pro/sowixfree/nezcane.php?il={il_ilce.split(' ')[0] if il_ilce else ''}&ilce={il_ilce.split(' ')[1] if il_ilce and ' ' in il_ilce else ''}",
     "basvuru": lambda tc, _: f"https://hexnox.pro/sowixfree/basvuru/basvuru.php?tc={tc}",
     "diploma": lambda tc, _: f"https://hexnox.pro/sowixfree/diploma/diploma.php?tc={tc}",
-    "facebook": lambda numara, _: f"极速飞艇开奖直播://hexnox.pro/sowixfree/facebook.php?numara={numara}",
+    "facebook": lambda numara, _: f"https://hexnox.pro/sowixfree/facebook.php?numara={numara}",
     "vergi": lambda tc, _: f"https://hexnox.pro/sowixfree/vergi/vergi.php?tc={tc}",
     "premadres": lambda tc, _: f"https://hexnox.pro/sowixfree/premadres.php?tc={tc}",
     "sgkpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/sgkpro.php?tc={tc}",
@@ -127,7 +127,7 @@ API_URLS = {
     "fatura": lambda tc, _: f"https://hexnox.pro/sowixfree/fatura.php?tc={tc}",
     "subdomain": lambda url, _: f"https://api.hexnox.pro/sowixapi/subdomain.php?url={url}",
     "sexgörsel": lambda soru, _: f"https://hexnox.pro/sowixfree/sexgörsel.php?soru={soru}",
-    "meslek": lambda tc, _: f"https://api.hexnox.pro/sowixapi/meslek极速飞艇开奖直播?tc={tc}",
+    "meslek": lambda tc, _: f"https://api.hexnox.pro/sowixapi/meslek.php?tc={tc}",
     "adsoyad": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}",
     "adsoyadil": lambda ad, soyad_il: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad_il.split(' ')[0] if soyad_il else ''}&il={soyad_il.split(' ')[1] if soyad_il and ' ' in soyad_il else ''}",
     "tcpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcpro.php?tc={tc}",
@@ -150,7 +150,9 @@ API_URLS = {
     "aifoto": lambda img_url, _: f"https://keneviznewapi.onrender.com/api/aifoto?img={img_url}",
     "papara": lambda numara, _: f"https://keneviznewapi.onrender.com/api/papara?paparano={numara}",
     "ininal": lambda numara, _: f"https://keneviznewapi.onrender.com/api/ininal?ininal_no={numara}",
-    "smsbomber": lambda number, _: f"https://keneviznewapi.onrender.com/api/smsbomber?number={number}"
+    "smsbomber": lambda number, _: f"https://keneviznewapi.onrender.com/api/smsbomber?number={number}",
+    "discord": lambda _, __: "https://discord.gg/cngzsvsaX2",
+    "turknet": lambda tc, _: f"https://keneviznewapi.onrender.com/api/turknet?tc={tc}"
 }
 
 QUERY_LABELS = {
@@ -184,7 +186,6 @@ QUERY_LABELS = {
     "nvi": ["TC Kimlik No", ""],
     "nezcane": ["İl İlçe", ""],
     "basvuru": ["TC Kimlik No", ""],
-    "hanepro": ["TC Kimlik No", ""],
     "facebook": ["Telefon Numarası", ""],
     "vergi": ["TC Kimlik No", ""],
     "premadres": ["TC Kimlik No", ""],
@@ -211,17 +212,15 @@ QUERY_LABELS = {
     "gsm": ["GSM Numarası", ""],
     "adres": ["TC Kimlik No", ""],
     "insta": ["kullanıcı adı", ""],
-    "facebook hanedan": ["ad", "soyad"],
-    "uni": ["TC Kimlik No", ""],
-    "ai foto": ["ımg url", ""],
-    "papara": ["papara no", ""],
-    "ininal": ["ininal no", ""],
-    "sms bomber": ["numara", ""]
-
-
-
-
-} 
+                "facebook_hanedan": ["ad", "soyad"],
+            "uni": ["TC Kimlik No", ""],
+            "aifoto": ["img url", ""],
+            "papara": ["papara no", ""],
+            "ininal": ["ininal no", ""],
+            "smsbomber": ["numara", ""],
+            "discord": ["", ""],
+            "turknet": ["TC Kimlik No", ""]
+}
 
 QUERY_DESCRIPTIONS = {
     "telegram": "Telegram kullanıcı adı sorgulama",
@@ -288,8 +287,8 @@ QUERY_DESCRIPTIONS = {
     "papara": "Papara numarası ile sorgulama",
     "ininal": "İninal kart numarası ile sorgulama",
     "turknet": "TurkNet sorgulama",
-    "smsbomber": "SMS Bomber aracı - Telefon numarasına SMS gönderin"
-
+    "smsbomber": "SMS Bomber aracı - Telefon numarasına SMS gönderin",
+    "discord": "Discord sunucu bilgileri"
 }
 
 LOGIN_HTML = """
@@ -1404,6 +1403,9 @@ PANEL_HTML = """
         .result-table td {
             padding: 15px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            word-wrap: break-word;
+            max-width: 300px;
+            vertical-align: top;
         }
         
         .result-table tr:last-child td {
@@ -1868,9 +1870,9 @@ PANEL_HTML = """
             <span>TurkNet Sorgu</span>
         </a>
      </a>
-        <a href="#" class="nav-item" onclick="setQuery('discord sunucu: https://discord.gg/cngzsvsaX2')">
-            <i class="fas fa-credit-card"></i>
-            <span>/cappybeamservices</span>
+        <a href="#" class="nav-item" onclick="setQuery('discord')">
+            <i class="fab fa-discord"></i>
+            <span>Discord Sunucu</span>
         </a>
     </div>
 </div>
@@ -1889,15 +1891,6 @@ PANEL_HTML = """
                     <a href="#" class="nav-item" onclick="setQuery('smsapi')">
                         <i class="fas fa-cog"></i>
                         <span>API Yönetimi</span>
-                    </a>
-                        </a>
-                    <a href="#" class="nav-item" onclick="setQuery('smsapi')">
-                        <i class="fas fa-cog"></i>
-                        <span>API Yönetimi</span>
-                    </a>
-                       <a href="#" class="nav-item" onclick="setQuery('smsbomber')">
-                        <i class="fas fa-cog"></i>
-                        <span>smsbomberv2</span>
                     </a>
                 </div>
             </div>
@@ -2073,9 +2066,8 @@ PANEL_HTML = """
             'papara': 'Papara numarası ile sorgulama',
             'ininal': 'İninal kart numarası ile sorgulama',
             'turknet': 'TC Kimlik numarası ile TurkNet sorgulama',
-            'smsbomber': 'SMS Bomber aracı - Telefon numarasına SMS gönderin'
-
-           
+            'smsbomber': 'SMS Bomber aracı - Telefon numarasına SMS gönderin',
+            'discord': 'Discord sunucu bilgileri'
         };
         
         const queryLabels = {
@@ -2143,9 +2135,9 @@ PANEL_HTML = """
             "ai foto": ["ımg url", ""],
             "papara": ["papara no", ""],
             "ininal": ["ininal no", ""],
-            "sms bomber": ["numara", ""],
             "smsbomber": ["Telefon Numarası", "Mesaj (Opsiyonel)"],
-            "smsapi": ["API Adı", "API URL"]
+            "smsapi": ["API Adı", "API URL"],
+            "discord": ["", ""]
         };
         
         // Menü arama fonksiyonu
@@ -2234,6 +2226,51 @@ PANEL_HTML = """
                 return;
             }
             
+            // Discord özel durumu
+            if (currentQuery === 'discord') {
+                document.getElementById('results').innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: var(--light);">
+                        <i class="fab fa-discord" style="font-size: 48px; margin-bottom: 15px; color: #7289da;"></i>
+                        <h3>Discord Sunucumuza Katılın!</h3>
+                        <p style="margin: 15px 0; font-size: 16px;">CAPPYBEAM Premium Discord sunucusuna katılarak güncel bilgileri alın ve toplulukla etkileşime geçin.</p>
+                        <a href="https://discord.gg/cngzsvsaX2" target="_blank" style="
+                            display: inline-block;
+                            background: linear-gradient(135deg, #7289da, #5865f2);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 25px;
+                            text-decoration: none;
+                            font-weight: 600;
+                            margin-top: 15px;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 5px 15px rgba(114, 137, 218, 0.3);
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(114, 137, 218, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(114, 137, 218, 0.3)'">
+                            <i class="fas fa-discord" style="font-size: 48px; margin-bottom: 15px; color: #7289da;"></i>
+                            Sunucuya Katıl
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            // SMS API Yönetimi özel durumu
+            if (currentQuery === 'smsapi') {
+                document.getElementById('results').innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: var(--light);">
+                        <i class="fas fa-cog" style="font-size: 48px; margin-bottom: 15px; color: var(--primary);"></i>
+                        <h3>SMS API Yönetimi</h3>
+                        <p style="margin: 15px 0; font-size: 16px;">SMS API ayarlarını yönetmek için bu özellik henüz implemente edilmemiştir.</p>
+                        <div style="background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; margin-top: 20px;">
+                            <p style="color: var(--light-gray); font-size: 14px;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px; color: var(--info);"></i>
+                                Bu özellik gelecek güncellemelerde eklenecektir.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
             // Özel durumlar için validasyon
             if ((currentQuery === 'adsoyad' || currentQuery === 'adsoyadil') && !input1) {
                 showError('Lütfen en az bir ad bilgisi girin.');
@@ -2268,7 +2305,19 @@ PANEL_HTML = """
                 if (data.error) {
                     showError(data.error);
                 } else {
-                    displayResults(data.result);
+                    // API response'unu daha iyi handle edelim
+                    let resultData = data.result;
+                    
+                    // Eğer result yoksa, tüm data'yı göster
+                    if (resultData === undefined || resultData === null) {
+                        resultData = data;
+                    }
+                    
+                    // Veriyi log'layalım (debug için)
+                    console.log('API Response:', data);
+                    console.log('Result Data:', resultData);
+                    
+                    displayResults(resultData);
                 }
             })
             .catch(error => {
@@ -2289,6 +2338,15 @@ PANEL_HTML = """
         function displayResults(data) {
             let html = '';
             
+            // Veriyi daha iyi formatlayalım
+            function formatValue(value) {
+                if (value === null || value === undefined) return '';
+                if (typeof value === 'object') {
+                    return JSON.stringify(value, null, 2);
+                }
+                return String(value);
+            }
+            
             if (Array.isArray(data) && data.length > 0) {
                 html = '<table class="result-table">';
                 html += '<tr>';
@@ -2300,7 +2358,7 @@ PANEL_HTML = """
                 data.forEach(row => {
                     html += '<tr>';
                     Object.values(row).forEach(value => {
-                        html += `<td>${value || ''}</td>`;
+                        html += `<td>${formatValue(value)}</td>`;
                     });
                     html += '</tr>';
                 });
@@ -2309,7 +2367,7 @@ PANEL_HTML = """
             } else if (typeof data === 'object' && data !== null) {
                 html = '<table class="result-table">';
                 for (const [key, value] of Object.entries(data)) {
-                    html += `<tr><th>${key}</th><td>${value || ''}</td></tr>`;
+                    html += `<tr><th>${key}</th><td>${formatValue(value)}</td></tr>`;
                 }
                 html += '</table>';
             } else if (typeof data === 'string') {
