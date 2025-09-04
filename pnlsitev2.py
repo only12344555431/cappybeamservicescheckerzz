@@ -2408,7 +2408,7 @@ PANEL_HTML = """
                     console.log('API Response:', data);
                     console.log('Result Data:', resultData);
                     
-                    displayResults(resultData);
+                    displayResults(resultData, currentQuery);
                 }
             })
             .catch(error => {
@@ -2426,7 +2426,7 @@ PANEL_HTML = """
             `;
         }
         
-        function displayResults(data) {
+        function displayResults(data, queryType) {
             let html = '';
             
             // Veriyi daha iyi formatlayalım
@@ -2436,7 +2436,7 @@ PANEL_HTML = """
                     return `<pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; overflow-x: auto; margin: 0;">${JSON.stringify(value, null, 2)}</pre>`;
                 }
                 if (typeof value === 'string' && value.length > 100) {
-                    return `<div style="max-height: 200px; overflow-y: auto;">${value}</div>`;
+                    return `<div style="max-height: 200px; overflow-y: auto;">${data}</div>`;
                 }
                 return String(value);
             }
@@ -2618,7 +2618,7 @@ PANEL_HTML = """
                 // Diğer Bilgiler
                 if (Object.keys(categories.other).length > 0) {
                     html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--secondary); margin: 10px 0;">📝 Diğer Bilgiler</h5>`;
+                    html += `<h5 style="color: var(--secondary); margin: 10px 0;">📝 Diğer Bilgiler</h3>`;
                     html += '<table class="result-table">';
                     html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
                     for (const [key, value] of Object.entries(categories.other)) {
