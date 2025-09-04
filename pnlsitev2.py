@@ -10,10 +10,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import os
 from datetime import datetime
-import urllib3
-
-# SSL uyarılarını kapat
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
 app.secret_key = "cappybeam_premium_secret_key_2023"
@@ -25,15 +21,7 @@ QUERY_LOGS_FILE = "query_logs.json"
 
 def load_users():
     if not os.path.exists(USERS_FILE):
-        # Varsayılan admin kullanıcısı oluştur
-        default_users = {
-            "admin": {
-                "password": generate_password_hash("admin123"),
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-        }
-        save_users(default_users)
-        return default_users
+        return {}
     try:
         with open(USERS_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -98,74 +86,71 @@ def login_required(func):
         return func(*args, **kwargs)
     return wrapper
 
-# Güncellenmiş API URL'leri - API sahibi bilgileri gizlendi
 API_URLS = {
     "telegram": lambda username, _: f"https://api.hexnox.pro/sowixapi/telegram_sorgu.php?username={username}",
     "isyeri": lambda tc, _: f"https://api.hexnox.pro/sowixapi/isyeri.php?tc={tc}",
     "hane": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hane.php?tc={tc}",
     "baba": lambda tc, _: f"https://api.hexnox.pro/sowixapi/baba.php?tc={tc}",
     "anne": lambda tc, _: f"https://api.hexnox.pro/sowixapi/anne.php?tc={tc}",
-    "ayak": lambda tc, _: f"https://api.hexnox.pro/sowixapi/ayak.php?tc={tc}",
-    "boy": lambda tc, _: f"https://api.hexnox.pro/sowixapi/boy.php?tc={tc}",
-    "burc": lambda tc, _: f"https://api.hexnox.pro/sowixapi/burc.php?tc={tc}",
-    "cm": lambda tc, _: f"https://api.hexnox.pro/sowixapi/cm.php?tc={tc}",
-    "cocuk": lambda tc, _: f"https://api.hexnox.pro/sowixapi/cocuk.php?tc={tc}",
-    "ehlt": lambda tc, _: f"https://api.hexnox.pro/sowixapi/ehlt.php?tc={tc}",
-    "email_sorgu": lambda email, _: f"https://api.hexnox.pro/sowixapi/email_sorgu.php?email={email}",
-    "havadurumu": lambda sehir, _: f"https://api.hexnox.pro/sowixapi/havadurumu.php?sehir={sehir}",
+    "ayak": lambda tc, _: f"http://api.hexnox.pro/sowixapi/ayak.php?tc={tc}",
+    "boy": lambda tc, _: f"http://api.hexnox.pro/sowixapi/boy.php?tc={tc}",
+    "burc": lambda tc, _: f"http://api.hexnox.pro/sowixapi/burc.php?tc={tc}",
+    "cm": lambda tc, _: f"http://api.hexnox.pro/sowixapi/cm.php?tc={tc}",
+    "cocuk": lambda tc, _: f"http://api.hexnox.pro/sowixapi/cocuk.php?tc={tc}",
+    "ehlt": lambda tc, _: f"http://api.hexnox.pro/sowixapi/ehlt.php?tc={tc}",
+    "email_sorgu": lambda email, _: f"http://api.hexnox.pro/sowixapi/email_sorgu.php?email={email}",
+    "havadurumu": lambda sehir, _: f"http://api.hexnox.pro/sow极速飞艇开奖直播api/havadurumu.php?sehir={sehir}",
     "imei": lambda imei, _: f"https://api.hexnox.pro/sowixapi/imei.php?imei={imei}",
     "operator": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/operator.php?gsm={gsm}",
     "hikaye": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hikaye.php?tc={tc}",
-    "hanepro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hanepro.php?tc={tc}",
+    "hanep极速飞艇开奖直播": lambda tc, _: f"https://api.hexnox.pro/sowixapi/hanepro.php?tc={tc}",
     "muhallev": lambda tc, _: f"https://api.hexnox.pro/sowixapi/muhallev.php?tc={tc}",
-    "lgs": lambda tc, _: f"https://api.hexnox.pro/sowixapi/lgs.php?tc={tc}",
-    "plaka": lambda plaka, _: f"https://api.hexnox.pro/sowixapi/plaka.php?plaka={plaka}",
-    "nude": lambda _, __: f"https://api.hexnox.pro/sowixapi/nude.php",
-    "sertifika": lambda tc, _: f"https://api.hexnox.pro/sowixapi/sertifika.php?tc={tc}",
-    "aracparca": lambda plaka, _: f"https://api.hexnox.pro/sowixapi/aracparca.php?plaka={plaka}",
-    "şehit": lambda ad_soyad, _: f"https://api.hexnox.pro/sowixapi/şehit.php?Ad={ad_soyad.split(' ')[0] if ad_soyad else ''}&Soyad={ad_soyad.split(' ')[1] if ad_soyad and ' ' in ad_soyad else ''}",
-    "interpol": lambda ad_soyad, _: f"https://api.hexnox.pro/sowixapi/interpol.php?ad={ad_soyad.split(' ')[0] if ad_soyad else ''}&soyad={ad_soyad.split(' ')[1] if ad_soyad and ' ' in ad_soyad else ''}",
-    "personel": lambda tc, _: f"https://api.hexnox.pro/sowixapi/personel.php?tc={tc}",
-    "internet": lambda tc, _: f"https://api.hexnox.pro/sowixapi/internet.php?tc={tc}",
-    "nvi": lambda tc, _: f"https://api.hexnox.pro/sowixapi/nvi.php?tc={tc}",
-    "nezcane": lambda il_ilce, _: f"https://api.hexnox.pro/sowixapi/nezcane.php?il={il_ilce.split(' ')[0] if il_ilce else ''}&ilce={il_ilce.split(' ')[1] if il_ilce and ' ' in il_ilce else ''}",
-    "basvuru": lambda tc, _: f"https://api.hexnox.pro/sowixapi/basvuru.php?tc={tc}",
-    "diploma": lambda tc, _: f"https://api.hexnox.pro/sowixapi/diploma.php?tc={tc}",
-    "facebook": lambda numara, _: f"https://api.hexnox.pro/sowixapi/facebook.php?numara={numara}",
-    "vergi": lambda tc, _: f"https://api.hexnox.pro/sowixapi/vergi.php?tc={tc}",
-    "premadres": lambda tc, _: f"https://api.hexnox.pro/sowixapi/premadres.php?tc={tc}",
+    "lgs": lambda tc, _: f"http://hexnox.pro/sowixfree/lgs/lgs极速飞艇开奖直播?tc={tc}",
+    "plaka": lambda plaka, _: f"http://hexnox.pro/sowixfree/plaka.php?plaka={plaka}",
+    "nude": lambda _, __: f"http://hexnox.pro/sowixfree/nude.php",
+    "sertifika": lambda tc, _: f"http://hexnox.pro/sowixfree/sertifika.php?tc={tc}",
+    "aracparca": lambda plaka, _: f"https://hexnox.pro/sowixfree/aracparca.php?plaka={plaka}",
+    "şehit": lambda ad_soyad, _: f"https://hexnox.pro/sowixfree/şehit.php?Ad={ad_soyad.split(' ')[0] if ad_soyad else ''}&Soyad={ad_soyad.split(' ')[1] if ad_soyad and ' ' in ad_soyad else ''}",
+    "interpol": lambda ad_soyad, _: f"https://hexnox.pro/sowixfree/interpol.php?ad={ad_soyad.split(' ')[0] if ad_soyad else ''}&soyad={ad_soyad.split(' ')[1] if ad_soyad and ' ' in ad_soyad else ''}",
+    "personel": lambda tc, _: f"https://hexnox.pro/sowixfree/personel.php?tc={tc}",
+    "internet": lambda tc, _: f"https://hexnox.pro/sowixfree/internet.php?tc={tc}",
+    "nvi": lambda tc, _: f"https://hexnox.pro/sowixfree/nvi.php?tc={tc}",
+    "nezcane": lambda il_ilce, _: f"https://hexnox.pro/sowixfree/nezcane.php?il={il_ilce.split(' ')[0] if il_ilce else ''}&ilce={il_ilce.split(' ')[1] if il_ilce and ' ' in il_ilce else ''}",
+    "basvuru": lambda tc, _: f"https://hexnox.pro/sowixfree/basvuru/basvuru.php?tc={tc}",
+    "diploma": lambda tc, _: f"https://hexnox.pro/sowixfree/diploma/diploma.php?tc={tc}",
+    "facebook": lambda numara, _: f"极速飞艇开奖直播://hexnox.pro/sowixfree/facebook.php?numara={numara}",
+    "vergi": lambda tc, _: f"https://hexnox.pro/sowixfree/vergi/vergi.php?tc={tc}",
+    "premadres": lambda tc, _: f"https://hexnox.pro/sowixfree/premadres.php?tc={tc}",
     "sgkpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/sgkpro.php?tc={tc}",
-    "mhrs": lambda tc, _: f"https://api.hexnox.pro/sowixapi/mhrs.php?tc={tc}",
+    "mhrs": lambda tc, _: f"https://hexnox.pro/sowixfree/mhrs/mhrs.php?tc={tc}",
     "premad": lambda ad_il_ilce, _: f"https://api.hexnox.pro/sowixapi/premad.php?ad={ad_il_ilce.split(' ')[0] if ad_il_ilce else ''}&il={ad_il_ilce.split(' ')[1] if ad_il_ilce and len(ad_il_ilce.split(' ')) > 1 else ''}&ilce={ad_il_ilce.split(' ')[2] if ad_il_ilce and len(ad_il_ilce.split(' ')) > 2 else ''}",
-    "fatura": lambda tc, _: f"https://api.hexnox.pro/sowixapi/fatura.php?tc={tc}",
+    "fatura": lambda tc, _: f"https://hexnox.pro/sowixfree/fatura.php?tc={tc}",
     "subdomain": lambda url, _: f"https://api.hexnox.pro/sowixapi/subdomain.php?url={url}",
-    "sexgörsel": lambda soru, _: f"https://api.hexnox.pro/sowixapi/sexgörsel.php?soru={soru}",
-    "meslek": lambda tc, _: f"https://api.hexnox.pro/sowixapi/meslek.php?tc={tc}",
+    "sexgörsel": lambda soru, _: f"https://hexnox.pro/sowixfree/sexgörsel.php?soru={soru}",
+    "meslek": lambda tc, _: f"https://api.hexnox.pro/sowixapi/meslek极速飞艇开奖直播?tc={tc}",
     "adsoyad": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad}",
     "adsoyadil": lambda ad, soyad_il: f"https://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={ad}&soyad={soyad_il.split(' ')[0] if soyad_il else ''}&il={soyad_il.split(' ')[1] if soyad_il and ' ' in soyad_il else ''}",
     "tcpro": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcpro.php?tc={tc}",
     "tcgsm": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tcgsm.php?tc={tc}",
     "tapu": lambda tc, _: f"https://api.hexnox.pro/sowixapi/tapu.php?tc={tc}",
     "sulale": lambda tc, _: f"https://api.hexnox.pro/sowixapi/sulale.php?tc={tc}",
-    "vesika": lambda tc, _: f"https://api.hexnox.pro/sowixapi/vesika.php?tc={tc}",
-    "allvesika": lambda tc, _: f"https://api.hexnox.pro/sowixapi/allvesika.php?tc={tc}",
-    "okulsicil": lambda tc, _: f"https://api.hexnox.pro/sowixapi/okulsicil.php?tc={tc}",
-    "kizlik": lambda tc, _: f"https://api.hexnox.pro/sowixapi/kizlik.php?tc={tc}",
+    "vesika": lambda tc, _: f"http://20.122.193.203/apiservice/woxy/tc.php?tc={tc}&auth=woxynindaramcigi",
+    "allvesika": lambda tc, _: f"http://84.32.15.160/apiservice/woxy/allvesika.php?tc={tc}&auth=cyberinsikimemesiamigotu",
+    "okulsicil": lambda tc, _: f"https://merial.cfd/Daimon/freePeker/okulsicil.php?tc={tc}",
+    "kizlik": lambda tc, _: f"http://212.68.34.148/apiservices/kizlik?tc={tc}",
     "okulno": lambda tc, _: f"https://api.hexnox.pro/sowixapi/okulno.php?tc={tc}",
     "isyeriyetkili": lambda tc, _: f"https://api.hexnox.pro/sowixapi/isyeriyetkili.php?tc={tc}",
     "gsmdetay": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsmdetay.php?gsm={gsm}",
     "gsm": lambda gsm, _: f"https://api.hexnox.pro/sowixapi/gsm.php?gsm={gsm}",
     "adres": lambda tc, _: f"https://api.hexnox.pro/sowixapi/adres.php?tc={tc}",
-    "insta": lambda username, _: f"https://api.hexnox.pro/sowixapi/insta.php?usr={username}",
-    "facebook_hanedan": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/facebook_hanedan.php?ad={ad}&soyad={soyad}",
-    "uni": lambda tc, _: f"https://api.hexnox.pro/sowixapi/uni.php?tc={tc}",
-    "akp": lambda ad, soyad: f"https://api.hexnox.pro/sowixapi/akp.php?ad={ad}&soyad={soyad}",
-    "aifoto": lambda img_url, _: f"https://api.hexnox.pro/sowixapi/aifoto.php?img={img_url}",
-    "papara": lambda numara, _: f"https://api.hexnox.pro/sowixapi/papara.php?paparano={numara}",
-    "ininal": lambda numara, _: f"https://api.hexnox.pro/sowixapi/ininal.php?ininal_no={numara}",
-    "smsbomber": lambda number, _: f"https://api.hexnox.pro/sowixapi/smsbomber.php?number={number}",
-    "discord": lambda _, __: "https://discord.gg/cngzsvsaX2",
-    "turknet": lambda tc, _: f"https://api.hexnox.pro/sowixapi/turknet.php?tc={tc}"
+    "insta": lambda username, _: f"https://keneviznewapi.onrender.com/api/insta?usr={username}",
+    "facebook_hanedan": lambda ad, soyad: f"https://keneviznewapi.onrender.com/api/facebook_hanedan?ad={ad}&soyad={soyad}",
+    "uni": lambda tc, _: f"https://keneviznewapi.onrender.com/api/uni?tc={tc}",
+    "akp": lambda ad, soyad: f"https://keneviznewapi.onrender.com/api/akp?ad={ad}&soyad={soyad}",
+    "aifoto": lambda img_url, _: f"https://keneviznewapi.onrender.com/api/aifoto?img={img_url}",
+    "papara": lambda numara, _: f"https://keneviznewapi.onrender.com/api/papara?paparano={numara}",
+    "ininal": lambda numara, _: f"https://keneviznewapi.onrender.com/api/ininal?ininal_no={numara}",
+    "smsbomber": lambda number, _: f"https://keneviznewapi.onrender.com/api/smsbomber?number={number}"
 }
 
 QUERY_LABELS = {
@@ -199,6 +184,7 @@ QUERY_LABELS = {
     "nvi": ["TC Kimlik No", ""],
     "nezcane": ["İl İlçe", ""],
     "basvuru": ["TC Kimlik No", ""],
+    "hanepro": ["TC Kimlik No", ""],
     "facebook": ["Telefon Numarası", ""],
     "vergi": ["TC Kimlik No", ""],
     "premadres": ["TC Kimlik No", ""],
@@ -225,15 +211,17 @@ QUERY_LABELS = {
     "gsm": ["GSM Numarası", ""],
     "adres": ["TC Kimlik No", ""],
     "insta": ["kullanıcı adı", ""],
-                "facebook_hanedan": ["ad", "soyad"],
-            "uni": ["TC Kimlik No", ""],
-            "aifoto": ["img url", ""],
-            "papara": ["papara no", ""],
-            "ininal": ["ininal no", ""],
-            "smsbomber": ["numara", ""],
-            "discord": ["", ""],
-            "turknet": ["TC Kimlik No", ""]
-}
+    "facebook hanedan": ["ad", "soyad"],
+    "uni": ["TC Kimlik No", ""],
+    "ai foto": ["ımg url", ""],
+    "papara": ["papara no", ""],
+    "ininal": ["ininal no", ""],
+    "sms bomber": ["numara", ""]
+
+
+
+
+} 
 
 QUERY_DESCRIPTIONS = {
     "telegram": "Telegram kullanıcı adı sorgulama",
@@ -296,12 +284,12 @@ QUERY_DESCRIPTIONS = {
     "facebook_hanedan": "Ad ve soyad ile Facebook hanedan sorgulama",
     "uni": "Üniversite sorgulama",
     "akp": "Ad ve soyad ile AKP sorgulama",
-    "aifoto": "Resim URL'si ile yapay zeka fotoğraf sorgulama",
+    "aifoto": "Resim URL’si ile yapay zeka fotoğraf sorgulama",
     "papara": "Papara numarası ile sorgulama",
     "ininal": "İninal kart numarası ile sorgulama",
     "turknet": "TurkNet sorgulama",
-    "smsbomber": "SMS Bomber aracı - Telefon numarasına SMS gönderin",
-    "discord": "Discord sunucu bilgileri"
+    "smsbomber": "SMS Bomber aracı - Telefon numarasına SMS gönderin"
+
 }
 
 LOGIN_HTML = """
@@ -976,20 +964,20 @@ PANEL_HTML = """
         
         /* Header Styles */
         .header {
-            background: rgba(45, 52, 54, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 0 30px;
+            background: rgba(45, 52, 54, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 0 25px;
             height: var(--header-height);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .header-left {
@@ -999,35 +987,28 @@ PANEL_HTML = """
         }
         
         .logo {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
-            transition: all 0.3s ease;
-        }
-        
-        .logo:hover {
-            transform: scale(1.1) rotate(5deg);
-            box-shadow: 0 12px 35px rgba(108, 92, 231, 0.5);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
         }
         
         .logo i {
-            font-size: 22px;
+            font-size: 20px;
             color: white;
         }
         
         .brand {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
             background: linear-gradient(45deg, var(--light), var(--lighter));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: 0.8px;
-            text-shadow: 0 2px 10px rgba(108, 92, 231, 0.3);
+            letter-spacing: 0.5px;
         }
         
         .header-right {
@@ -1039,48 +1020,36 @@ PANEL_HTML = """
         .user-info {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.08);
+            gap: 12px;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 30px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            transition: var(--transition);
         }
         
         .user-info:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            border-color: rgba(108, 92, 231, 0.3);
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .user-avatar {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
-            transition: all 0.3s ease;
-        }
-        
-        .user-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
+            box-shadow: 0 3px 10px rgba(108, 92, 231, 0.3);
         }
         
         .user-avatar i {
-            font-size: 20px;
+            font-size: 18px;
             color: white;
         }
         
         .user-name {
-            font-weight: 600;
-            font-size: 16px;
-            color: var(--light);
+            font-weight: 500;
+            font-size: 15px;
         }
         
         .btn {
@@ -1167,8 +1136,6 @@ PANEL_HTML = """
             border-radius: 8px;
             margin-bottom: 5px;
             font-size: 14.5px;
-            animation: slideInLeft 0.4s ease-out;
-            animation-delay: 0.1s;
         }
         
         .nav-item:hover {
@@ -1204,7 +1171,6 @@ PANEL_HTML = """
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
             margin-bottom: 35px;
-            animation: fadeInUp 0.6s ease-out;
         }
         
         .card {
@@ -1215,7 +1181,6 @@ PANEL_HTML = """
             box-shadow: var(--card-shadow);
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: var(--transition);
-            animation: fadeInUp 0.6s ease-out;
         }
         
         .card:hover {
@@ -1278,7 +1243,6 @@ PANEL_HTML = """
             box-shadow: var(--card-shadow);
             margin-bottom: 35px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            animation: fadeInUp 0.8s ease-out;
         }
         
         .section-title {
@@ -1310,40 +1274,28 @@ PANEL_HTML = """
         .query-form {
             display: grid;
             grid-template-columns: 1fr 1fr auto;
-            gap: 25px;
-            margin-bottom: 30px;
-            animation: fadeInUp 0.8s ease-out;
+            gap: 20px;
+            margin-bottom: 25px;
         }
         
         .form-group {
             display: flex;
             flex-direction: column;
-            position: relative;
         }
         
         .form-label {
-            font-size: 15px;
-            margin-bottom: 12px;
+            font-size: 14px;
+            margin-bottom: 10px;
             color: var(--light-gray);
-            font-weight: 600;
+            font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 10px;
-            transition: color 0.3s ease;
+            gap: 8px;
         }
         
         .form-label i {
             color: var(--primary);
-            font-size: 18px;
-            transition: all 0.3s ease;
-        }
-        
-        .form-group:focus-within .form-label {
-            color: var(--primary);
-        }
-        
-        .form-group:focus-within .form-label i {
-            transform: scale(1.1);
+            font-size: 16px;
         }
         
         .form-input {
@@ -1388,87 +1340,70 @@ PANEL_HTML = """
             border-radius: var(--border-radius);
             padding: 30px;
             box-shadow: var(--card-shadow);
-            margin-bottom: 35px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            animation: fadeInUp 1s ease-out;
         }
         
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(108, 92, 231, 0.2);
+            margin-bottom: 25px;
         }
         
         .results-content {
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.15);
             border-radius: var(--border-radius);
-            padding: 30px;
-            min-height: 250px;
-            max-height: 600px;
+            padding: 25px;
+            min-height: 200px;
+            max-height: 500px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.6;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
         }
         
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 250px;
+            height: 200px;
             color: var(--light-gray);
             flex-direction: column;
-            gap: 20px;
-            animation: fadeInUp 0.5s ease-out;
+            gap: 15px;
         }
         
         .loading i {
-            font-size: 50px;
+            font-size: 40px;
             color: var(--primary);
-            animation: pulse 2s infinite;
+            animation: pulse 1.5s infinite;
         }
         
-        .loading span {
-            font-size: 16px;
-            color: var(--light);
-            font-weight: 500;
+        @keyframes pulse {
+            0% { opacity: 0.6; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.6; transform: scale(0.95); }
         }
         
         .result-table {
             width: 100%;
             border-collapse: collapse;
-            background: rgba(0, 0, 0, 0.15);
+            background: rgba(0, 0, 0, 0.1);
             border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            margin: 20px 0;
         }
         
         .result-table th {
             text-align: left;
-            padding: 18px 20px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             font-weight: 600;
-            color: white;
-            text-transform: uppercase;
-            font-size: 14px;
-            letter-spacing: 0.5px;
+            color: var(--primary-light);
         }
         
         .result-table td {
-            padding: 18px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            word-wrap: break-word;
-            max-width: 350px;
-            vertical-align: top;
-            line-height: 1.6;
-            color: var(--light);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .result-table tr:last-child td {
@@ -1476,91 +1411,7 @@ PANEL_HTML = """
         }
         
         .result-table tr:hover td {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateX(5px);
-            transition: all 0.3s ease;
-        }
-        
-        .result-table tr:nth-child(even) {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        
-        .result-table tr:nth-child(even):hover td {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        
-        .result-table .key-column {
-            font-weight: 600;
-            color: var(--primary-light);
-            background: rgba(0, 0, 0, 0.1);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .result-table .value-column {
-            color: var(--light);
-        }
-        
-        .result-header {
-            margin: 20px 0 15px 0;
-            text-align: center;
-        }
-        
-        .result-header h3 {
-            color: var(--primary-light);
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .result-table thead th {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        
-        .result-table tbody tr.even {
-            background: rgba(0, 0, 0, 0.05);
-        }
-        
-        .result-table tbody tr.odd {
-            background: transparent;
-        }
-        
-        /* Yeni bölüm stilleri */
-        .result-section {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .category-section {
-            margin-bottom: 20px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            padding: 15px;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .category-section h5 {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .category-section:last-child {
-            margin-bottom: 0;
-        }
-        
-        /* Bölüm başlıkları için özel stiller */
-        .result-section h4 {
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.03);
         }
         
         /* Responsive Design */
@@ -1675,376 +1526,6 @@ PANEL_HTML = """
             transform: translateY(-50%);
             color: var(--light-gray);
         }
-        
-        /* Additional Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes pulse {
-            0% { 
-                opacity: 0.6; 
-                transform: scale(0.95) rotate(0deg); 
-            }
-            50% { 
-                opacity: 1; 
-                transform: scale(1.05) rotate(180deg); 
-            }
-            100% { 
-                opacity: 0.6; 
-                transform: scale(0.95) rotate(360deg); 
-            }
-        }
-        
-        /* Enhanced Button Styles */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            align-self: flex-end;
-            height: 52px;
-            font-size: 16px;
-            font-weight: 600;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .btn-primary:active {
-            transform: translateY(-1px);
-        }
-        
-        /* Enhanced Navigation Items */
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            color: var(--light);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-            cursor: pointer;
-            border-radius: 12px;
-            margin-bottom: 8px;
-            font-size: 14.5px;
-            position: relative;
-            overflow: hidden;
-            animation: slideInLeft 0.4s ease-out;
-        }
-        
-        .nav-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(86, 73, 201, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .nav-item:hover::before {
-            opacity: 1;
-        }
-        
-        .nav-item:hover {
-            background: rgba(108, 92, 231, 0.1);
-            border-left-color: var(--primary);
-            transform: translateX(8px);
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.2);
-        }
-        
-        .nav-item.active {
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.2) 0%, rgba(86, 73, 201, 0.2) 100%);
-            border-left-color: var(--primary);
-            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.25);
-            transform: translateX(5px);
-        }
-        
-        .nav-item.active::before {
-            opacity: 1;
-        }
-        
-        .nav-item i {
-            margin-right: 15px;
-            width: 20px;
-            text-align: center;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-item:hover i {
-            transform: scale(1.1);
-            color: var(--primary);
-        }
-        
-        /* Enhanced Card Styling */
-        .card {
-            background: rgba(45, 52, 54, 0.6);
-            backdrop-filter: blur(15px);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.6s ease-out;
-        }
-        
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.05), rgba(86, 73, 201, 0.05));
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        
-        .card:hover::before {
-            opacity: 1;
-        }
-        
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border-color: rgba(108, 92, 231, 0.2);
-        }
-        
-        /* Enhanced Form Styling */
-        .form-input {
-            padding: 18px 22px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
-            background: rgba(0, 0, 0, 0.2);
-            color: var(--light);
-            font-size: 15px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .form-input::placeholder {
-            color: var(--light-gray);
-            transition: color 0.3s ease;
-        }
-        
-        .form-input:focus::placeholder {
-            color: var(--primary);
-        }
-        
-        /* Enhanced Table Styling */
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-            margin: 25px 0;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .result-table th {
-            text-align: left;
-            padding: 20px 22px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            font-weight: 600;
-            color: white;
-            text-transform: uppercase;
-            font-size: 14px;
-            letter-spacing: 0.8px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-        }
-        
-        .result-table td {
-            padding: 20px 22px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            word-wrap: break-word;
-            max-width: 350px;
-            vertical-align: top;
-            line-height: 1.6;
-            color: var(--light);
-            transition: all 0.3s ease;
-        }
-        
-        .result-table tr:hover td {
-            background: rgba(108, 92, 231, 0.1);
-            transform: translateX(5px);
-            box-shadow: 0 2px 10px rgba(108, 92, 231, 0.2);
-        }
-        
-        .result-table tr:nth-child(even) {
-            background: rgba(0, 0, 0, 0.08);
-        }
-        
-        .result-table tr:nth-child(even):hover td {
-            background: rgba(108, 92, 231, 0.15);
-        }
-        
-        /* Enhanced Category Sections */
-        .category-section {
-            margin-bottom: 25px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            padding: 20px;
-            border-left: 4px solid var(--primary);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .category-section:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            border-color: rgba(108, 92, 231, 0.3);
-        }
-        
-        .category-section h5 {
-            margin: 0 0 18px 0;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--primary);
-        }
-        
-        /* Enhanced Scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 10px;
-            border: 2px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-        }
-        
-        /* Enhanced Search */
-        .search-input {
-            width: 100%;
-            padding: 18px 22px 18px 55px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            background: rgba(0, 0, 0, 0.2);
-            color: var(--light);
-            font-size: 15px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .search-icon {
-            position: absolute;
-            left: 22px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--light-gray);
-            transition: color 0.3s ease;
-        }
-        
-        .search-input:focus + .search-icon {
-            color: var(--primary);
-        }
-        
-        /* Enhanced Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: rgba(45, 52, 54, 0.9);
-            backdrop-filter: blur(20px);
-            padding: 30px 0;
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
-            overflow-y: auto;
-            height: calc(100vh - var(--header-height));
-            position: fixed;
-            left: 0;
-            top: var(--header-height);
-            z-index: 900;
-            transition: all 0.4s ease;
-        }
-        
-        /* Animation Delays for Nav Items */
-        .nav-item:nth-child(1) { animation-delay: 0.1s; }
-        .nav-item:nth-child(2) { animation-delay: 0.2s; }
-        .nav-item:nth-child(3) { animation-delay: 0.3s; }
-        .nav-item:nth-child(4) { animation-delay: 0.4s; }
-        .nav-item:nth-child(5) { animation-delay: 0.5s; }
-        .nav-item:nth-child(6) { animation-delay: 0.6s; }
-        .nav-item:nth-child(7) { animation-delay: 0.7s; }
-        .nav-item:nth-child(8) { animation-delay: 0.8s; }
-        .nav-item:nth-child(5) { animation-delay: 0.9s; }
-        .nav-item:nth-child(10) { animation-delay: 1.0s; }
     </style>
 </head>
 <body>
@@ -2066,7 +1547,7 @@ PANEL_HTML = """
                 </div>
                 <div class="user-name">{{ session['user'] }}</div>
             </div>
-            <button class="btn btn-logout" data-action="logout">
+            <button class="btn btn-logout" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> Çıkış
             </button>
         </div>
@@ -2085,11 +1566,11 @@ PANEL_HTML = """
                     Ana Menü
                 </div>
                 <div class="nav-items">
-                    <a href="#" class="nav-item active" data-query="dashboard">
+                    <a href="#" class="nav-item active" onclick="setQuery('dashboard')">
                         <i class="fas fa-home"></i>
                         <span>Dashboard</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="history">
+                    <a href="#" class="nav-item" onclick="setQuery('history')">
                         <i class="fas fa-history"></i>
                         <span>Sorgu Geçmişi</span>
                     </a>
@@ -2102,167 +1583,167 @@ PANEL_HTML = """
                     Kişisel Sorgular
                 </div>
                 <div class="nav-items">
-                    <a href="#" class="nav-item" data-query="tcpro">
+                    <a href="#" class="nav-item" onclick="setQuery('tcpro')">
                         <i class="fas fa-id-card"></i>
                         <span>TC Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="adsoyad">
+                    <a href="#" class="nav-item" onclick="setQuery('adsoyad')">
                         <i class="fas fa-user"></i>
                         <span>Ad Soyad</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="gsm">
+                    <a href="#" class="nav-item" onclick="setQuery('gsm')">
                         <i class="fas fa-phone"></i>
                         <span>GSM Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="adres">
+                    <a href="#" class="nav-item" onclick="setQuery('adres')">
                         <i class="fas fa-map-marker-alt"></i>
                         <span>Adres Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="vesika">
+                    <a href="#" class="nav-item" onclick="setQuery('vesika')">
                         <i class="fas fa-id-badge"></i>
                         <span>Vesika Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="allvesika">
+                    <a href="#" class="nav-item" onclick="setQuery('allvesika')">
                         <i class="fas fa-id-card-alt"></i>
                         <span>Tüm Vesika Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="anne">
+                    <a href="#" class="nav-item" onclick="setQuery('anne')">
                         <i class="fas fa-female"></i>
                         <span>Anne Bilgisi</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="baba">
+                    <a href="#" class="nav-item" onclick="setQuery('baba')">
                         <i class="fas fa-male"></i>
                         <span>Baba Bilgisi</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="hane">
+                    <a href="#" class="nav-item" onclick="setQuery('hane')">
                         <i class="fas fa-house-user"></i>
                         <span>Hane Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="sulale">
+                    <a href="#" class="nav-item" onclick="setQuery('sulale')">
                         <i class="fas fa-sitemap"></i>
                         <span>Sülale Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="cocuk">
+                    <a href="#" class="nav-item" onclick="setQuery('cocuk')">
                         <i class="fas fa-child"></i>
                         <span>Çocuk Bilgileri</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="isyeri">
+                    <a href="#" class="nav-item" onclick="setQuery('isyeri')">
                         <i class="fas fa-building"></i>
                         <span>İşyeri Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="isyeriyetkili">
+                    <a href="#" class="nav-item" onclick="setQuery('isyeriyetkili')">
                         <i class="fas fa-user-tie"></i>
                         <span>İşyeri Yetkili</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="tapu">
+                    <a href="#" class="nav-item" onclick="setQuery('tapu')">
                         <i class="fas fa-home"></i>
                         <span>Tapu Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="sgkpro">
+                    <a href="#" class="nav-item" onclick="setQuery('sgkpro')">
                         <i class="fas fa-file-medical"></i>
                         <span>SGK Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="vergi">
+                    <a href="#" class="nav-item" onclick="setQuery('vergi')">
                         <i class="fas fa-receipt"></i>
                         <span>Vergi Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="premadres">
+                    <a href="#" class="nav-item" onclick="setQuery('premadres')">
                         <i class="fas fa-address-card"></i>
                         <span>Premadres Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="premad">
+                    <a href="#" class="nav-item" onclick="setQuery('premad')">
                         <i class="fas fa-address-book"></i>
                         <span>Premad Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="nvi">
+                    <a href="#" class="nav-item" onclick="setQuery('nvi')">
                         <i class="fas fa-landmark"></i>
                         <span>NVI Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="muhallev">
+                    <a href="#" class="nav-item" onclick="setQuery('muhallev')">
                         <i class="fas fa-file-contract"></i>
                         <span>Muhallev Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="hanepro">
+                    <a href="#" class="nav-item" onclick="setQuery('hanepro')">
                         <i class="fas fa-house-damage"></i>
                         <span>Hane Pro Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="ehlt">
+                    <a href="#" class="nav-item" onclick="setQuery('ehlt')">
                         <i class="fas fa-users"></i>
                         <span>EHLT Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="ayak">
+                    <a href="#" class="nav-item" onclick="setQuery('ayak')">
                         <i class="fas fa-shoe-prints"></i>
                         <span>Ayak No Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="boy">
+                    <a href="#" class="nav-item" onclick="setQuery('boy')">
                         <i class="fas fa-ruler-vertical"></i>
                         <span>Boy Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="burc">
+                    <a href="#" class="nav-item" onclick="setQuery('burc')">
                         <i class="fas fa-star"></i>
                         <span>Burç Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="cm">
+                    <a href="#" class="nav-item" onclick="setQuery('cm')">
                         <i class="fas fa-ruler"></i>
                         <span>CM Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="meslek">
+                    <a href="#" class="nav-item" onclick="setQuery('meslek')">
                         <i class="fas fa-briefcase"></i>
                         <span>Meslek Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="tcgsm">
+                    <a href="#" class="nav-item" onclick="setQuery('tcgsm')">
                         <i class="fas fa-phone-alt"></i>
                         <span>TC GSM Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="adsoyadil">
+                    <a href="#" class="nav-item" onclick="setQuery('adsoyadil')">
                         <i class="fas fa-user-plus"></i>
                         <span>Ad Soyad İl Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="personel">
+                    <a href="#" class="nav-item" onclick="setQuery('personel')">
                         <i class="fas fa-user-md"></i>
                         <span>Personel Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="internet">
+                    <a href="#" class="nav-item" onclick="setQuery('internet')">
                         <i class="fas fa-wifi"></i>
                         <span>Internet Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="fatura">
+                    <a href="#" class="nav-item" onclick="setQuery('fatura')">
                         <i class="fas fa-file-invoice-dollar"></i>
                         <span>Fatura Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="mhrs">
+                    <a href="#" class="nav-item" onclick="setQuery('mhrs')">
                         <i class="fas fa-hospital"></i>
                         <span>MHRS Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="basvuru">
+                    <a href="#" class="nav-item" onclick="setQuery('basvuru')">
                         <i class="fas fa-file-signature"></i>
                         <span>Başvuru Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="diploma">
+                    <a href="#" class="nav-item" onclick="setQuery('diploma')">
                         <i class="fas fa-graduation-cap"></i>
                         <span>Diploma Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="okulno">
+                    <a href="#" class="nav-item" onclick="setQuery('okulno')">
                         <i class="fas fa-school"></i>
                         <span>Okul No Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="okulsicil">
+                    <a href="#" class="nav-item" onclick="setQuery('okulsicil')">
                         <i class="fas fa-user-graduate"></i>
                         <span>Okul Sicil Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="lgs">
+                    <a href="#" class="nav-item" onclick="setQuery('lgs')">
                         <i class="fas fa-book"></i>
                         <span>LGS Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="sertifika">
+                    <a href="#" class="nav-item" onclick="setQuery('sertifika')">
                         <i class="fas fa-certificate"></i>
                         <span>Sertifika Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="kizlik">
+                    <a href="#" class="nav-item" onclick="setQuery('kizlik')">
                         <i class="fas fa-female"></i>
                         <span>Kızlık Soyadı</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="hikaye">
+                    <a href="#" class="nav-item" onclick="setQuery('hikaye')">
                         <i class="fas fa-book-open"></i>
                         <span>Hikaye Sorgulama</span>
                     </a>
@@ -2275,15 +1756,15 @@ PANEL_HTML = """
                     Sosyal Medya
                 </div>
                 <div class="nav-items">
-                    <a href="#" class="nav-item" data-query="telegram">
+                    <a href="#" class="nav-item" onclick="setQuery('telegram')">
                         <i class="fab fa-telegram"></i>
                         <span>Telegram Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="facebook">
+                    <a href="#" class="nav-item" onclick="setQuery('facebook')">
                         <i class="fab fa-facebook"></i>
                         <span>Facebook Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="email_sorgu">
+                    <a href="#" class="nav-item" onclick="setQuery('email_sorgu')">
                         <i class="fas fa-envelope"></i>
                         <span>Email Sorgu</span>
                     </a>
@@ -2296,15 +1777,15 @@ PANEL_HTML = """
                     Araç & Araç Bilgileri
                 </div>
                 <div class="nav-items">
-                    <a href="#" class="nav-item" data-query="plaka">
+                    <a href="#" class="nav-item" onclick="setQuery('plaka')">
                         <i class="fas fa-car"></i>
                         <span>Plaka Sorgulama</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="aracparca">
+                    <a href="#" class="nav-item" onclick="setQuery('aracparca')">
                         <i class="fas fa-tools"></i>
                         <span>Araç Parça Sorgu</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="imei">
+                    <a href="#" class="nav-item" onclick="setQuery('imei')">
                         <i class="fas fa-mobile-alt"></i>
                         <span>IMEI Sorgulama</span>
                     </a>
@@ -2317,78 +1798,79 @@ PANEL_HTML = """
         Diğer Sorgular
     </div>
     <div class="nav-items">
-        <a href="#" class="nav-item" data-query="operator">
+        <a href="#" class="nav-item" onclick="setQuery('operator')">
             <i class="fas fa-sim-card"></i>
             <span>Operatör Sorgulama</span>
         </a>
-        <a href="#" class="nav-item" data-query="gsmdetay">
+        <a href="#" class="nav-item" onclick="setQuery('gsmdetay')">
             <i class="fas fa-phone-square"></i>
             <span>GSM Detay Sorgu</span>
         </a>
-        <a href="#" class="nav-item" data-query="havadurumu">
+        <a href="#" class="nav-item" onclick="setQuery('havadurumu')">
             <i class="fas fa-cloud-sun"></i>
             <span>Hava Durumu</span>
         </a>
-        <a href="#" class="nav-item" data-query="subdomain">
+        <a href="#" class="nav-item" onclick="setQuery('subdomain')">
             <i class="fas fa-globe"></i>
             <span>Subdomain Sorgu</span>
         </a>
-        <a href="#" class="nav-item" data-query="nezcane">
+        <a href="#" class="nav-item" onclick="setQuery('nezcane')">
             <i class="fas fa-map-marked-alt"></i>
             <span>Nezcane Sorgulama</span>
         </a>
-        <a href="#" class="nav-item" data-query="şehit">
+        <a href="#" class="nav-item" onclick="setQuery('şehit')">
             <i class="fas fa-medal"></i>
             <span>Şehit Sorgulama</span>
         </a>
-        <a href="#" class="nav-item" data-query="interpol">
+        <a href="#" class="nav-item" onclick="setQuery('interpol')">
             <i class="fas fa-globe-americas"></i>
             <span>Interpol Sorgulama</span>
         </a>
-        <a href="#" class="nav-item" data-query="sexgörsel">
+        <a href="#" class="nav-item" onclick="setQuery('sexgörsel')">
             <i class="fas fa-image"></i>
             <span>Sex Görsel Sorgu</span>
         </a>
-        <a href="#" class="nav-item" data-query="nude">
+        <a href="#" class="nav-item" onclick="setQuery('nude')">
             <i class="fas fa-ban"></i>
             <span>Nude Sorgulama</span>
         </a>
         <!-- Yeni eklenenler -->
-        <a href="#" class="nav-item" data-query="insta">
+        <a href="#" class="nav-item" onclick="setQuery('insta')">
             <i class="fab fa-instagram"></i>
             <span>Instagram Sorgulama</span>
         </a>
-        <a href="#" class="nav-item" data-query="facebook_hanedan">
+        <a href="#" class="nav-item" onclick="setQuery('facebook_hanedan')">
             <i class="fab fa-facebook"></i>
             <span>Facebook Hanedan</span>
         </a>
-        <a href="#" class="nav-item" data-query="uni">
+        <a href="#" class="nav-item" onclick="setQuery('uni')">
             <i class="fas fa-university"></i>
             <span>Üniversite Sorgu</span>
         </a>
-        <a href="#" class="nav-item" data-query="akp">
+        <a href="#" class="nav-item" onclick="setQuery('akp')">
             <i class="fas fa-landmark"></i>
             <span>AKP Sorgulama</span>
         </a>
-        <a href="#" class="nav-item" data-query="aifoto">
+        <a href="#" class="nav-item" onclick="setQuery('aifoto')">
             <i class="fas fa-robot"></i>
             <span>AI Foto</span>
         </a>
-        <a href="#" class="nav-item" data-query="papara">
+        <a href="#" class="nav-item" onclick="setQuery('papara')">
             <i class="fas fa-wallet"></i>
             <span>Papara Sorgu</span>
         </a>
-        <a href="#" class="nav-item" data-query="ininal">
+        <a href="#" class="nav-item" onclick="setQuery('ininal')">
             <i class="fas fa-credit-card"></i>
             <span>İninal Sorgu</span>
         </a>
-        <a href="#" class="nav-item" data-query="turknet">
+        <a href="#" class="nav-item" onclick="setQuery('turknet')">
             <i class="fas fa-wifi"></i>
             <span>TurkNet Sorgu</span>
         </a>
-        <a href="#" class="nav-item" data-query="discord">
-            <i class="fab fa-discord"></i>
-            <span>Discord Sunucu</span>
+     </a>
+        <a href="#" class="nav-item" onclick="setQuery('discord sunucu: https://discord.gg/cngzsvsaX2')">
+            <i class="fas fa-credit-card"></i>
+            <span>/cappybeamservices</span>
         </a>
     </div>
 </div>
@@ -2400,13 +1882,22 @@ PANEL_HTML = """
                     Araçlar
                 </div>
                 <div class="nav-items">
-                    <a href="#" class="nav-item" data-query="smsbomber">
+                    <a href="#" class="nav-item" onclick="setQuery('smsbomber')">
                         <i class="fas fa-bomb"></i>
                         <span>SMS Bomber</span>
                     </a>
-                    <a href="#" class="nav-item" data-query="smsapi">
+                    <a href="#" class="nav-item" onclick="setQuery('smsapi')">
                         <i class="fas fa-cog"></i>
                         <span>API Yönetimi</span>
+                    </a>
+                        </a>
+                    <a href="#" class="nav-item" onclick="setQuery('smsapi')">
+                        <i class="fas fa-cog"></i>
+                        <span>API Yönetimi</span>
+                    </a>
+                       <a href="#" class="nav-item" onclick="setQuery('smsbomber')">
+                        <i class="fas fa-cog"></i>
+                        <span>smsbomberv2</span>
                     </a>
                 </div>
             </div>
@@ -2484,7 +1975,7 @@ PANEL_HTML = """
                         <input type="text" class="form-input" id="input2" placeholder="İsteğe bağlı parametre">
                     </div>
                     
-                    <button class="btn btn-primary" data-action="runQuery">
+                    <button class="btn btn-primary" onclick="runQuery()">
                         <i class="fas fa-play"></i> Sorgula
                     </button>
                 </div>
@@ -2496,7 +1987,7 @@ PANEL_HTML = """
                         <i class="fas fa-list"></i>
                         <span>Sorgu Sonuçları</span>
                     </div>
-                    <button class="btn btn-logout" data-action="clearResults">
+                    <button class="btn btn-logout" onclick="clearResults()">
                         <i class="fas fa-trash"></i> Temizle
                     </button>
                 </div>
@@ -2578,12 +2069,13 @@ PANEL_HTML = """
             'facebook_hanedan': 'Ad ve soyad ile Facebook hanedan sorgulama',
             'uni': 'TC Kimlik numarası ile üniversite sorgulama',
             'akp': 'Ad ve soyad ile AKP sorgulama',
-            'aifoto': 'Resim URL'si ile yapay zeka fotoğraf sorgulama',
+            'aifoto': 'Resim URL’si ile yapay zeka fotoğraf sorgulama',
             'papara': 'Papara numarası ile sorgulama',
             'ininal': 'İninal kart numarası ile sorgulama',
             'turknet': 'TC Kimlik numarası ile TurkNet sorgulama',
-            'smsbomber': 'SMS Bomber aracı - Telefon numarasına SMS gönderin',
-            'discord': 'Discord sunucu bilgileri'
+            'smsbomber': 'SMS Bomber aracı - Telefon numarasına SMS gönderin'
+
+           
         };
         
         const queryLabels = {
@@ -2651,9 +2143,9 @@ PANEL_HTML = """
             "ai foto": ["ımg url", ""],
             "papara": ["papara no", ""],
             "ininal": ["ininal no", ""],
+            "sms bomber": ["numara", ""],
             "smsbomber": ["Telefon Numarası", "Mesaj (Opsiyonel)"],
-            "smsapi": ["API Adı", "API URL"],
-            "discord": ["", ""]
+            "smsapi": ["API Adı", "API URL"]
         };
         
         // Menü arama fonksiyonu
@@ -2682,19 +2174,15 @@ PANEL_HTML = """
             document.getElementById('sidebar').classList.toggle('active');
         });
         
-        function setQuery(queryType, clickedElement) {
+        function setQuery(queryType) {
             currentQuery = queryType;
             updateFormLabels();
             
-            // Tüm nav-item'lardan active class'ını kaldır
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
             
-            // Tıklanan elemente active class'ını ekle
-            if (clickedElement) {
-                clickedElement.classList.add('active');
-            }
+            event.currentTarget.classList.add('active');
             
             if (currentQuery === 'dashboard' || currentQuery === 'history') {
                 document.getElementById('query-section').style.display = 'none';
@@ -2746,51 +2234,6 @@ PANEL_HTML = """
                 return;
             }
             
-            // Discord özel durumu
-            if (currentQuery === 'discord') {
-                document.getElementById('results').innerHTML = `
-                    <div style="padding: 20px; text-align: center; color: var(--light);">
-                        <i class="fab fa-discord" style="font-size: 48px; margin-bottom: 15px; color: #7289da;"></i>
-                        <h3>Discord Sunucumuza Katılın!</h3>
-                        <p style="margin: 15px 0; font-size: 16px;">CAPPYBEAM Premium Discord sunucusuna katılarak güncel bilgileri alın ve toplulukla etkileşime geçin.</p>
-                        <a href="https://discord.gg/cngzsvsaX2" target="_blank" style="
-                            display: inline-block;
-                            background: linear-gradient(135deg, #7289da, #5865f2);
-                            color: white;
-                            padding: 12px 24px;
-                            border-radius: 25px;
-                            text-decoration: none;
-                            font-weight: 600;
-                            margin-top: 15px;
-                            transition: all 0.3s ease;
-                            box-shadow: 0 5px 15px rgba(114, 137, 218, 0.3);
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(114, 137, 218, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(114, 137, 218, 0.3)'">
-                            <i class="fas fa-discord" style="font-size: 48px; margin-bottom: 15px; color: #7289da;"></i>
-                            Sunucuya Katıl
-                        </a>
-                    </div>
-                `;
-                return;
-            }
-            
-            // SMS API Yönetimi özel durumu
-            if (currentQuery === 'smsapi') {
-                document.getElementById('results').innerHTML = `
-                    <div style="padding: 20px; text-align: center; color: var(--light);">
-                        <i class="fas fa-cog" style="font-size: 48px; margin-bottom: 15px; color: var(--primary);"></i>
-                        <h3>SMS API Yönetimi</h3>
-                        <p style="margin: 15px 0; font-size: 16px;">SMS API ayarlarını yönetmek için bu özellik henüz implemente edilmemiştir.</p>
-                        <div style="background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 12px; margin-top: 20px;">
-                            <p style="color: var(--light-gray); font-size: 14px;">
-                                <i class="fas fa-info-circle" style="margin-right: 8px; color: var(--info);"></i>
-                                Bu özellik gelecek güncellemelerde eklenecektir.
-                            </p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
             // Özel durumlar için validasyon
             if ((currentQuery === 'adsoyad' || currentQuery === 'adsoyadil') && !input1) {
                 showError('Lütfen en az bir ad bilgisi girin.');
@@ -2825,19 +2268,7 @@ PANEL_HTML = """
                 if (data.error) {
                     showError(data.error);
                 } else {
-                    // API response'unu daha iyi handle edelim
-                    let resultData = data.result;
-                    
-                    // Eğer result yoksa, tüm data'yı göster
-                    if (resultData === undefined || resultData === null) {
-                        resultData = data;
-                    }
-                    
-                    // Veriyi log'layalım (debug için)
-                    console.log('API Response:', data);
-                    console.log('Result Data:', resultData);
-                    
-                    displayResults(resultData);
+                    displayResults(data.result);
                 }
             })
             .catch(error => {
@@ -2858,166 +2289,33 @@ PANEL_HTML = """
         function displayResults(data) {
             let html = '';
             
-            // Veriyi daha iyi formatlayalım
-            function formatValue(value) {
-                if (value === null || value === undefined) return '<span style="color: var(--light-gray); font-style: italic;">Boş</span>';
-                if (typeof value === 'object') {
-                    return `<pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; overflow-x: auto; margin: 0;">${JSON.stringify(value, null, 2)}</pre>`;
-                }
-                if (typeof value === 'string' && value.length > 100) {
-                    return `<div style="max-height: 200px; overflow-y: auto;">${value}</div>`;
-                }
-                return String(value);
-            }
-            
-            // TC ve adres bilgilerini ayrı bölümlerde göstermek için
-            function categorizeData(data) {
-                const tcFields = ['tc', 'tcno', 'tc_no', 'kimlik', 'kimlik_no', 'tckn', 'kendisi'];
-                const addressFields = ['adres', 'address', 'il', 'ilce', 'mahalle', 'sokak', 'cadde', 'posta_kodu', 'sehir', 'bolge', 'nüfus_il', 'nüfus_ilçe'];
-                const personalFields = ['ad', 'soyad', 'ad_soyad', 'isim', 'dogum_tarihi', 'dogum_yeri', 'anne_adi', 'baba_adi', 'cinsiyet', 'adi', 'soyadi', 'doğum_tarihi', 'anne_adı', 'baba_adı'];
-                const contactFields = ['telefon', 'tel', 'phone', 'email', 'eposta', 'gsm'];
-                
-                const categories = {
-                    tc: {},
-                    address: {},
-                    personal: {},
-                    contact: {},
-                    other: {}
-                };
-                
-                for (const [key, value] of Object.entries(data)) {
-                    const lowerKey = key.toLowerCase();
-                    let categorized = false;
-                    
-                    if (tcFields.some(field => lowerKey.includes(field))) {
-                        categories.tc[key] = value;
-                        categorized = true;
-                    } else if (addressFields.some(field => lowerKey.includes(field))) {
-                        categories.address[key] = value;
-                        categorized = true;
-                    } else if (personalFields.some(field => lowerKey.includes(field))) {
-                        categories.personal[key] = value;
-                        categorized = true;
-                    } else if (contactFields.some(field => lowerKey.includes(field))) {
-                        categories.contact[key] = value;
-                        categorized = true;
-                    }
-                    
-                    if (!categorized) {
-                        categories.other[key] = value;
-                    }
-                }
-                
-                return categories;
-            }
-            
             if (Array.isArray(data) && data.length > 0) {
-                html = '<div class="result-header"><h3>📊 Sorgu Sonuçları (' + data.length + ' kayıt)</h3></div>';
-                
-                // Ana tablo oluştur - görseldeki gibi
-                html += '<div class="overflow-x-auto">';
-                html += '<table class="result-table" style="width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.15); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); margin: 20px 0;">';
-                
-                // Tablo başlığı - görseldeki gibi
-                const firstRow = data[0];
-                const headers = Object.keys(firstRow);
-                html += '<thead><tr>';
-                headers.forEach(header => {
-                    const formattedHeader = header.charAt(0).toUpperCase() + header.slice(1).replace(/_/g, ' ');
-                    html += '<th style="text-align: left; padding: 18px 20px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-bottom: 2px solid rgba(255, 255, 255, 0.1); font-weight: 600; color: white; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 10;">' + formattedHeader + '</th>';
+                html = '<table class="result-table">';
+                html += '<tr>';
+                Object.keys(data[0]).forEach(key => {
+                    html += `<th>${key}</th>`;
                 });
-                html += '</tr></thead>';
+                html += '</tr>';
                 
-                // Tablo gövdesi
-                html += '<tbody>';
-                data.forEach((row, index) => {
-                    const rowClass = index % 2 === 0 ? 'even' : 'odd';
-                    html += '<tr class="' + rowClass + '" style="background: ' + (rowClass === 'even' ? 'rgba(0, 0, 0, 0.05)' : 'transparent') + ';">';
-                    headers.forEach(header => {
-                        const value = row[header];
-                        html += '<td style="padding: 18px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); word-wrap: break-word; max-width: 350px; vertical-align: top; line-height: 1.6; color: var(--light);">' + formatValue(value) + '</td>';
+                data.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row).forEach(value => {
+                        html += `<td>${value || ''}</td>`;
                     });
                     html += '</tr>';
                 });
-                html += '</tbody>';
+                
                 html += '</table>';
-                html += '</div>';
-                
             } else if (typeof data === 'object' && data !== null) {
-                const categories = categorizeData(data);
-                html = '<div class="result-header"><h3>📋 Sorgu Sonucu</h3></div>';
-                
-                // TC Bilgileri
-                if (Object.keys(categories.tc).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--success); margin: 10px 0;">🆔 TC Kimlik Bilgileri</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.tc)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
+                html = '<table class="result-table">';
+                for (const [key, value] of Object.entries(data)) {
+                    html += `<tr><th>${key}</th><td>${value || ''}</td></tr>`;
                 }
-                
-                // Adres Bilgileri
-                if (Object.keys(categories.address).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--warning); margin: 10px 0;">🏠 Adres Bilgileri</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.address)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
-                // Kişisel Bilgiler
-                if (Object.keys(categories.personal).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--warning); margin: 10px 0;">👤 Kişisel Bilgiler</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.personal)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
-                // İletişim Bilgileri
-                if (Object.keys(categories.contact).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--primary); margin: 10px 0;">📞 İletişim Bilgileri</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.contact)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
-                // Diğer Bilgiler
-                if (Object.keys(categories.other).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--secondary); margin: 10px 0;">📝 Diğer Bilgiler</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.other)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
+                html += '</table>';
             } else if (typeof data === 'string') {
-                html = '<div class="result-header"><h3>📝 Metin Sonucu</h3></div>';
-                html += `<div style="background: rgba(0,0,0,0.1); padding: 20px; border-radius: 10px; white-space: pre-wrap; font-family: monospace;">${data}</div>`;
+                html = `<div style="white-space: pre-wrap;">${data}</div>`;
             } else {
-                html = '<div class="result-header"><h3>🔍 Ham Veri</h3></div>';
-                html += `<pre style="background: rgba(0,0,0,0.1); padding: 20px; border-radius: 10px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>`;
+                html = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
             }
             
             document.getElementById('results').innerHTML = html;
@@ -3039,53 +2337,6 @@ PANEL_HTML = """
         // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', function() {
             updateFormLabels();
-            
-            // Tüm navigation item'lara event listener ekle
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const queryType = this.getAttribute('data-query');
-                    if (queryType) {
-                        setQuery(queryType, this);
-                    }
-                });
-            });
-            
-            // Query butonuna event listener ekle
-            const queryBtn = document.querySelector('.btn-primary[data-action="runQuery"]');
-            if (queryBtn) {
-                queryBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    runQuery();
-                });
-            }
-            
-            // Clear results butonuna event listener ekle
-            const clearBtn = document.querySelector('.btn-logout[data-action="clearResults"]');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    clearResults();
-                });
-            }
-            
-            // Logout butonuna event listener ekle
-            const logoutBtn = document.querySelector('.btn-logout[data-action="logout"]');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    logout();
-                });
-            }
-            
-            // Menu toggle butonuna event listener ekle
-            const menuToggle = document.getElementById('menuToggle');
-            if (menuToggle) {
-                menuToggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.getElementById('sidebar').classList.toggle('active');
-                });
-            }
             
             // Mobil menü için dışarı tıklama kapatma
             document.addEventListener('click', function(event) {
@@ -3179,7 +2430,6 @@ def api_query():
     result_status = "error"
 
     try:
-        # URL oluşturma
         if query == "nude":
             url = url_func("", "")
         elif query in ["şehit", "interpol"]:
@@ -3217,76 +2467,22 @@ def api_query():
         else:
             url = url_func(val1, val2)
 
-        # API isteği yapma
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        
-        r = requests.get(url, timeout=20, headers=headers, verify=False)
-        
-        # HTTP hata kodlarını kontrol etme
-        if r.status_code != 200:
-            return jsonify({"error": f"API yanıt vermedi. HTTP Kodu: {r.status_code}"})
-        
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
         result_status = "success"
-        
-        # Yanıtı işleme
+
         try:
-            # JSON yanıtı deneme
             result = r.json()
-            
-            # Boş yanıt kontrolü
-            if not result or (isinstance(result, dict) and not result):
-                return jsonify({"error": "API'den veri alınamadı. Lütfen parametreleri kontrol edin."})
-            
-            # Liste yanıtı
             if isinstance(result, list):
-                if len(result) == 0:
-                    return jsonify({"error": "Sonuç bulunamadı. Lütfen parametreleri kontrol edin."})
                 return jsonify({"result": result})
-            
-            # Sözlük yanıtı
-            elif isinstance(result, dict):
-                # Hata mesajı kontrolü
-                if "error" in result and result["error"]:
-                    return jsonify({"error": f"API Hatası: {result['error']}"})
-                
-                # Veri alanlarını kontrol etme
-                if "data" in result:
-                    if not result["data"]:
-                        return jsonify({"error": "Sonuç bulunamadı. Lütfen parametreleri kontrol edin."})
-                    return jsonify({"result": result["data"]})
-                elif "results" in result:
-                    if not result["results"]:
-                        return jsonify({"error": "Sonuç bulunamadı. Lütfen parametreleri kontrol edin."})
-                    return jsonify({"result": result["results"]})
-                else:
-                    return jsonify({"result": result})
-            
-            # Diğer yanıt türleri
+            elif isinstance(result, dict) and ("data" in result or "results" in result):
+                return jsonify({"result": result.get("data", result.get("results"))})
             else:
                 return jsonify({"result": result})
-                
         except ValueError:
-            # JSON parse edilemezse metin olarak döndür
-            text_result = r.text.strip()
-            if not text_result:
-                return jsonify({"error": "API'den veri alınamadı. Lütfen parametreleri kontrol edin."})
-            
-            # Hata mesajı kontrolü
-            if "error" in text_result.lower() or "not found" in text_result.lower():
-                return jsonify({"error": f"Sonuç bulunamadı: {text_result}"})
-            
-            return jsonify({"result": text_result})
-            
-    except requests.exceptions.Timeout:
-        return jsonify({"error": "API yanıt vermedi. Zaman aşımı."})
-    except requests.exceptions.ConnectionError:
-        return jsonify({"error": "API'ye bağlanılamadı. Bağlantı hatası."})
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": f"API isteği başarısız: {str(e)}"})
+            return jsonify({"result": r.text})
     except Exception as e:
-        return jsonify({"error": f"Beklenmeyen hata: {str(e)}"})
+        return jsonify({"error": f"API sorgusu başarısız: {str(e)}"})
     finally:
         log_query(session["user"], query, {"val1": val1, "val2": val2}, result_status)
 
