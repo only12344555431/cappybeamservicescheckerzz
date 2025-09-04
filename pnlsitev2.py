@@ -1383,14 +1383,19 @@ PANEL_HTML = """
             100% { opacity: 0.6; transform: scale(0.95); }
         }
         
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
         .result-table {
             width: 100%;
             border-collapse: collapse;
             background: rgba(0, 0, 0, 0.15);
             border-radius: var(--border-radius);
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            margin: 20px 0;
         }
         
         .result-table th {
@@ -1470,35 +1475,9 @@ PANEL_HTML = """
             background: transparent;
         }
         
-        /* Yeni bölüm stilleri */
-        .result-section {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+
         
-        .category-section {
-            margin-bottom: 20px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            padding: 15px;
-            border-left: 4px solid var(--primary);
-        }
         
-        .category-section h5 {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .category-section:last-child {
-            margin-bottom: 0;
-        }
         
         /* Bölüm başlıkları için özel stiller */
         .result-section h4 {
@@ -2441,194 +2420,59 @@ PANEL_HTML = """
                 return String(value);
             }
             
-            // TC ve adres bilgilerini ayrı bölümlerde göstermek için
-            function categorizeData(data) {
-                const tcFields = ['tc', 'tcno', 'tc_no', 'kimlik', 'kimlik_no', 'tckn'];
-                const addressFields = ['adres', 'address', 'il', 'ilce', 'mahalle', 'sokak', 'cadde', 'posta_kodu', 'posta_kodu', 'sehir', 'bolge'];
-                const personalFields = ['ad', 'soyad', 'ad_soyad', 'isim', 'dogum_tarihi', 'dogum_yeri', 'anne_adi', 'baba_adi', 'cinsiyet'];
-                const contactFields = ['telefon', 'tel', 'phone', 'email', 'eposta', 'gsm'];
-                
-                const categories = {
-                    tc: {},
-                    address: {},
-                    personal: {},
-                    contact: {},
-                    other: {}
-                };
-                
-                for (const [key, value] of Object.entries(data)) {
-                    const lowerKey = key.toLowerCase();
-                    let categorized = false;
-                    
-                    if (tcFields.some(field => lowerKey.includes(field))) {
-                        categories.tc[key] = value;
-                        categorized = true;
-                    } else if (addressFields.some(field => lowerKey.includes(field))) {
-                        categories.address[key] = value;
-                        categorized = true;
-                    } else if (personalFields.some(field => lowerKey.includes(field))) {
-                        categories.personal[key] = value;
-                        categorized = true;
-                    } else if (contactFields.some(field => lowerKey.includes(field))) {
-                        categories.contact[key] = value;
-                        categorized = true;
+                            // Basit tablo formatı için veriyi düzenle
+                function formatTableData(data) {
+                    if (Array.isArray(data) && data.length > 0) {
+                        // İlk kayıttan tüm sütunları al
+                        const allKeys = Object.keys(data[0]);
+                        
+                        // Tablo başlığını oluştur
+                        let html = '<div class="result-header"><h3>📊 Sorgu Sonuçları (' + data.length + ' kayıt)</h3></div>';
+                        html += '<div class="table-container">';
+                        html += '<table class="result-table">';
+                        html += '<thead><tr>';
+                        
+                        // Sütun başlıkları
+                        allKeys.forEach(key => {
+                            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+                            html += '<th>' + formattedKey + '</th>';
+                        });
+                        html += '</tr></thead><tbody>';
+                        
+                        // Her kayıt için satır oluştur
+                        data.forEach(row => {
+                            html += '<tr>';
+                            allKeys.forEach(key => {
+                                const value = row[key];
+                                html += '<td>' + formatValue(value) + '</td>';
+                            });
+                            html += '</tr>';
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        return html;
+                    } else if (typeof data === 'object' && data !== null) {
+                        // Tek kayıt için tablo
+                        const keys = Object.keys(data);
+                        let html = '<div class="result-header"><h3>📋 Sorgu Sonucu</h3></div>';
+                        html += '<div class="table-container">';
+                        html += '<table class="result-table">';
+                        html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
+                        
+                        keys.forEach(key => {
+                            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+                            html += '<tr><td class="key-column">' + formattedKey + '</td><td class="value-column">' + formatValue(data[key]) + '</td></tr>';
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        return html;
                     }
-                    
-                    if (!categorized) {
-                        categories.other[key] = value;
-                    }
+                    return '<div class="result-header"><h3>❌ Veri bulunamadı</h3></div>';
                 }
-                
-                return categories;
-            }
             
             if (Array.isArray(data) && data.length > 0) {
-                html = '<div class="result-header"><h3>📊 Sorgu Sonuçları (${data.length} kayıt)</h3></div>';
-                
-                // Her kayıt için ayrı bölümler oluştur
-                data.forEach((row, index) => {
-                    const categories = categorizeData(row);
-                    html += `<div class="result-section" style="margin-bottom: 30px;">`;
-                    html += `<h4 style="color: var(--primary); margin-bottom: 15px;">📋 Kayıt ${index + 1}</h4>`;
-                    
-                    // TC Bilgileri
-                    if (Object.keys(categories.tc).length > 0) {
-                        html += `<div class="category-section">`;
-                        html += `<h5 style="color: var(--success); margin: 10px 0;">🆔 TC Kimlik Bilgileri</h5>`;
-                        html += '<table class="result-table">';
-                        html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                        for (const [key, value] of Object.entries(categories.tc)) {
-                            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                            html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                        }
-                        html += '</tbody></table></div>';
-                    }
-                    
-                    // Adres Bilgileri
-                    if (Object.keys(categories.address).length > 0) {
-                        html += `<div class="category-section">`;
-                        html += `<h5 style="color: var(--warning); margin: 10px 0;">🏠 Adres Bilgileri</h5>`;
-                        html += '<table class="result-table">';
-                        html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                        for (const [key, value] of Object.entries(categories.address)) {
-                            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                            html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                        }
-                        html += '</tbody></table></div>';
-                    }
-                    
-                    // Kişisel Bilgiler
-                    if (Object.keys(categories.personal).length > 0) {
-                        html += `<div class="category-section">`;
-                        html += `<h5 style="color: var(--info); margin: 10px 0;">👤 Kişisel Bilgiler</h5>`;
-                        html += '<table class="result-table">';
-                        html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                        for (const [key, value] of Object.entries(categories.personal)) {
-                            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                            html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                        }
-                        html += '</tbody></table></div>';
-                    }
-                    
-                    // İletişim Bilgileri
-                    if (Object.keys(categories.contact).length > 0) {
-                        html += `<div class="category-section">`;
-                        html += `<h5 style="color: var(--primary); margin: 10px 0;">📞 İletişim Bilgileri</h5>`;
-                        html += '<table class="result-table">';
-                        html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                        for (const [key, value] of Object.entries(categories.contact)) {
-                            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                            html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                        }
-                        html += '</tbody></table></div>';
-                    }
-                    
-                    // Diğer Bilgiler
-                    if (Object.keys(categories.other).length > 0) {
-                        html += `<div class="category-section">`;
-                        html += `<h5 style="color: var(--secondary); margin: 10px 0;">📝 Diğer Bilgiler</h5>`;
-                        html += '<table class="result-table">';
-                        html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                        for (const [key, value] of Object.entries(categories.other)) {
-                            const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                            html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                        }
-                        html += '</tbody></table></div>';
-                    }
-                    
-                    html += `</div>`;
-                });
-                
-            } else if (typeof data === 'object' && data !== null) {
-                const categories = categorizeData(data);
-                html = '<div class="result-header"><h3>📋 Sorgu Sonucu</h3></div>';
-                
-                // TC Bilgileri
-                if (Object.keys(categories.tc).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--success); margin: 10px 0;">🆔 TC Kimlik Bilgileri</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.tc)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
-                // Adres Bilgileri
-                if (Object.keys(categories.address).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--warning); margin: 10px 0;">🏠 Adres Bilgileri</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.address)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
-                // Kişisel Bilgiler
-                if (Object.keys(categories.personal).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--warning); margin: 10px 0;">👤 Kişisel Bilgiler</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.personal)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
-                // İletişim Bilgileri
-                if (Object.keys(categories.contact).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--primary); margin: 10px 0;">📞 İletişim Bilgileri</h5>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.contact)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
-                // Diğer Bilgiler
-                if (Object.keys(categories.other).length > 0) {
-                    html += `<div class="category-section">`;
-                    html += `<h5 style="color: var(--secondary); margin: 10px 0;">📝 Diğer Bilgiler</h3>`;
-                    html += '<table class="result-table">';
-                    html += '<thead><tr><th>Alan</th><th>Değer</th></tr></thead><tbody>';
-                    for (const [key, value] of Object.entries(categories.other)) {
-                        const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                        html += `<tr><td class="key-column">${formattedKey}</td><td class="value-column">${formatValue(value)}</td></tr>`;
-                    }
-                    html += '</tbody></table></div>';
-                }
-                
-            } else if (typeof data === 'string') {
+            // Basit tablo formatında sonuçları göster
+            html = formatTableData(data); else if (typeof data === 'string') {
                 html = '<div class="result-header"><h3>📝 Metin Sonucu</h3></div>';
                 html += `<div style="background: rgba(0,0,0,0.1); padding: 20px; border-radius: 10px; white-space: pre-wrap; font-family: monospace;">${data}</div>`;
             } else {
