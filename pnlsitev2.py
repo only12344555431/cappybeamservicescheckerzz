@@ -17,7 +17,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600
 
 USERS_FILE = "users.json"
 SMS_APIS_FILE = "sms_apis.json"
-QUERY_LOGS_FILE = "query_logs.json"
+QUERY_LOGS_FILE = "sorgular.json"
 
 def load_users():
     if not os.path.exists(USERS_FILE):
@@ -298,23 +298,26 @@ LOGIN_HTML = """
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CAPPYBEAM | Giriş Yap</title>
+  <title>CAPPYBEAMSERVICES | Giriş Yap</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #6c5ce7;
-      --primary-dark: #5649c9;
-      --secondary: #a29bfe;
-      --accent: #fd79a8;
-      --dark: #2d3436;
-      --darker: #1e272e;
-      --light: #dfe6e9;
-      --success: #00b894;
-      --warning: #fdcb6e;
-      --danger: #d63031;
-      --gray: #636e72;
-      --light-gray: #b2bec3;
+      --primary: #667eea;
+      --primary-dark: #5a67d8;
+      --secondary: #764ba2;
+      --accent: #f093fb;
+      --dark: #1a202c;
+      --darker: #0f1419;
+      --light: #f7fafc;
+      --success: #48bb78;
+      --warning: #ed8936;
+      --danger: #f56565;
+      --gray: #4a5568;
+      --light-gray: #a0aec0;
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-dark: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
     }
     
     * {
@@ -325,7 +328,7 @@ LOGIN_HTML = """
     }
     
     body {
-      background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+      background: var(--gradient-dark);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -346,7 +349,7 @@ LOGIN_HTML = """
     }
     
     .login-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: var(--gradient-primary);
       padding: 30px 20px;
       text-align: center;
       position: relative;
@@ -439,7 +442,7 @@ LOGIN_HTML = """
     .input-with-icon input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
     }
     
     .input-with-icon input::placeholder {
@@ -449,7 +452,7 @@ LOGIN_HTML = """
     .btn-login {
       width: 100%;
       padding: 15px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: var(--gradient-primary);
       border: none;
       border-radius: 12px;
       color: white;
@@ -457,12 +460,12 @@ LOGIN_HTML = """
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
     }
     
     .btn-login:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.6);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
     }
     
     .btn-login:active {
@@ -527,7 +530,7 @@ LOGIN_HTML = """
       <div class="logo">
         <i class="fas fa-shield-alt"></i>
       </div>
-      <h1>CAPPYBEAM</h1>
+      <h1>CAPPYBEAMSERVICES</h1>
       <p>Premium Sorgu Sistemi</p>
     </div>
     
@@ -573,23 +576,26 @@ REGISTER_HTML = """
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CAPPYBEAM | Kayıt Ol</title>
+  <title>CAPPYBEAMSERVICES | Kayıt Ol</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #6c5ce7;
-      --primary-dark: #5649c9;
-      --secondary: #a29bfe;
-      --accent: #fd79a8;
-      --dark: #2d3436;
-      --darker: #1e272e;
-      --light: #dfe6e9;
-      --success: #00b894;
-      --warning: #fdcb6e;
-      --danger: #d63031;
-      --gray: #636e72;
-      --light-gray: #b2bec3;
+      --primary: #667eea;
+      --primary-dark: #5a67d8;
+      --secondary: #764ba2;
+      --accent: #f093fb;
+      --dark: #1a202c;
+      --darker: #0f1419;
+      --light: #f7fafc;
+      --success: #48bb78;
+      --warning: #ed8936;
+      --danger: #f56565;
+      --gray: #4a5568;
+      --light-gray: #a0aec0;
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-dark: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
     }
     
     * {
@@ -621,7 +627,7 @@ REGISTER_HTML = """
     }
     
     .register-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: var(--gradient-primary);
       padding: 30px 20px;
       text-align: center;
       position: relative;
@@ -714,7 +720,7 @@ REGISTER_HTML = """
     .input-with-icon input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
     }
     
     .input-with-icon input::placeholder {
@@ -724,7 +730,7 @@ REGISTER_HTML = """
     .btn-register {
       width: 100%;
       padding: 15px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: var(--gradient-primary);
       border: none;
       border-radius: 12px;
       color: white;
@@ -732,12 +738,12 @@ REGISTER_HTML = """
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
     }
     
     .btn-register:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.6);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
     }
     
     .btn-register:active {
@@ -838,7 +844,7 @@ REGISTER_HTML = """
         <i class="fas fa-user-plus"></i>
       </div>
       <h1>Yeni Hesap</h1>
-      <p>CAPPYBEAM Premium Sorgu Sistemi</p>
+      <p>CAPPYBEAMSERVICES Premium Sorgu Sistemi</p>
     </div>
     
     <div class="register-form">
@@ -918,32 +924,35 @@ PANEL_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAPPYBEAMSERVİCES | Premium Sorgu Paneli</title>
+    <title>CAPPYBEAMSERVICES | Premium Sorgu Paneli</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6c5ce7;
-            --primary-dark: #5649c9;
-            --primary-light: #7d70e9;
-            --secondary: #a29bfe;
-            --accent: #fd79a8;
-            --dark: #2d3436;
-            --darker: #1e272e;
-            --light: #dfe6e9;
-            --lighter: #f5f6fa;
-            --success: #00b894;
-            --warning: #fdcb6e;
-            --danger: #d63031;
-            --info: #0984e3;
-            --gray: #636e72;
-            --light-gray: #b2bec3;
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --primary-light: #7c3aed;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --dark: #1a202c;
+            --darker: #0f1419;
+            --light: #f7fafc;
+            --lighter: #edf2f7;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --danger: #f56565;
+            --info: #4299e1;
+            --gray: #4a5568;
+            --light-gray: #a0aec0;
             --sidebar-width: 280px;
             --header-height: 70px;
             --border-radius: 12px;
             --transition: all 0.3s ease;
             --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-dark: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
         }
         
         * {
@@ -954,12 +963,34 @@ PANEL_HTML = """
         }
         
         body {
-            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            background: var(--gradient-dark);
             color: var(--light);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+            animation: backgroundFloat 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes backgroundFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(10px) rotate(-1deg); }
         }
         
         /* Header Styles */
@@ -989,12 +1020,12 @@ PANEL_HTML = """
         .logo {
             width: 45px;
             height: 45px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: var(--gradient-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
         
         .logo i {
@@ -1005,10 +1036,16 @@ PANEL_HTML = """
         .brand {
             font-size: 24px;
             font-weight: 700;
-            background: linear-gradient(45deg, var(--light), var(--lighter));
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: 0.5px;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
         
         .header-right {
@@ -1034,12 +1071,12 @@ PANEL_HTML = """
         .user-avatar {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: var(--gradient-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 3px 10px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
         }
         
         .user-avatar i {
@@ -1136,18 +1173,35 @@ PANEL_HTML = """
             border-radius: 8px;
             margin-bottom: 5px;
             font-size: 14.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.3s;
+        }
+        
+        .nav-item:hover::before {
+            left: 100%;
         }
         
         .nav-item:hover {
-            background: rgba(108, 92, 231, 0.1);
+            background: rgba(102, 126, 234, 0.1);
             border-left-color: var(--primary);
             transform: translateX(5px);
         }
         
         .nav-item.active {
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.15) 0%, rgba(86, 73, 201, 0.15) 100%);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
             border-left-color: var(--primary);
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
         }
         
         .nav-item i {
@@ -1181,11 +1235,29 @@ PANEL_HTML = """
             box-shadow: var(--card-shadow);
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .card:hover::before {
+            left: 100%;
         }
         
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(102, 126, 234, 0.3);
         }
         
         .card-header {
@@ -1208,7 +1280,7 @@ PANEL_HTML = """
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(108, 92, 231, 0.1);
+            background: rgba(102, 126, 234, 0.1);
             color: var(--primary);
             font-size: 22px;
         }
@@ -1311,7 +1383,7 @@ PANEL_HTML = """
         .form-input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
         
         .form-input::placeholder {
@@ -1319,18 +1391,35 @@ PANEL_HTML = """
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: var(--gradient-primary);
             color: white;
             align-self: flex-end;
             height: 52px;
             font-size: 16px;
             font-weight: 600;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
         }
         
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
         
         /* Results Container */
@@ -1379,9 +1468,26 @@ PANEL_HTML = """
         }
         
         @keyframes pulse {
-            0% { opacity: 0.6; transform: scale(0.95); }
-            50% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0.6; transform: scale(0.95); }
+            0% { opacity: 0.6; transform: scale(0.95) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1) rotate(180deg); }
+            100% { opacity: 0.6; transform: scale(0.95) rotate(360deg); }
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .result-table {
@@ -1477,7 +1583,7 @@ PANEL_HTML = """
         }
         
         ::-webkit-scrollbar-thumb {
-            background: var(--primary);
+            background: var(--gradient-primary);
             border-radius: 10px;
         }
         
@@ -1516,7 +1622,7 @@ PANEL_HTML = """
         .search-input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
         
         .search-icon {
@@ -1525,6 +1631,179 @@ PANEL_HTML = """
             top: 50%;
             transform: translateY(-50%);
             color: var(--light-gray);
+        }
+        
+        /* History Styles */
+        .history-container {
+            max-width: 100%;
+        }
+        
+        .history-header {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .history-header h3 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .history-header p {
+            color: var(--light-gray);
+            font-size: 14px;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .history-item {
+            background: rgba(45, 52, 54, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .history-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.05), transparent);
+            transition: left 0.5s;
+        }
+        
+        .history-item:hover::before {
+            left: 100%;
+        }
+        
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+        
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .history-user i {
+            color: var(--primary);
+        }
+        
+        .username {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .history-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+        
+        .history-item-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .history-query-type {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--light);
+            font-weight: 500;
+        }
+        
+        .history-query-type i {
+            color: var(--primary);
+        }
+        
+        .history-parameters {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .param-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .param-group label {
+            font-size: 12px;
+            color: var(--light-gray);
+            font-weight: 500;
+        }
+        
+        .param-group span {
+            color: var(--light);
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+        
+        .history-timestamp {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--light-gray);
+            font-size: 13px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .history-timestamp i {
+            color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .history-item-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .history-item-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -1537,7 +1816,7 @@ PANEL_HTML = """
             <div class="logo">
                 <i class="fas fa-shield-alt"></i>
             </div>
-            <div class="brand">CAPPYBEAMSERVİCES</div>
+            <div class="brand">CAPPYBEAMSERVICES</div>
         </div>
         
         <div class="header-right">
@@ -1868,9 +2147,9 @@ PANEL_HTML = """
             <span>TurkNet Sorgu</span>
         </a>
      </a>
-        <a href="#" class="nav-item" onclick="setQuery('discord sunucu: https://discord.gg/cngzsvsaX2')">
+        <a href="#" class="nav-item" onclick="setQuery('discord sunucu: https://discord.gg/AUEA5RDnjM')">
             <i class="fas fa-credit-card"></i>
-            <span>/cappybeamservices</span>
+            <span>CAPPYBEAMSERVICES</span>
         </a>
     </div>
 </div>
@@ -2223,14 +2502,19 @@ PANEL_HTML = """
             const input1 = document.getElementById('input1').value;
             const input2 = document.getElementById('input2').value;
             
-            if (currentQuery === 'dashboard' || currentQuery === 'history') {
+            if (currentQuery === 'dashboard') {
                 document.getElementById('results').innerHTML = `
                     <div style="padding: 20px; text-align: center; color: var(--light-gray);">
                         <i class="fas fa-info-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
-                        <h3>${currentQuery === 'dashboard' ? 'Dashboard' : 'Sorgu Geçmişi'} Sayfası</h3>
+                        <h3>Dashboard Sayfası</h3>
                         <p>Bu sayfa henüz implemente edilmemiştir.</p>
                     </div>
                 `;
+                return;
+            }
+            
+            if (currentQuery === 'history') {
+                loadQueryHistory();
                 return;
             }
             
@@ -2328,6 +2612,95 @@ PANEL_HTML = """
                     <span>Sorgu sonuçları burada görünecek</span>
                 </div>
             `;
+        }
+        
+        function loadQueryHistory() {
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-history"></i>
+                    <span>Sorgu geçmişi yükleniyor...</span>
+                </div>
+            `;
+            
+            fetch("/api/query-logs")
+                .then(response => response.json())
+                .then(data => {
+                    displayQueryHistory(data);
+                })
+                .catch(error => {
+                    showError('Sorgu geçmişi yüklenirken hata oluştu: ' + error.message);
+                });
+        }
+        
+        function displayQueryHistory(logs) {
+            let html = '';
+            
+            if (logs.length === 0) {
+                html = `
+                    <div style="padding: 40px; text-align: center; color: var(--light-gray);">
+                        <i class="fas fa-history" style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <h3>Henüz Sorgu Geçmişi Yok</h3>
+                        <p>İlk sorgunuzu yaparak geçmişinizi oluşturmaya başlayın.</p>
+                    </div>
+                `;
+            } else {
+                html = '<div class="history-container">';
+                html += '<div class="history-header">';
+                html += '<h3><i class="fas fa-history"></i> Sorgu Geçmişi</h3>';
+                html += '<p>Toplam ' + logs.length + ' sorgu kaydı</p>';
+                html += '</div>';
+                
+                html += '<div class="history-list">';
+                
+                logs.reverse().forEach((log, index) => {
+                    const statusIcon = log.result_status === 'success' ? 'fas fa-check-circle' : 'fas fa-times-circle';
+                    const statusColor = log.result_status === 'success' ? 'var(--success)' : 'var(--danger)';
+                    const statusText = log.result_status === 'success' ? 'Başarılı' : 'Başarısız';
+                    
+                    html += `
+                        <div class="history-item">
+                            <div class="history-item-header">
+                                <div class="history-user">
+                                    <i class="fas fa-user"></i>
+                                    <span class="username">${log.username}</span>
+                                </div>
+                                <div class="history-status" style="color: ${statusColor}">
+                                    <i class="${statusIcon}"></i>
+                                    <span>${statusText}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="history-item-content">
+                                <div class="history-query-type">
+                                    <i class="fas fa-search"></i>
+                                    <span>${log.query_type}</span>
+                                </div>
+                                
+                                <div class="history-parameters">
+                                    <div class="param-group">
+                                        <label>Parametre 1:</label>
+                                        <span>${log.parameters.val1 || 'Yok'}</span>
+                                    </div>
+                                    <div class="param-group">
+                                        <label>Parametre 2:</label>
+                                        <span>${log.parameters.val2 || 'Yok'}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="history-timestamp">
+                                    <i class="fas fa-clock"></i>
+                                    <span>${log.timestamp}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                html += '</div>';
+            }
+            
+            document.getElementById('results').innerHTML = html;
         }
         
         function logout() {
@@ -2561,8 +2934,8 @@ def manage_sms_apis():
 @login_required
 def get_query_logs():
     logs = load_query_logs()
-    user_logs = [log for log in logs if log["username"] == session["user"]]
-    return jsonify(user_logs[-50:])
+    # Tüm kullanıcıların sorgu geçmişini göster (son 100 kayıt)
+    return jsonify(logs[-100:])
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
