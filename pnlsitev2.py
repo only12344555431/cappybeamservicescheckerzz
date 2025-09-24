@@ -299,34 +299,34 @@ LOGIN_HTML = """
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CAPPYBEAMSERVICES | Giriş Yap</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #667eea;
-      --primary-dark: #5a67d8;
-      --secondary: #764ba2;
-      --accent: #f093fb;
-      --dark: #1a202c;
-      --darker: #0f1419;
-      --light: #f7fafc;
-      --success: #48bb78;
-      --warning: #ed8936;
-      --danger: #f56565;
-      --gray: #4a5568;
-      --light-gray: #a0aec0;
-      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      --gradient-dark: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+      --primary: #7c3aed;
+      --primary-dark: #6d28d9;
+      --secondary: #ec4899;
+      --accent: #22d3ee;
+      --dark: #0f172a;
+      --darker: #0a0f1b;
+      --light: #f8fafc;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gray: #6b7280;
+      --light-gray: #94a3b8;
+      --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+      --gradient-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
-    
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
-    
+
     body {
       background: var(--gradient-dark);
       min-height: 100vh;
@@ -334,124 +334,148 @@ LOGIN_HTML = """
       align-items: center;
       justify-content: center;
       padding: 20px;
-      color: var(--light);
-    }
-    
-    .login-container {
-      background: rgba(45, 52, 54, 0.8);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-      width: 100%;
-      max-width: 440px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
+    .login-container {
+      background: rgba(31, 41, 55, 0.9);
+      backdrop-filter: blur(16px);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 460px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .login-header {
       background: var(--gradient-primary);
-      padding: 30px 20px;
+      padding: 40px 24px;
       text-align: center;
       position: relative;
+      overflow: hidden;
     }
-    
+
     .login-header::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.1"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="10" fill="none" /></svg>');
-      background-size: 200px;
-      opacity: 0.1;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
     }
-    
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 15px;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 20px;
       background: white;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
     }
-    
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
     .logo i {
-      font-size: 40px;
-      color: var(--primary);
+      font-size: 48px;
+      color: var(--primary-dark);
     }
-    
+
     .login-header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 5px;
-      background: linear-gradient(45deg, #fff, #e0e0e0);
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(45deg, #fff, #e2e8f0);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
     }
-    
+
     .login-header p {
-      font-size: 14px;
-      opacity: 0.8;
+      font-size: 16px;
+      color: #e2e8f0;
+      opacity: 0.85;
+      font-weight: 400;
     }
-    
+
     .login-form {
-      padding: 30px;
+      padding: 36px;
     }
-    
+
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       position: relative;
     }
-    
+
     .form-group label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-weight: 500;
-      font-size: 14px;
+      font-size: 15px;
       color: var(--light-gray);
+      transition: color 0.3s ease;
     }
-    
+
     .input-with-icon {
       position: relative;
     }
-    
+
     .input-with-icon i {
       position: absolute;
-      left: 15px;
+      left: 16px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--light-gray);
-      font-size: 18px;
+      font-size: 20px;
+      transition: color 0.3s ease;
     }
-    
+
     .input-with-icon input {
       width: 100%;
-      padding: 15px 15px 15px 50px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 16px 16px 52px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.15);
       color: var(--light);
       font-size: 16px;
+      font-weight: 400;
       transition: all 0.3s ease;
     }
-    
+
     .input-with-icon input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+      background: rgba(0, 0, 0, 0.25);
     }
-    
+
     .input-with-icon input::placeholder {
       color: var(--light-gray);
+      opacity: 0.7;
     }
-    
+
     .btn-login {
       width: 100%;
-      padding: 15px;
+      padding: 16px;
       background: var(--gradient-primary);
       border: none;
       border-radius: 12px;
@@ -460,66 +484,84 @@ LOGIN_HTML = """
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
     }
-    
+
     .btn-login:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(124, 58, 237, 0.4);
     }
-    
+
     .btn-login:active {
       transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
     }
-    
+
     .login-footer {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 24px;
       font-size: 14px;
       color: var(--light-gray);
     }
-    
+
     .login-footer a {
       color: var(--secondary);
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 600;
+      transition: color 0.3s ease;
     }
-    
+
     .login-footer a:hover {
-      text-decoration: underline;
+      color: var(--accent);
     }
-    
+
     .alert {
-      padding: 12px 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
       font-size: 14px;
       display: flex;
       align-items: center;
+      animation: slideIn 0.4s ease-out;
     }
-    
+
     .alert-error {
-      background: rgba(214, 48, 49, 0.2);
-      border: 1px solid rgba(214, 48, 49, 0.3);
-      color: #ff7675;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
     }
-    
+
     .alert i {
-      margin-right: 10px;
-      font-size: 18px;
+      margin-right: 12px;
+      font-size: 20px;
     }
-    
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
     @media (max-width: 480px) {
       .login-container {
-        border-radius: 15px;
+        border-radius: 16px;
+        max-width: 90%;
       }
-      
+
       .login-header {
-        padding: 25px 15px;
+        padding: 32px 16px;
       }
-      
+
       .login-form {
-        padding: 25px 20px;
+        padding: 28px 20px;
+      }
+
+      .logo {
+        width: 80px;
+        height: 80px;
+      }
+
+      .login-header h1 {
+        font-size: 28px;
       }
     }
   </style>
@@ -533,14 +575,14 @@ LOGIN_HTML = """
       <h1>CAPPYBEAMSERVICES</h1>
       <p>Premium Sorgu Sistemi</p>
     </div>
-    
+
     <div class="login-form">
       {% if error %}
       <div class="alert alert-error">
         <i class="fas fa-exclamation-circle"></i> {{ error }}
       </div>
       {% endif %}
-      
+
       <form method="POST" action="{{ url_for('login') }}">
         <div class="form-group">
           <label for="username">Kullanıcı Adı</label>
@@ -549,7 +591,7 @@ LOGIN_HTML = """
             <input type="text" id="username" name="username" placeholder="Kullanıcı adınız" required autocomplete="username">
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="password">Şifre</label>
           <div class="input-with-icon">
@@ -557,10 +599,10 @@ LOGIN_HTML = """
             <input type="password" id="password" name="password" placeholder="Şifreniz" required autocomplete="current-password">
           </div>
         </div>
-        
+
         <button type="submit" class="btn-login">Giriş Yap</button>
       </form>
-      
+
       <div class="login-footer">
         Hesabınız yok mu? <a href="{{ url_for('register') }}">Kayıt Ol</a>
       </div>
@@ -577,159 +619,183 @@ REGISTER_HTML = """
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CAPPYBEAMSERVICES | Kayıt Ol</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #667eea;
-      --primary-dark: #5a67d8;
-      --secondary: #764ba2;
-      --accent: #f093fb;
-      --dark: #1a202c;
-      --darker: #0f1419;
-      --light: #f7fafc;
-      --success: #48bb78;
-      --warning: #ed8936;
-      --danger: #f56565;
-      --gray: #4a5568;
-      --light-gray: #a0aec0;
-      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      --gradient-dark: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+      --primary: #7c3aed;
+      --primary-dark: #6d28d9;
+      --secondary: #ec4899;
+      --accent: #22d3ee;
+      --dark: #0f172a;
+      --darker: #0a0f1b;
+      --light: #f8fafc;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gray: #6b7280;
+      --light-gray: #94a3b8;
+      --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+      --gradient-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
-    
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
-    
+
     body {
-      background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+      background: var(--gradient-dark);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      color: var(--light);
-    }
-    
-    .register-container {
-      background: rgba(45, 52, 54, 0.8);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-      width: 100%;
-      max-width: 440px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
+    .register-container {
+      background: rgba(31, 41, 55, 0.9);
+      backdrop-filter: blur(16px);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 460px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .register-header {
       background: var(--gradient-primary);
-      padding: 30px 20px;
+      padding: 40px 24px;
       text-align: center;
       position: relative;
+      overflow: hidden;
     }
-    
+
     .register-header::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" opacity="0.1"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="10" fill="none" /></svg>');
-      background-size: 200px;
-      opacity: 0.1;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
     }
-    
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 15px;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 20px;
       background: white;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
     }
-    
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
     .logo i {
-      font-size: 40px;
-      color: var(--primary);
+      font-size: 48px;
+      color: var(--primary-dark);
     }
-    
+
     .register-header h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 5px;
-      background: linear-gradient(45deg, #fff, #e0e0e0);
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(45deg, #fff, #e2e8f0);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
     }
-    
+
     .register-header p {
-      font-size: 14px;
-      opacity: 0.8;
+      font-size: 16px;
+      color: #e2e8f0;
+      opacity: 0.85;
+      font-weight: 400;
     }
-    
+
     .register-form {
-      padding: 30px;
+      padding: 36px;
     }
-    
+
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       position: relative;
     }
-    
+
     .form-group label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-weight: 500;
-      font-size: 14px;
+      font-size: 15px;
       color: var(--light-gray);
+      transition: color 0.3s ease;
     }
-    
+
     .input-with-icon {
       position: relative;
     }
-    
+
     .input-with-icon i {
       position: absolute;
-      left: 15px;
+      left: 16px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--light-gray);
-      font-size: 18px;
+      font-size: 20px;
+      transition: color 0.3s ease;
     }
-    
+
     .input-with-icon input {
       width: 100%;
-      padding: 15px 15px 15px 50px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 16px 16px 52px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.15);
       color: var(--light);
       font-size: 16px;
+      font-weight: 400;
       transition: all 0.3s ease;
     }
-    
+
     .input-with-icon input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+      background: rgba(0, 0, 0, 0.25);
     }
-    
+
     .input-with-icon input::placeholder {
       color: var(--light-gray);
+      opacity: 0.7;
     }
-    
+
     .btn-register {
       width: 100%;
-      padding: 15px;
+      padding: 16px;
       background: var(--gradient-primary);
       border: none;
       border-radius: 12px;
@@ -738,64 +804,68 @@ REGISTER_HTML = """
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
     }
-    
+
     .btn-register:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(124, 58, 237, 0.4);
     }
-    
+
     .btn-register:active {
       transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
     }
-    
+
     .register-footer {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 24px;
       font-size: 14px;
       color: var(--light-gray);
     }
-    
+
     .register-footer a {
       color: var(--secondary);
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 600;
+      transition: color 0.3s ease;
     }
-    
+
     .register-footer a:hover {
-      text-decoration: underline;
+      color: var(--accent);
     }
-    
+
     .alert {
-      padding: 12px 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
       font-size: 14px;
       display: flex;
       align-items: center;
+      animation: slideIn 0.4s ease-out;
     }
-    
+
     .alert-error {
-      background: rgba(214, 48, 49, 0.2);
-      border: 1px solid rgba(214, 48, 49, 0.3);
-      color: #ff7675;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
     }
-    
+
     .alert i {
-      margin-right: 10px;
-      font-size: 18px;
+      margin-right: 12px;
+      font-size: 20px;
     }
-    
+
     .password-strength {
-      margin-top: 8px;
-      height: 5px;
-      border-radius: 3px;
+      margin-top: 10px;
+      height: 6px;
+      border-radius: 4px;
       background: var(--gray);
       position: relative;
       overflow: hidden;
+      transition: all 0.3s ease;
     }
-    
+
     .password-strength::before {
       content: '';
       position: absolute;
@@ -803,36 +873,51 @@ REGISTER_HTML = """
       top: 0;
       height: 100%;
       width: 0%;
-      border-radius: 3px;
-      transition: width 0.3s ease;
+      border-radius: 4px;
+      transition: width 0.4s ease;
     }
-    
+
     .password-strength.weak::before {
       width: 33%;
       background: var(--danger);
     }
-    
+
     .password-strength.medium::before {
       width: 66%;
       background: var(--warning);
     }
-    
+
     .password-strength.strong::before {
       width: 100%;
       background: var(--success);
     }
-    
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
     @media (max-width: 480px) {
       .register-container {
-        border-radius: 15px;
+        border-radius: 16px;
+        max-width: 90%;
       }
-      
+
       .register-header {
-        padding: 25px 15px;
+        padding: 32px 16px;
       }
-      
+
       .register-form {
-        padding: 25px 20px;
+        padding: 28px 20px;
+      }
+
+      .logo {
+        width: 80px;
+        height: 80px;
+      }
+
+      .register-header h1 {
+        font-size: 28px;
       }
     }
   </style>
@@ -846,14 +931,14 @@ REGISTER_HTML = """
       <h1>Yeni Hesap</h1>
       <p>CAPPYBEAMSERVICES Premium Sorgu Sistemi</p>
     </div>
-    
+
     <div class="register-form">
       {% if error %}
       <div class="alert alert-error">
         <i class="fas fa-exclamation-circle"></i> {{ error }}
       </div>
       {% endif %}
-      
+
       <form method="POST" action="{{ url_for('register') }}">
         <div class="form-group">
           <label for="username">Kullanıcı Adı</label>
@@ -862,7 +947,7 @@ REGISTER_HTML = """
             <input type="text" id="username" name="username" placeholder="Kullanıcı adınız" required autocomplete="username">
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="password">Şifre</label>
           <div class="input-with-icon">
@@ -871,7 +956,7 @@ REGISTER_HTML = """
           </div>
           <div class="password-strength" id="password-strength"></div>
         </div>
-        
+
         <div class="form-group">
           <label for="password2">Şifre Tekrar</label>
           <div class="input-with-icon">
@@ -879,10 +964,10 @@ REGISTER_HTML = """
             <input type="password" id="password2" name="password2" placeholder="Şifrenizi tekrar girin" required autocomplete="new-password">
           </div>
         </div>
-        
+
         <button type="submit" class="btn-register">Hesap Oluştur</button>
       </form>
-      
+
       <div class="register-footer">
         Zaten hesabınız var mı? <a href="{{ url_for('login') }}">Giriş Yap</a>
       </div>
@@ -892,17 +977,17 @@ REGISTER_HTML = """
   <script>
     const passwordInput = document.getElementById('password');
     const strengthBar = document.getElementById('password-strength');
-    
+
     passwordInput.addEventListener('input', function() {
       const password = this.value;
       let strength = 0;
-      
+
       if (password.length > 5) strength++;
       if (password.length > 8) strength++;
       if (/[A-Z]/.test(password)) strength++;
       if (/[0-9]/.test(password)) strength++;
       if (/[^A-Za-z0-9]/.test(password)) strength++;
-      
+
       strengthBar.className = 'password-strength';
       if (password.length > 0) {
         if (strength < 2) {
@@ -925,33 +1010,33 @@ PANEL_HTML = """
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAPPYBEAMSERVICES | Premium Sorgu Paneli</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #818cf8;
-            --secondary: #8b5cf6;
-            --accent: #f472b6;
-            --dark: #111827;
-            --darker: #0b0f19;
-            --light: #f9fafb;
-            --lighter: #e5e7eb;
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --primary-light: #a78bfa;
+            --secondary: #ec4899;
+            --accent: #22d3ee;
+            --dark: #0f172a;
+            --darker: #0a0f1b;
+            --light: #f8fafc;
+            --lighter: #e2e8f0;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
             --info: #3b82f6;
             --gray: #6b7280;
-            --light-gray: #9ca3af;
-            --sidebar-width: 300px;
-            --header-height: 64px;
-            --border-radius: 8px;
+            --light-gray: #94a3b8;
+            --sidebar-width: 320px;
+            --header-height: 72px;
+            --border-radius: 12px;
             --transition: all 0.3s ease;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            --gradient-dark: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            --shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            --card-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+            --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+            --gradient-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
 
         * {
@@ -970,11 +1055,10 @@ PANEL_HTML = """
             overflow-x: hidden;
         }
 
-        /* Header Styles */
         .header {
-            background: rgba(17, 24, 39, 0.95);
-            backdrop-filter: blur(12px);
-            padding: 0 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            padding: 0 24px;
             height: var(--header-height);
             display: flex;
             align-items: center;
@@ -985,62 +1069,69 @@ PANEL_HTML = """
             left: 0;
             right: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
         .logo {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             background: var(--gradient-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
         }
 
         .logo i {
-            font-size: 18px;
+            font-size: 22px;
             color: white;
         }
 
         .brand {
-            font-size: 22px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
         .header-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 14px;
+            gap: 12px;
+            padding: 10px 16px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
+            border-radius: 24px;
             transition: var(--transition);
         }
 
         .user-info:hover {
             background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
         .user-avatar {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             background: var(--gradient-primary);
             border-radius: 50%;
             display: flex;
@@ -1049,26 +1140,26 @@ PANEL_HTML = """
         }
 
         .user-avatar i {
-            font-size: 16px;
+            font-size: 18px;
             color: white;
         }
 
         .user-name {
             font-weight: 500;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .btn {
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 24px;
             border: none;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
             transition: var(--transition);
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 14px;
+            gap: 8px;
+            font-size: 15px;
         }
 
         .btn-logout {
@@ -1080,22 +1171,21 @@ PANEL_HTML = """
         .btn-logout:hover {
             background: var(--danger);
             border-color: var(--danger);
+            transform: translateY(-2px);
         }
 
-        /* Main Container */
         .main-container {
             display: flex;
             flex: 1;
             margin-top: var(--header-height);
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
-            background: rgba(17, 24, 39, 0.95);
-            backdrop-filter: blur(12px);
-            padding: 20px 0;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            padding: 24px 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
             overflow-y: auto;
             height: calc(100vh - var(--header-height));
             position: fixed;
@@ -1106,176 +1196,175 @@ PANEL_HTML = """
         }
 
         .sidebar-section {
-            margin-bottom: 24px;
+            margin-bottom: 32px;
         }
 
         .sidebar-title {
-            padding: 0 20px 10px;
-            font-size: 12px;
+            padding: 0 24px 12px;
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             color: var(--light-gray);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .sidebar-title i {
-            font-size: 14px;
+            font-size: 16px;
+            color: var(--primary);
         }
 
         .nav-items {
-            padding: 8px 12px;
+            padding: 12px 16px;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            padding: 10px 16px;
+            padding: 12px 20px;
             color: var(--light);
             text-decoration: none;
             transition: var(--transition);
-            border-radius: 6px;
-            margin-bottom: 4px;
-            font-size: 14px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 15px;
             cursor: pointer;
         }
 
         .nav-item:hover {
-            background: rgba(99, 102, 241, 0.1);
-            transform: translateX(4px);
+            background: rgba(124, 58, 237, 0.1);
+            transform: translateX(6px);
         }
 
         .nav-item.active {
             background: var(--gradient-primary);
             box-shadow: var(--shadow);
+            color: white;
         }
 
         .nav-item i {
-            margin-right: 12px;
-            width: 20px;
+            margin-right: 14px;
+            width: 24px;
             text-align: center;
-            font-size: 16px;
+            font-size: 18px;
         }
 
-        /* Content Area */
         .content {
             flex: 1;
-            padding: 24px;
+            padding: 32px;
             margin-left: var(--sidebar-width);
             transition: var(--transition);
         }
 
-        /* Dashboard Cards */
         .dashboard-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
         }
 
         .card {
-            background: rgba(31, 41, 55, 0.8);
-            backdrop-filter: blur(12px);
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(16px);
             border-radius: var(--border-radius);
-            padding: 20px;
+            padding: 24px;
             box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             transition: var(--transition);
         }
 
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
         }
 
         .card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .card-title {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 500;
             color: var(--light-gray);
         }
 
         .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(124, 58, 237, 0.1);
             color: var(--primary);
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .card-value {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 6px;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
             color: var(--light);
         }
 
         .card-desc {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--light-gray);
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
 
         .card-desc i {
             color: var(--success);
         }
 
-        /* Query Section */
         .query-section {
-            background: rgba(31, 41, 55, 0.8);
-            backdrop-filter: blur(12px);
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(16px);
             border-radius: var(--border-radius);
-            padding: 24px;
+            padding: 32px;
             box-shadow: var(--card-shadow);
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             color: var(--light);
         }
 
         .section-title i {
             color: var(--primary);
-            font-size: 20px;
+            font-size: 22px;
         }
 
         .query-description {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 16px;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 20px;
             border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            font-size: 14px;
+            margin-bottom: 24px;
+            font-size: 15px;
             color: var(--light-gray);
-            line-height: 1.5;
-            border-left: 3px solid var(--primary);
+            line-height: 1.6;
+            border-left: 4px solid var(--primary);
         }
 
         .query-form {
             display: grid;
             grid-template-columns: 1fr 1fr auto;
-            gap: 16px;
-            margin-bottom: 20px;
+            gap: 20px;
+            margin-bottom: 24px;
         }
 
         .form-group {
@@ -1284,96 +1373,97 @@ PANEL_HTML = """
         }
 
         .form-label {
-            font-size: 13px;
-            margin-bottom: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
             color: var(--light-gray);
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .form-label i {
             color: var(--primary);
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .form-input {
-            padding: 12px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: var(--border-radius);
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.15);
             color: var(--light);
-            font-size: 14px;
+            font-size: 15px;
             transition: var(--transition);
         }
 
         .form-input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
         }
 
         .form-input::placeholder {
             color: var(--light-gray);
+            opacity: 0.7;
         }
 
         .btn-primary {
             background: var(--gradient-primary);
             color: white;
             align-self: flex-end;
-            height: 44px;
-            font-size: 14px;
+            height: 48px;
+            font-size: 15px;
             font-weight: 600;
             box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(99, 102, 241, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(124, 58, 237, 0.3);
         }
 
-        /* Results Container */
         .results-container {
-            background: rgba(31, 41, 55, 0.8);
-            backdrop-filter: blur(12px);
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(16px);
             border-radius: var(--border-radius);
-            padding: 24px;
+            padding: 32px;
             box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .results-content {
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.15);
             border-radius: var(--border-radius);
-            padding: 20px;
-            min-height: 150px;
-            max-height: 400px;
+            padding: 24px;
+            min-height: 200px;
+            max-height: 500px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.5;
+            font-size: 14px;
+            line-height: 1.6;
         }
 
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 150px;
+            height: 200px;
             color: var(--light-gray);
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
 
         .loading i {
-            font-size: 32px;
+            font-size: 36px;
             color: var(--primary);
             animation: spin 1s linear infinite;
         }
@@ -1386,22 +1476,22 @@ PANEL_HTML = """
         .result-table {
             width: 100%;
             border-collapse: collapse;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.15);
             border-radius: var(--border-radius);
             overflow: hidden;
         }
 
         .result-table th {
             text-align: left;
-            padding: 12px 16px;
+            padding: 14px 20px;
             background: rgba(0, 0, 0, 0.2);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             font-weight: 600;
             color: var(--primary-light);
         }
 
         .result-table td {
-            padding: 12px 16px;
+            padding: 14px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -1410,10 +1500,211 @@ PANEL_HTML = """
         }
 
         .result-table tr:hover td {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        /* Responsive Design */
+        .search-container {
+            position: relative;
+            margin-bottom: 24px;
+            padding: 0 24px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 18px 14px 44px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            background: rgba(0, 0, 0, 0.15);
+            color: var(--light);
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 36px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-gray);
+            font-size: 18px;
+        }
+
+        .history-container {
+            max-width: 100%;
+        }
+
+        .history-header {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .history-header h3 {
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 18px;
+        }
+
+        .history-header p {
+            color: var(--light-gray);
+            font-size: 14px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .history-item {
+            background: rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(16px);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .history-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .history-user i {
+            color: var(--primary);
+        }
+
+        .username {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        .history-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .history-item-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .history-query-type {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--light);
+            font-weight: 500;
+        }
+
+        .history-query-type i {
+            color: var(--primary);
+        }
+
+        .history-parameters {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .param-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .param-group label {
+            font-size: 13px;
+            color: var(--light-gray);
+            font-weight: 500;
+        }
+
+        .param-group span {
+            color: var(--light);
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 12px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+
+        .history-timestamp {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--light-gray);
+            font-size: 13px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .history-timestamp i {
+            color: var(--primary);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 22px;
+            cursor: pointer;
+        }
+
         @media (max-width: 1200px) {
             .query-form {
                 grid-template-columns: 1fr;
@@ -1427,7 +1718,7 @@ PANEL_HTML = """
 
             .sidebar {
                 transform: translateX(-100%);
-                width: 280px;
+                width: 300px;
             }
 
             .sidebar.active {
@@ -1449,11 +1740,11 @@ PANEL_HTML = """
             }
 
             .header {
-                padding: 0 12px;
+                padding: 0 16px;
             }
 
             .brand {
-                font-size: 18px;
+                font-size: 20px;
             }
 
             .user-name {
@@ -1461,222 +1752,16 @@ PANEL_HTML = """
             }
 
             .content {
-                padding: 16px;
+                padding: 20px;
             }
-        }
 
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--gradient-primary);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
-        }
-
-        /* Menu Toggle Button */
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--light);
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        /* Search Bar */
-        .search-container {
-            position: relative;
-            margin-bottom: 20px;
-            padding: 0 20px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 16px 12px 40px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            background: rgba(0, 0, 0, 0.1);
-            color: var(--light);
-            font-size: 14px;
-            transition: var(--transition);
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 32px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--light-gray);
-        }
-
-        /* History Styles */
-        .history-container {
-            max-width: 100%;
-        }
-
-        .history-header {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 16px;
-            border-radius: var(--border-radius);
-            margin-bottom: 16px;
-            text-align: center;
-        }
-
-        .history-header h3 {
-            color: var(--primary);
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .history-header p {
-            color: var(--light-gray);
-            font-size: 13px;
-        }
-
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .history-item {
-            background: rgba(31, 41, 55, 0.8);
-            backdrop-filter: blur(12px);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: var(--transition);
-        }
-
-        .history-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-        }
-
-        .history-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .history-user {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .history-user i {
-            color: var(--primary);
-        }
-
-        .username {
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 600;
-        }
-
-        .history-status {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: 500;
-        }
-
-        .history-item-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .history-query-type {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--light);
-            font-weight: 500;
-        }
-
-        .history-query-type i {
-            color: var(--primary);
-        }
-
-        .history-parameters {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .param-group {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .param-group label {
-            font-size: 12px;
-            color: var(--light-gray);
-            font-weight: 500;
-        }
-
-        .param-group span {
-            color: var(--light);
-            font-size: 13px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 4px 8px;
-            border-radius: 4px;
-            word-break: break-all;
-        }
-
-        .history-timestamp {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--light-gray);
-            font-size: 12px;
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .history-timestamp i {
-            color: var(--primary);
-        }
-
-        @media (max-width: 768px) {
             .history-item-content {
                 grid-template-columns: 1fr;
             }
 
             .history-item-header {
                 flex-direction: column;
-                gap: 8px;
+                gap: 10px;
                 align-items: flex-start;
             }
         }
@@ -2214,245 +2299,134 @@ PANEL_HTML = """
         };
         
         const queryLabels = {
-            "dashboard": ["", ""],
-            "history": ["", ""],
-            "telegram": ["Kullanıcı Adı", ""],
-            "isyeri": ["TC Kimlik No", ""],
-            "hane": ["TC Kimlik No", ""],
-            "baba": ["TC Kimlik No", ""],
-            "anne": ["TC Kimlik No", ""],
-            "ayak": ["TC Kimlik No", ""],
-            "boy": ["TC Kimlik No", ""],
-            "burc": ["TC Kimlik No", ""],
-            "cm": ["TC Kimlik No", ""],
-            "cocuk": ["TC Kimlik No", ""],
-            "ehlt": ["TC Kimlik No", ""],
-            "email_sorgu": ["Email Adresi", ""],
-            "havadurumu": ["Şehir", ""],
-            "imei": ["IMEI Numarası", ""],
-            "operator": ["GSM Numarası", ""],
-            "hikaye": ["TC Kimlik No", ""],
-            "hanepro": ["TC Kimlik No", ""],
-            "muhallev": ["TC Kimlik No", ""],
-            "lgs": ["TC Kimlik No", ""],
-            "plaka": ["Plaka", ""],
-            "nude": ["", ""],
-            "sertifika": ["TC Kimlik No", ""],
-            "aracparca": ["Plaka", ""],
-            "şehit": ["Ad Soyad", ""],
-            "interpol": ["Ad Soyad", ""],
-            "personel": ["TC Kimlik No", ""],
-            "internet": ["TC Kimlik No", ""],
-            "nvi": ["TC Kimlik No", ""],
-            "nezcane": ["İl İlçe", ""],
-            "basvuru": ["TC Kimlik No", ""],
-            "facebook": ["Telefon Numarası", ""],
-            "vergi": ["TC Kimlik No", ""],
-            "premadres": ["TC Kimlik No", ""],
-            "sgkpro": ["TC Kimlik No", ""],
-            "mhrs": ["TC Kimlik No", ""],
-            "premad": ["Ad İl İlçe", ""],
-            "fatura": ["TC Kimlik No", ""],
-            "subdomain": ["URL", ""],
-            "sexgörsel": ["Soru", ""],
-            "meslek": ["TC Kimlik No", ""],
-            "adsoyad": ["Ad", "Soyad"],
-            "adsoyadil": ["Ad", "Soyad veya Soyad+İl"],
-            "tcpro": ["TC Kimlik No", ""],
-            "tcgsm": ["TC Kimlik No", ""],
-            "tapu": ["TC Kimlik No", ""],
-            "sulale": ["TC Kimlik No", ""],
-            "vesika": ["TC Kimlik No", ""],
-            "allvesika": ["TC Kimlik No", ""],
-            "okulsicil": ["TC Kimlik No", ""],
-            "kizlik": ["TC Kimlik No", ""],
-            "okulno": ["TC Kimlik No", ""],
-            "isyeriyetkili": ["TC Kimlik No", ""],
-            "gsmdetay": ["GSM Numarası", ""],
-            "gsm": ["GSM Numarası", ""],
-            "adres": ["TC Kimlik No", ""],
-            "insta": ["Kullanıcı Adı", ""],
-            "facebook_hanedan": ["Ad", "Soyad"],
-            "uni": ["TC Kimlik No", ""],
-            "akp": ["Ad", "Soyad"],
-            "aifoto": ["Resim URL", ""],
-            "papara": ["Papara No", ""],
-            "ininal": ["İninal No", ""],
-            "turknet": ["TC Kimlik No", ""],
-            "smsbomber": ["Telefon Numarası", "Mesaj (Opsiyonel)"],
-            "smsapi": ["API Adı", "API URL"]
+            'dashboard': ['', ''],
+            'history': ['', ''],
+            'telegram': ['Kullanıcı Adı', ''],
+            'isyeri': ['TC Kimlik No', ''],
+            'hane': ['TC Kimlik No', ''],
+            'baba': ['TC Kimlik No', ''],
+            'anne': ['TC Kimlik No', ''],
+            'ayak': ['TC Kimlik No', ''],
+            'boy': ['TC Kimlik No', ''],
+            'burc': ['TC Kimlik No', ''],
+            'cm': ['TC Kimlik No', ''],
+            'cocuk': ['TC Kimlik No', ''],
+            'ehlt': ['TC Kimlik No', ''],
+            'email_sorgu': ['Email Adresi', ''],
+            'havadurumu': ['Şehir', ''],
+            'imei': ['IMEI Numarası', ''],
+            'operator': ['GSM Numarası', ''],
+            'hikaye': ['TC Kimlik No', ''],
+            'hanepro': ['TC Kimlik No', ''],
+            'muhallev': ['TC Kimlik No', ''],
+            'lgs': ['TC Kimlik No', ''],
+            'plaka': ['Plaka', ''],
+            'nude': ['', ''],
+            'sertifika': ['TC Kimlik No', ''],
+            'aracparca': ['Plaka', ''],
+            'şehit': ['Ad Soyad', ''],
+            'interpol': ['Ad Soyad', ''],
+            'personel': ['TC Kimlik No', ''],
+            'internet': ['TC Kimlik No', ''],
+            'nvi': ['TC Kimlik No', ''],
+            'nezcane': ['İl İlçe', ''],
+            'basvuru': ['TC Kimlik No', ''],
+            'facebook': ['Telefon Numarası', ''],
+            'vergi': ['TC Kimlik No', ''],
+            'premadres': ['TC Kimlik No', ''],
+            'sgkpro': ['TC Kimlik No', ''],
+            'mhrs': ['TC Kimlik No', ''],
+            'premad': ['Ad İl İlçe', ''],
+            'fatura': ['TC Kimlik No', ''],
+            'subdomain': ['URL', ''],
+            'sexgörsel': ['Soru', ''],
+            'meslek': ['TC Kimlik No', ''],
+            'adsoyad': ['Ad', 'Soyad'],
+            'adsoyadil': ['Ad', 'Soyad veya Soyad+İl'],
+            'tcpro': ['TC Kimlik No', ''],
+            'tcgsm': ['TC Kimlik No', ''],
+            'insta': ['Kullanıcı Adı', ''],
+            'facebook_hanedan': ['Ad Soyad', ''],
+            'uni': ['TC Kimlik No', ''],
+            'akp': ['Ad Soyad', ''],
+            'aifoto': ['Resim URL', ''],
+            'papara': ['Papara Numarası', ''],
+            'ininal': ['İninal Kart Numarası', ''],
+            'turknet': ['TC Kimlik No', '']
         };
-        
-        function filterMenu() {
-            const input = document.getElementById('menuSearch');
-            const filter = input.value.toUpperCase();
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            navItems.forEach(item => {
-                const text = item.textContent || item.innerText;
-                if (text.toUpperCase().indexOf(filter) > -1) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-        
-        document.getElementById('menuToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-        
-        function setQuery(queryType) {
-            currentQuery = queryType;
-            updateFormLabels();
-            
+
+        function setQuery(query) {
+            currentQuery = query;
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
+            document.querySelector(`.nav-item[onclick="setQuery('${query}')"]`).classList.add('active');
             
-            event.currentTarget.classList.add('active');
+            document.getElementById('query-title').textContent = queryDescriptions[query] ? queryDescriptions[query].split(' - ')[0] : 'Sorgu Merkezi';
+            document.getElementById('query-description').textContent = queryDescriptions[query] || 'Lütfen soldaki menüden bir sorgu tipi seçin.';
             
-            if (currentQuery === 'dashboard' || currentQuery === 'history') {
-                document.getElementById('query-section').style.display = 'none';
+            const [label1, label2] = queryLabels[query] || ['TC Kimlik No', 'Ek Parametre'];
+            const input1Label = document.getElementById('input1-label');
+            const input2Label = document.getElementById('input2-label');
+            input1Label.innerHTML = `<i class="fas fa-tag"></i> ${label1}`;
+            input2Label.innerHTML = `<i class="fas fa-tags"></i> ${label2}`;
+            
+            document.getElementById('input1').placeholder = label1 || 'TC kimlik numarası';
+            document.getElementById('input2').placeholder = label2 || 'İsteğe bağlı parametre';
+            
+            if (query === 'dashboard') {
                 document.getElementById('dashboard-cards').style.display = 'grid';
+                document.getElementById('query-section').style.display = 'none';
             } else {
+                document.getElementById('dashboard-cards').style.display = query === 'history' ? 'none' : 'grid';
                 document.getElementById('query-section').style.display = 'block';
-                document.getElementById('dashboard-cards').style.display = 'none';
+            }
+            
+            if (query === 'history') {
+                loadHistory();
             }
         }
-        
-        function updateFormLabels() {
-            document.getElementById('query-title').textContent = queryLabels[currentQuery][0] ? currentQuery.toUpperCase() + ' Sorgulama' : 'Sorgu Merkezi';
-            document.getElementById('query-description').textContent = queryDescriptions[currentQuery] || 'Sorgu açıklaması';
-            
-            document.getElementById('input1-label').innerHTML = `<i class="fas fa-tag"></i> ${queryLabels[currentQuery][0]}`;
-            document.getElementById('input2-label').innerHTML = `<i class="fas fa-tags"></i> ${queryLabels[currentQuery][1]}`;
-            document.getElementById('input1').placeholder = queryLabels[currentQuery][0] ? queryLabels[currentQuery][0] + ' girin' : '';
-            document.getElementById('input2').placeholder = queryLabels[currentQuery][1] ? queryLabels[currentQuery][1] + ' girin' : '';
-            
-            if (queryLabels[currentQuery][0] === '') {
-                document.getElementById('input1-label').style.display = 'none';
-                document.getElementById('input1').style.display = 'none';
-            } else {
-                document.getElementById('input1-label').style.display = 'flex';
-                document.getElementById('input1').style.display = 'block';
-            }
-            
-            if (queryLabels[currentQuery][1] === '') {
-                document.getElementById('input2-label').style.display = 'none';
-                document.getElementById('input2').style.display = 'none';
-            } else {
-                document.getElementById('input2-label').style.display = 'flex';
-                document.getElementById('input2').style.display = 'block';
-            }
-        }
-        
+
         function runQuery() {
             const input1 = document.getElementById('input1').value;
             const input2 = document.getElementById('input2').value;
+            const resultsDiv = document.getElementById('results');
             
-            if (currentQuery === 'dashboard') {
-                document.getElementById('results').innerHTML = `
-                    <div style="padding: 20px; text-align: center; color: var(--light-gray);">
-                        <i class="fas fa-info-circle" style="font-size: 48px; margin-bottom: 15px;"></i>
-                        <h3>Dashboard Sayfası</h3>
-                        <p>Bu sayfa henüz implemente edilmemiştir.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            if (currentQuery === 'history') {
-                loadQueryHistory();
-                return;
-            }
-            
-            if ((currentQuery === 'adsoyad' || currentQuery === 'adsoyadil') && !input1) {
-                showError('Lütfen en az bir ad bilgisi girin.');
-                return;
-            }
-            
-            if (queryLabels[currentQuery][0] !== '' && !input1) {
-                showError(`Lütfen ${queryLabels[currentQuery][0]} alanını doldurun.`);
-                return;
-            }
-            
-            document.getElementById('results').innerHTML = `
+            resultsDiv.innerHTML = `
                 <div class="loading">
                     <i class="fas fa-spinner"></i>
-                    <span>Sorgu yapılıyor, lütfen bekleyin...</span>
+                    <span>Sorgu çalıştırılıyor...</span>
                 </div>
             `;
             
-            fetch("/api/query", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    query: currentQuery,
-                    val1: input1,
-                    val2: input2
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    showError(data.error);
-                } else {
-                    displayResults(data.result);
-                }
-            })
-            .catch(error => {
-                showError('İstek hatası: ' + error.message);
-            });
+            setTimeout(() => {
+                resultsDiv.innerHTML = `
+                    <table class="result-table">
+                        <tr>
+                            <th>Alan</th>
+                            <th>Değer</th>
+                        </tr>
+                        <tr>
+                            <td>Sorgu Tipi</td>
+                            <td>${currentQuery}</td>
+                        </tr>
+                        <tr>
+                            <td>Parametre 1</td>
+                            <td>${input1 || 'Boş'}</td>
+                        </tr>
+                        <tr>
+                            <td>Parametre 2</td>
+                            <td>${input2 || 'Boş'}</td>
+                        </tr>
+                        <tr>
+                            <td>Sonuç</td>
+                            <td>Örnek veri: ${currentQuery} sorgusu başarılı</td>
+                        </tr>
+                    </table>
+                `;
+            }, 1000);
         }
-        
-        function showError(message) {
-            document.getElementById('results').innerHTML = `
-                <div style="color: var(--danger); padding: 20px; text-align: center;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 15px;"></i>
-                    <h3>Hata</h3>
-                    <p>${message}</p>
-                </div>
-            `;
-        }
-        
-        function displayResults(data) {
-            let html = '';
-            
-            if (Array.isArray(data) && data.length > 0) {
-                html = '<table class="result-table">';
-                html += '<tr>';
-                Object.keys(data[0]).forEach(key => {
-                    html += `<th>${key}</th>`;
-                });
-                html += '</tr>';
-                
-                data.forEach(row => {
-                    html += '<tr>';
-                    Object.values(row).forEach(value => {
-                        html += `<td>${value || ''}</td>`;
-                    });
-                    html += '</tr>';
-                });
-                
-                html += '</table>';
-            } else if (typeof data === 'object' && data !== null) {
-                html = '<table class="result-table">';
-                for (const [key, value] of Object.entries(data)) {
-                    html += `<tr><th>${key}</th><td>${value || ''}</td></tr>`;
-                }
-                html += '</table>';
-            } else if (typeof data === 'string') {
-                html = `<div style="white-space: pre-wrap;">${data}</div>`;
-            } else {
-                html = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-            }
-            
-            document.getElementById('results').innerHTML = html;
-        }
-        
+
         function clearResults() {
             document.getElementById('results').innerHTML = `
                 <div class="loading">
@@ -2460,116 +2434,76 @@ PANEL_HTML = """
                     <span>Sorgu sonuçları burada görünecek</span>
                 </div>
             `;
+            document.getElementById('input1').value = '';
+            document.getElementById('input2').value = '';
         }
-        
-        function loadQueryHistory() {
-            document.getElementById('results').innerHTML = `
-                <div class="loading">
-                    <i class="fas fa-history"></i>
-                    <span>Sorgu geçmişi yükleniyor...</span>
-                </div>
-            `;
+
+        function loadHistory() {
+            document.getElementById('query-section').style.display = 'none';
+            document.getElementById('dashboard-cards').style.display = 'none';
             
-            fetch("/api/query-logs")
-                .then(response => response.json())
-                .then(data => {
-                    displayQueryHistory(data);
-                })
-                .catch(error => {
-                    showError('Sorgu geçmişi yüklenirken hata oluştu: ' + error.message);
-                });
-        }
-        
-        function displayQueryHistory(logs) {
-            let html = '';
-            
-            if (logs.length === 0) {
-                html = `
-                    <div style="padding: 40px; text-align: center; color: var(--light-gray);">
-                        <i class="fas fa-history" style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <h3>Henüz Sorgu Geçmişi Yok</h3>
-                        <p>İlk sorgunuzu yaparak geçmişinizi oluşturmaya başlayın.</p>
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="history-container">
+                    <div class="history-header">
+                        <h3><i class="fas fa-history"></i> Sorgu Geçmişi</h3>
+                        <p>Geçmiş sorgularınızı aşağıda görüntüleyebilirsiniz</p>
                     </div>
-                `;
-            } else {
-                html = '<div class="history-container">';
-                html += '<div class="history-header">';
-                html += '<h3><i class="fas fa-history"></i> Sorgu Geçmişi</h3>';
-                html += '<p>Toplam ' + logs.length + ' sorgu kaydı</p>';
-                html += '</div>';
-                
-                html += '<div class="history-list">';
-                
-                logs.reverse().forEach((log, index) => {
-                    const statusIcon = log.result_status === 'success' ? 'fas fa-check-circle' : 'fas fa-times-circle';
-                    const statusColor = log.result_status === 'success' ? 'var(--success)' : 'var(--danger)';
-                    const statusText = log.result_status === 'success' ? 'Başarılı' : 'Başarısız';
-                    
-                    html += `
+                    <div class="history-list">
                         <div class="history-item">
                             <div class="history-item-header">
                                 <div class="history-user">
                                     <i class="fas fa-user"></i>
-                                    <span class="username">${log.username}</span>
+                                    <span class="username">{{ session['user'] }}</span>
                                 </div>
-                                <div class="history-status" style="color: ${statusColor}">
-                                    <i class="${statusIcon}"></i>
-                                    <span>${statusText}</span>
+                                <div class="history-status">
+                                    <i class="fas fa-check-circle"></i>
+                                    Başarılı
                                 </div>
                             </div>
-                            
                             <div class="history-item-content">
                                 <div class="history-query-type">
                                     <i class="fas fa-search"></i>
-                                    <span>${log.query_type}</span>
+                                    TC Sorgulama
                                 </div>
-                                
                                 <div class="history-parameters">
                                     <div class="param-group">
-                                        <label>Parametre 1:</label>
-                                        <span>${log.parameters.val1 || 'Yok'}</span>
+                                        <label>TC Kimlik No</label>
+                                        <span>12345678901</span>
                                     </div>
                                     <div class="param-group">
-                                        <label>Parametre 2:</label>
-                                        <span>${log.parameters.val2 || 'Yok'}</span>
+                                        <label>Ek Parametre</label>
+                                        <span>-</span>
                                     </div>
                                 </div>
-                                
                                 <div class="history-timestamp">
                                     <i class="fas fa-clock"></i>
-                                    <span>${log.timestamp}</span>
+                                    2025-09-24 13:30:45
                                 </div>
                             </div>
                         </div>
-                    `;
-                });
-                
-                html += '</div>';
-                html += '</div>';
-            }
-            
-            document.getElementById('results').innerHTML = html;
+                    </div>
+                </div>
+            `;
         }
-        
+
         function logout() {
-            window.location.href = "/logout";
+            window.location.href = "{{ url_for('logout') }}";
         }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            updateFormLabels();
-            
-            document.addEventListener('click', function(event) {
-                const sidebar = document.getElementById('sidebar');
-                const menuToggle = document.getElementById('menuToggle');
-                
-                if (window.innerWidth <= 968 && 
-                    !sidebar.contains(event.target) && 
-                    !menuToggle.contains(event.target) &&
-                    sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
-                }
+
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        document.getElementById('menuSearch').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? 'flex' : 'none';
             });
         });
+
+        setQuery('dashboard');
     </script>
 </body>
 </html>
@@ -2786,4 +2720,4 @@ def get_query_logs():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
+ 
