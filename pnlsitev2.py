@@ -108,7 +108,7 @@ MAIN_HTML = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CappyChecker2025 | TC Sorgu Sistemi</title>
+    <title>CappyChecker2025</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
@@ -177,7 +177,7 @@ MAIN_HTML = '''
                 <img src="https://www.pngfind.com/pngs/m/332-3329196_haha-facebook-facebook-haha-icon-png-transparent-png.png" alt="CappyChecker2025 Logo">
             </div>
             <h1>CappyChecker2025</h1>
-            <span>TC Sorgu Sistemi</span>
+            <span>geliştirilme aşamasındadır!</span>
         </div>
         <ul class="menu">
             <li><a class="active" data-page="anasayfa"><i class="fas fa-home"></i> Ana Sayfa</a></li>
