@@ -71,7 +71,7 @@ LOGIN_HTML = '''
                 <img src="https://www.pngfind.com/pngs/m/332-3329196_haha-facebook-facebook-haha-icon-png-transparent-png.png" alt="CappyChecker2025 Logo">
             </div>
             <h1>CappyChecker2025</h1>
-            <span>TC Sorgu Sistemi</span>
+            <span>geliştirilme aşamasındadır!</span>
         </div>
         <form method="POST" action="/login" id="loginForm">
             <div class="form-group">
