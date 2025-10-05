@@ -8,17 +8,17 @@ app.secret_key = 'cappychecker2025_secret_key_2025'
 VALID_KEYS = ['cappy2025', 'admin123', 'checkerkey']
 
 API_URLS = {
-    'tc': 'https://apiservices.alwaysdata.net/diger/tc.php?tc=',
-    'tcpro': 'https://apiservices.alwaysdata.net/diger/tcpro.php?tc=',
+    'tc': 'https://apiservices.alwaysdata.net/diger/tc.php?tc={tc}',
+    'tcpro': 'https://apiservices.alwaysdata.net/diger/tcpro.php?tc={tc}',
     'adsoyad': 'https://apiservices.alwaysdata.net/diger/adsoyad.php?ad={ad}&soyad={soyad}',
     'adsoyadpro': 'https://apiservices.alwaysdata.net/diger/adsoyadpro.php?ad={ad}&soyad={soyad}&il={il}&ilce={ilce}',
-    'tapu': 'https://apiservices.alwaysdata.net/diger/tapu.php?tc=',
-    'tcgsm': 'https://apiservices.alwaysdata.net/diger/tcgsm.php?tc=',
-    'gsmtc': 'https://apiservices.alwaysdata.net/diger/gsmtc.php?gsm=',
-    'adres': 'https://apiservices.alwaysdata.net/diger/adres.php?tc=',
-    'hane': 'https://apiservices.alwaysdata.net/diger/hane.php?tc=',
-    'aile': 'https://apiservices.alwaysdata.net/diger/aile.php?tc=',
-    'sulale': 'https://apiservices.alwaysdata.net/diger/sulale.php?tc='
+    'tapu': 'https://apiservices.alwaysdata.net/diger/tapu.php?tc={tc}',
+    'tcgsm': 'https://apiservices.alwaysdata.net/diger/tcgsm.php?tc={tc}',
+    'gsmtc': 'https://apiservices.alwaysdata.net/diger/gsmtc.php?gsm={gsm}',
+    'adres': 'https://apiservices.alwaysdata.net/diger/adres.php?tc={tc}',
+    'hane': 'https://apiservices.alwaysdata.net/diger/hane.php?tc={tc}',
+    'aile': 'https://apiservices.alwaysdata.net/diger/aile.php?tc={tc}',
+    'sulale': 'https://apiservices.alwaysdata.net/diger/sulale.php?tc={tc}'
 }
 
 LOGIN_HTML = '''
@@ -352,125 +352,152 @@ MAIN_HTML = '''
             `;
             
             fetch('/sorgu', { method: 'POST', body: formData })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    displayResults(data.data, sorguTipi);
-                } else {
-                    document.getElementById('sonuclar').innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i> ' + data.error + '</div>';
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error(`HTTP error! status: ${r.status}`);
                 }
+                return r.json();
             })
-            .catch(err => {
-                document.getElementById('sonuclar').innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i> Hata: ' + err + '</div>';
-            });
-        });
-function displayResults(data, sorguTipi) {
-    let html = '<div class="success"><i class="fas fa-check-circle"></i> Sorgu başarılı! Sonuçlar aşağıda listelenmiştir.</div>';
-    
-    // Handle the API response
-    let results = [];
-    if (data.VERI && Array.isArray(data.VERI)) {
-        results = data.VERI; // If the API returns a VERI array
-    } else if (Array.isArray(data)) {
-        results = data; // If the API returns a direct array
-    } else if (typeof data === 'object' && data !== null) {
-        results = [data]; // If the API returns a single object
+            .then(data => {
+    console.log("Ham API Yanıtı:", data);
+    const rawData = data.data?.Veri || data.VERI || data.result || data.data || data || [];
+
+    console.log("Çözümlenmiş Veri:", rawData);
+
+    if (data.success && Array.isArray(rawData)) {
+        displayResults(rawData, sorguTipi);
     } else {
-        results = []; // Fallback for empty or invalid data
+        document.getElementById('sonuclar').innerHTML = `
+            <div class="error">
+                <i class="fas fa-exclamation-triangle"></i> Veri alınamadı veya sonuç boş.
+            </div>`;
     }
-    
-    const resultCount = results.length;
-    
-    html += `<div class="search-info"><i class="fas fa-database"></i> Toplam <strong>${resultCount}</strong> kayıt bulundu</div>`;
-    
-    if (resultCount > 0) {
-        html += '<div class="results-container">';
-        html += '<table class="results-table"><thead><tr>';
-        
-        // Get headers based on query type
-        const headers = getHeadersForQueryType(sorguTipi);
-        headers.forEach(header => {
-            html += '<th>' + header + '</th>';
-        });
-        html += '</tr></thead><tbody>';
-        
-        // Populate table rows with API data
-        results.forEach(item => {
-            html += '<tr>';
-            const values = getValuesForQueryType(item, sorguTipi);
-            values.forEach(value => {
-                html += '<td>' + (value || '-') + '</td>';
+})
+            .catch(err => {
+                console.error('Fetch Error:', err); // Hata logu
+                document.getElementById('sonuclar').innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i> Hata: ' + err.message + '</div>';
             });
-            html += '</tr>';
         });
-        html += '</tbody></table></div>';
+
+       function displayResults(dataArray, sorguTipi) {
+    let results = [];
+    if (dataArray.VERI && Array.isArray(dataArray.VERI)) {
+        results = dataArray.VERI; // API 'VERI' dizisi döndürüyorsa
+    } else if (Array.isArray(dataArray)) {
+        results = dataArray; // Doğrudan dizi döndürüyorsa
+    } else if (typeof dataArray === 'object' && dataArray !== null) {
+        results = [dataArray]; // Tek bir obje döndürüyorsa diziye çevir
+    } else {
+        results = []; // Geçersiz veya boş veri
+    }
+
+    const resultCount = results.length;
+    let html = `<div class="success"><i class="fas fa-check-circle"></i> Sorgu başarılı! Sonuçlar aşağıda listelenmiştir.</div>`;
+    html += `<div class="search-info"><i class="fas fa-database"></i> Toplam <strong>${resultCount}</strong> kayıt bulundu</div>`;
+
+    if (resultCount > 0) {
+        html += `
+            <div class="results-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>TC</th>
+                            <th>Adı</th>
+                            <th>Soyadı</th>
+                            <th>Doğum Tarihi</th>
+                            <th>Nüfus İl</th>
+                            <th>Nüfus İlçe</th>
+                            <th>Anne Adı</th>
+                            <th>Anne TC</th>
+                            <th>Baba Adı</th>
+                            <th>Baba TC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map(item => `
+                            <tr>
+                                <td>${item.TCKN || item.TC || item.tckimlikno || '-'}</td>
+                                <td>${item.Adi || item.ADI || item.ad || item.isim || '-'}</td>
+                                <td>${item.Soyadi || item.SOYADI || item.soyad || item.soyisim || '-'}</td>
+                                <td>${item.DogumTarihi || item.DOGUM_TARIHI || item.dogumtarihi || '-'}</td>
+                                <td>${item.NufusIl || item.NUFUS_IL || item.il || item.sehir || '-'}</td>
+                                <td>${item.NufusIlce || item.NUFUS_ILCE || item.ilce || '-'}</td>
+                                <td>${item.AnneAdi || item.ANNE_ADI || item.anneadi || '-'}</td>
+                                <td>${item.AnneTCKN || item.ANNE_TC || item.annetc || '-'}</td>
+                                <td>${item.BabaAdi || item.BABA_ADI || item.babaadi || '-'}</td>
+                                <td>${item.BabaTCKN || item.BABA_TC || item.babatc || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
     } else {
         html += '<div class="error">Sonuç bulunamadı</div>';
     }
-    
-    document.getElementById('sonuclar').innerHTML = html;
+
+    document.getElementById("sonuclar").innerHTML = html;
 }
 
-function getHeadersForQueryType(sorguTipi) {
-    const headerMap = {
-        'tc': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
-        'tcpro': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
-        'adsoyad': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
-        'adsoyadpro': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
-        'tapu': ['TC', 'ADA', 'PARSEL', 'MAHALLE', 'İL', 'İLÇE', 'TAPU TÜRÜ'],
-        'tcgsm': ['TC', 'GSM', 'OPERATÖR', 'ADI', 'SOYADI'],
-        'gsmtc': ['GSM', 'TC', 'OPERATÖR', 'ADI', 'SOYADI'],
-        'adres': ['TC', 'ADRES', 'İL', 'İLÇE', 'MAHALLE', 'POSTA KODU'],
-        'hane': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'AKRABA TC', 'AKRABA ADI', 'YAKINLIK'],
-        'aile': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'ANNE ADI', 'BABA ADI', 'KARDEŞ SAYISI'],
-        'sulale': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'SÜLALE ADI', 'SÜLALE BÜYÜĞÜ']
-    };
-    
-    return headerMap[sorguTipi] || ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI'];
-}
+        function getHeadersForQueryType(sorguTipi) {
+            const headerMap = {
+                'tc': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
+                'tcpro': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
+                'adsoyad': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
+                'adsoyadpro': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
+                'tapu': ['TC', 'ADA', 'PARSEL', 'MAHALLE', 'İL', 'İLÇE', 'TAPU TÜRÜ'],
+                'tcgsm': ['TC', 'GSM', 'OPERATÖR', 'ADI', 'SOYADI'],
+                'gsmtc': ['GSM', 'TC', 'OPERATÖR', 'ADI', 'SOYADI'],
+                'adres': ['TC', 'ADRES', 'İL', 'İLÇE', 'MAHALLE', 'POSTA KODU'],
+                'hane': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'AKRABA TC', 'AKRABA ADI', 'YAKINLIK'],
+                'aile': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'ANNE ADI', 'BABA ADI', 'KARDEŞ SAYISI'],
+                'sulale': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'SÜLALE ADI', 'SÜLALE BÜYÜĞÜ']
+            };
+            return headerMap[sorguTipi] || ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI'];
+        }
 
-function getValuesForQueryType(item, sorguTipi) {
-    // Extract values from the API response
-    const tc = item.TC || item.tc || item.TCKimlikNo || '-';
-    const adi = item.ADI || item.adi || item.AD || item.ad || item.isim || '-';
-    const soyadi = item.SOYADI || item.soyadi || item.SOYAD || item.soyad || item.soyisim || '-';
-    const dogumTarihi = item.DOGUM_TARIHI || item.dogum_tarihi || item.DOGUMTARIHI || item.dogumtarihi || '-';
-    const nufusIl = item.NUFUS_IL || item.nufus_il || item.IL || item.il || item.sehir || '-';
-    const nufusIlce = item.NUFUS_ILCE || item.nufus_ilce || item.ILCE || item.ilce || '-';
-    const anneAdi = item.ANNE_ADI || item.anne_adi || item.ANNEADI || '-';
-    const anneTc = item.ANNE_TC || item.anne_tc || item.ANNETC || '-';
-    const babaAdi = item.BABA_ADI || item.baba_adi || item.BABAADI || '-';
-    const gsm = item.GSM || item.gsm || item.TELEFON || item.telefon || '-';
-    const operator = item.OPERATOR || item.operator || item.OPERATÖR || '-';
-    const adres = item.ADRES || item.adres || item.ADDRESS || '-';
-    const postaKodu = item.POSTA_KODU || item.posta_kodu || item.POSTAKODU || '-';
-    const ada = item.ADA || item.ada || item.ADA_NO || '-';
-    const parsel = item.PARSEL || item.parsel || item.PARSEL_NO || '-';
-    const mahalle = item.MAHALLE || item.mahalle || item.MAHALLE_ADI || '-';
-    const tapuTuru = item.TAPU_TURU || item.tapu_turu || item.TAPUTURU || '-';
-    const akrabaTc = item.AKRABA_TC || item.akraba_tc || item.AKRABATC || '-';
-    const akrabaAdi = item.AKRABA_ADI || item.akraba_adi || item.AKRABAAD || '-';
-    const yakinlik = item.YAKINLIK || item.yakinlik || '-';
-    const kardesSayisi = item.KARDES_SAYISI || item.kardes_sayisi || item.KARDESSAYISI || '-';
-    const sulaleAdi = item.SULALE_ADI || item.sulale_adi || item.SULALEADI || '-';
-    const sulaleBuyugu = item.SULALE_BUYUGU || item.sulale_buyugu || item.SULALEBUYUGU || '-';
+        function getValuesForQueryType(item, sorguTipi) {
+            // API yanıtından değerleri esnek bir şekilde al
+            const tc = item.TC || item.tc || item.TCKimlikNo || item.tckimlikno || '-';
+            const adi = item.ADI || item.adi || item.AD || item.ad || item.isim || '-';
+            const soyadi = item.SOYADI || item.soyadi || item.SOYAD || item.soyad || item.soyisim || '-';
+            const dogumTarihi = item.DOGUM_TARIHI || item.dogum_tarihi || item.DOGUMTARIHI || item.dogumtarihi || '-';
+            const nufusIl = item.NUFUS_IL || item.nufus_il || item.IL || item.il || item.sehir || '-';
+            const nufusIlce = item.NUFUS_ILCE || item.nufus_ilce || item.ILCE || item.ilce || '-';
+            const anneAdi = item.ANNE_ADI || item.anne_adi || item.ANNEADI || item.anneadi || '-';
+            const anneTc = item.ANNE_TC || item.anne_tc || item.ANNETC || item.annetc || '-';
+            const babaAdi = item.BABA_ADI || item.baba_adi || item.BABAADI || item.babaadi || '-';
+            const gsm = item.GSM || item.gsm || item.TELEFON || item.telefon || '-';
+            const operator = item.OPERATOR || item.operator || item.OPERATÖR || item.operator || '-';
+            const adres = item.ADRES || item.adres || item.ADDRESS || item.address || '-';
+            const postaKodu = item.POSTA_KODU || item.posta_kodu || item.POSTAKODU || item.postakodu || '-';
+            const ada = item.ADA || item.ada || item.ADA_NO || item.ada_no || '-';
+            const parsel = item.PARSEL || item.parsel || item.PARSEL_NO || item.parsel_no || '-';
+            const mahalle = item.MAHALLE || item.mahalle || item.MAHALLE_ADI || item.mahalle_adi || '-';
+            const tapuTuru = item.TAPU_TURU || item.tapu_turu || item.TAPUTURU || item.taputuru || '-';
+            const akrabaTc = item.AKRABA_TC || item.akraba_tc || item.AKRABATC || item.akrabatc || '-';
+            const akrabaAdi = item.AKRABA_ADI || item.akraba_adi || item.AKRABAAD || item.akrabaad || '-';
+            const yakinlik = item.YAKINLIK || item.yakinlik || '-';
+            const kardesSayisi = item.KARDES_SAYISI || item.kardes_sayisi || item.KARDESSAYISI || item.kardessayisi || '-';
+            const sulaleAdi = item.SULALE_ADI || item.sulale_adi || item.SULALEADI || item.sulaleadi || '-';
+            const sulaleBuyugu = item.SULALE_BUYUGU || item.sulale_buyugu || item.SULALEBUYUGU || item.sulalebuyugu || '-';
 
-    const valueMap = {
-        'tc': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
-        'tcpro': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
-        'adsoyad': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
-        'adsoyadpro': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
-        'tapu': [tc, ada, parsel, mahalle, nufusIl, nufusIlce, tapuTuru],
-        'tcgsm': [tc, gsm, operator, adi, soyadi],
-        'gsmtc': [gsm, tc, operator, adi, soyadi],
-        'adres': [tc, adres, nufusIl, nufusIlce, mahalle, postaKodu],
-        'hane': [tc, adi, soyadi, dogumTarihi, akrabaTc, akrabaAdi, yakinlik],
-        'aile': [tc, adi, soyadi, dogumTarihi, anneAdi, babaAdi, kardesSayisi],
-        'sulale': [tc, adi, soyadi, dogumTarihi, sulaleAdi, sulaleBuyugu]
-    };
-    
-    return valueMap[sorguTipi] || [tc, adi, soyadi, dogumTarihi];
-}
+            const valueMap = {
+                'tc': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
+                'tcpro': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
+                'adsoyad': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
+                'adsoyadpro': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
+                'tapu': [tc, ada, parsel, mahalle, nufusIl, nufusIlce, tapuTuru],
+                'tcgsm': [tc, gsm, operator, adi, soyadi],
+                'gsmtc': [gsm, tc, operator, adi, soyadi],
+                'adres': [tc, adres, nufusIl, nufusIlce, mahalle, postaKodu],
+                'hane': [tc, adi, soyadi, dogumTarihi, akrabaTc, akrabaAdi, yakinlik],
+                'aile': [tc, adi, soyadi, dogumTarihi, anneAdi, babaAdi, kardesSayisi],
+                'sulale': [tc, adi, soyadi, dogumTarihi, sulaleAdi, sulaleBuyugu]
+            };
+            
+            return valueMap[sorguTipi] || [tc, adi, soyadi, dogumTarihi];
+        }
 
         // İlk yüklemede ana sayfayı göster
         showPage('anasayfa');
@@ -530,17 +557,30 @@ def sorgu():
         else:
             return jsonify({'error': 'Geçersiz sorgu tipi!'})
         
+        print(f"Requesting URL: {url}")  # Hangi URL'ye istek atıldığını logla
+        
+        # API isteği ve detaylı loglama
         response = requests.get(url, timeout=30)
+        print(f"Response Status Code: {response.status_code}")
+        print(f"Raw Response Text: {response.text}")  # Ham yanıtı logla
         
         if response.status_code == 200:
-            data = response.json()
-            # Eğer API boş bir dizi veya boş bir obje dönerse
-            if not data:
-                return jsonify({'error': 'API boş yanıt döndü. Veri bulunamadı.'})
-            return jsonify({'success': True, 'data': data})
+            try:
+                data = response.json()
+                print(f"Parsed JSON Data: {json.dumps(data, ensure_ascii=False, indent=2)}")  # JSON'u okunabilir şekilde logla
+                if not data:
+                    return jsonify({'error': 'API boş yanıt döndü. Veri bulunamadı.'})
+                return jsonify({'success': True, 'data': data})
+            except ValueError as e:
+                print(f"JSON Parse Error: {e}")
+                return jsonify({'error': 'API yanıtı JSON formatında değil.'})
         else:
-            return jsonify({'error': f'API hatası: {response.status_code}'})
+            return jsonify({'error': f'API hatası: {response.status_code} - {response.text}'})
+    except requests.RequestException as e:
+        print(f"Network Error: {str(e)}")
+        return jsonify({'error': f'Ağ hatası: {str(e)}'})
     except Exception as e:
+        print(f"Unexpected Error: {str(e)}")
         return jsonify({'error': f'Sorgu hatası: {str(e)}'})
 
 if __name__ == '__main__':
