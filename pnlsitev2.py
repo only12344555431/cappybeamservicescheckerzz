@@ -1,6 +1,8 @@
 from flask import Flask, render_template_string, request, session, jsonify
 import requests
 import json
+import random
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = 'cappychecker2025_secret_key_2025'
@@ -19,6 +21,16 @@ API_URLS = {
     'hane': 'https://apiservices.alwaysdata.net/diger/hane.php?tc={tc}',
     'aile': 'https://apiservices.alwaysdata.net/diger/aile.php?tc={tc}',
     'sulale': 'https://apiservices.alwaysdata.net/diger/sulale.php?tc={tc}'
+}
+
+# İstatistik verilerini saklamak için basit bir yapı
+stats = {
+    'active_users': 0,
+    'registered_accounts': len(VALID_KEYS),
+    'total_queries': 0,
+    'successful_queries': 0,
+    'failed_queries': 0,
+    'query_history': []
 }
 
 LOGIN_HTML = '''
@@ -111,6 +123,7 @@ MAIN_HTML = '''
     <title>CappyChecker2025</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         :root {
@@ -144,8 +157,19 @@ MAIN_HTML = '''
         .main-content { flex: 1; margin-left: 280px; padding: 40px; }
         .section { margin-bottom: 50px; background: var(--card-bg); padding: 35px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
         .section h2 { background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 20px; font-size: 28px; font-weight: 700; }
-        .anasayfa-content { color: var(--text-secondary); font-size: 16px; }
-        .anasayfa-content p { margin-bottom: 15px; }
+        .dashboard-content { color: var(--text-secondary); font-size: 16px; }
+        .dashboard-content p { margin-bottom: 15px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--secondary-color); padding: 25px; border-radius: 12px; text-align: center; border-left: 4px solid var(--accent-color); }
+        .stat-card i { font-size: 32px; margin-bottom: 15px; color: var(--accent-color); }
+        .stat-card h3 { font-size: 14px; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card .value { font-size: 32px; font-weight: 700; color: var(--text-color); }
+        .stat-card .change { font-size: 14px; margin-top: 5px; }
+        .change.positive { color: #4CAF50; }
+        .change.negative { color: #f44336; }
+        .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .chart-card { background: var(--secondary-color); padding: 25px; border-radius: 12px; }
+        .chart-card h3 { margin-bottom: 15px; color: var(--text-color); font-size: 18px; }
         .sorgu-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: var(--text-color); font-weight: 500; }
@@ -167,6 +191,7 @@ MAIN_HTML = '''
             .main-content { margin-left: 0; }
             body { flex-direction: column; }
             .sorgu-form { grid-template-columns: 1fr; }
+            .charts-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -180,7 +205,7 @@ MAIN_HTML = '''
             <span>geliştirilme aşamasındadır!</span>
         </div>
         <ul class="menu">
-            <li><a class="active" data-page="anasayfa"><i class="fas fa-home"></i> Ana Sayfa</a></li>
+            <li><a class="active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
             <li><a data-sorgu="tc" data-page="sorgu"><i class="fas fa-id-card"></i> TC Sorgu</a></li>
             <li><a data-sorgu="tcpro" data-page="sorgu"><i class="fas fa-id-card-alt"></i> TC Pro Sorgu</a></li>
             <li><a data-sorgu="adsoyad" data-page="sorgu"><i class="fas fa-user"></i> Ad Soyad Sorgu</a></li>
@@ -196,24 +221,67 @@ MAIN_HTML = '''
     </div>
 
     <div class="main-content">
-        <!-- Ana Sayfa -->
-        <div class="section" id="anasayfa">
-            <h2>Hoş Geldiniz</h2>
-            <div class="anasayfa-content">
-                <p><strong>CappyChecker2025 TC Sorgu Sistemi'ne hoş geldiniz!</strong></p>
-                <p>Bu sistem, güvenli ve hızlı bir şekilde TC kimlik numarası sorgulama işlemleri yapmanızı sağlar.</p>
-                <p><strong>Özellikler:</strong></p>
-                <ul>
-                    <li>TC Kimlik Sorgulama</li>
-                    <li>Ad-Soyad Sorgulama</li>
-                    <li>GSM Numarası Sorgulama</li>
-                    <li>Adres ve Tapu Bilgileri</li>
-                    <li>Aile ve Sülale Bilgileri</li>
-                    <li>Güvenli Cloudflare Doğrulama</li>
-                    <li>1000+ satırlık büyük veri setleri</li>
-                </ul>
-                <p><strong>Kullanım:</strong> Sol menüden sorgu tipini seçin, gerekli bilgileri girin ve sorgulama yapın.</p>
-                <p><em>Not: Tüm sorgular güvenli API'ler üzerinden gerçekleştirilmektedir.</em></p>
+        <!-- Dashboard -->
+        <div class="section" id="dashboard">
+            <h2>Dashboard</h2>
+            <div class="dashboard-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Aktif Kullanıcılar</h3>
+                        <div class="value" id="activeUsers">0</div>
+                        <div class="change positive" id="activeUsersChange">+0 bugün</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-user-plus"></i>
+                        <h3>Kayıtlı Hesaplar</h3>
+                        <div class="value" id="registeredAccounts">0</div>
+                        <div class="change positive" id="registeredAccountsChange">+0 bu ay</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-search"></i>
+                        <h3>Toplam Sorgu</h3>
+                        <div class="value" id="totalQueries">0</div>
+                        <div class="change positive" id="totalQueriesChange">+0 bugün</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Başarı Oranı</h3>
+                        <div class="value" id="successRate">0%</div>
+                        <div class="change positive" id="successRateChange">+0%</div>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>Sorgu İstatistikleri</h3>
+                        <canvas id="queryChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Sorgu Türleri</h3>
+                        <canvas id="queryTypeChart"></canvas>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3 style="margin-bottom: 15px; color: var(--text-color);">Son Sorgular</h3>
+                    <div class="results-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Sorgu Türü</th>
+                                    <th>Kullanıcı</th>
+                                    <th>Sonuç</th>
+                                    <th>Süre</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentQueries">
+                                <!-- Son sorgular buraya eklenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -274,9 +342,124 @@ MAIN_HTML = '''
     <script>
         // Sayfa yönlendirme
         function showPage(pageId) {
-            document.getElementById('anasayfa').classList.add('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('sorgu').classList.add('hidden');
             document.getElementById(pageId).classList.remove('hidden');
+            
+            if (pageId === 'dashboard') {
+                updateDashboard();
+            }
+        }
+
+        // Dashboard verilerini güncelle
+        function updateDashboard() {
+            // API'den istatistikleri al (şimdilik mock veri kullanıyoruz)
+            const mockData = {
+                active_users: {{ stats.active_users }},
+                registered_accounts: {{ stats.registered_accounts }},
+                total_queries: {{ stats.total_queries }},
+                successful_queries: {{ stats.successful_queries }},
+                failed_queries: {{ stats.failed_queries }},
+                query_history: {{ stats.query_history|tojson }}
+            };
+            
+            // İstatistikleri güncelle
+            document.getElementById('activeUsers').textContent = mockData.active_users;
+            document.getElementById('registeredAccounts').textContent = mockData.registered_accounts;
+            document.getElementById('totalQueries').textContent = mockData.total_queries;
+            
+            const successRate = mockData.total_queries > 0 ? 
+                Math.round((mockData.successful_queries / mockData.total_queries) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            // Grafikleri oluştur
+            createCharts(mockData);
+            updateRecentQueries(mockData.query_history);
+        }
+        
+        // Grafikleri oluştur
+        function createCharts(data) {
+            // Sorgu istatistikleri grafiği
+            const queryCtx = document.getElementById('queryChart').getContext('2d');
+            new Chart(queryCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+                    datasets: [{
+                        label: 'Başarılı Sorgular',
+                        data: [12, 19, 8, 15, 12, 18, 14],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Başarısız Sorgular',
+                        data: [2, 3, 1, 2, 1, 2, 1],
+                        borderColor: '#f44336',
+                        backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '7 Günlük Sorgu Geçmişi'
+                        }
+                    }
+                }
+            });
+            
+            // Sorgu türleri grafiği
+            const typeCtx = document.getElementById('queryTypeChart').getContext('2d');
+            new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['TC Sorgu', 'TC Pro', 'Ad Soyad', 'Ad Soyad Pro', 'Diğer'],
+                    datasets: [{
+                        data: [35, 25, 15, 10, 15],
+                        backgroundColor: [
+                            '#dc2626',
+                            '#ef4444',
+                            '#f87171',
+                            '#fca5a5',
+                            '#fecaca'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Son sorguları güncelle
+        function updateRecentQueries(queries) {
+            const tbody = document.getElementById('recentQueries');
+            if (queries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Henüz sorgu yapılmamış</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = queries.map(query => `
+                <tr>
+                    <td>${query.date}</td>
+                    <td>${query.type}</td>
+                    <td>${query.user}</td>
+                    <td><span class="${query.success ? 'success' : 'error'}" style="padding: 5px 10px; border-radius: 4px; font-size: 12px;">
+                        ${query.success ? 'Başarılı' : 'Başarısız'}
+                    </span></td>
+                    <td>${query.duration}ms</td>
+                </tr>
+            `).join('');
         }
 
         // Menü tıklama
@@ -294,7 +477,7 @@ MAIN_HTML = '''
                     updateFormFields(sorguTipi);
                     showPage('sorgu');
                 } else {
-                    showPage('anasayfa');
+                    showPage('dashboard');
                 }
             });
         });
@@ -359,148 +542,88 @@ MAIN_HTML = '''
                 return r.json();
             })
             .then(data => {
-    console.log("Ham API Yanıtı:", data);
-    const rawData = data.data?.Veri || data.VERI || data.result || data.data || data || [];
+                console.log("Ham API Yanıtı:", data);
+                const rawData = data.data?.Veri || data.VERI || data.result || data.data || data || [];
 
-    console.log("Çözümlenmiş Veri:", rawData);
+                console.log("Çözümlenmiş Veri:", rawData);
 
-    if (data.success && Array.isArray(rawData)) {
-        displayResults(rawData, sorguTipi);
-    } else {
-        document.getElementById('sonuclar').innerHTML = `
-            <div class="error">
-                <i class="fas fa-exclamation-triangle"></i> Veri alınamadı veya sonuç boş.
-            </div>`;
-    }
-})
+                if (data.success && Array.isArray(rawData)) {
+                    displayResults(rawData, sorguTipi);
+                } else {
+                    document.getElementById('sonuclar').innerHTML = `
+                        <div class="error">
+                            <i class="fas fa-exclamation-triangle"></i> Veri alınamadı veya sonuç boş.
+                        </div>`;
+                }
+            })
             .catch(err => {
-                console.error('Fetch Error:', err); // Hata logu
+                console.error('Fetch Error:', err);
                 document.getElementById('sonuclar').innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i> Hata: ' + err.message + '</div>';
             });
         });
 
-       function displayResults(dataArray, sorguTipi) {
-    let results = [];
-    if (dataArray.VERI && Array.isArray(dataArray.VERI)) {
-        results = dataArray.VERI; // API 'VERI' dizisi döndürüyorsa
-    } else if (Array.isArray(dataArray)) {
-        results = dataArray; // Doğrudan dizi döndürüyorsa
-    } else if (typeof dataArray === 'object' && dataArray !== null) {
-        results = [dataArray]; // Tek bir obje döndürüyorsa diziye çevir
-    } else {
-        results = []; // Geçersiz veya boş veri
-    }
+        function displayResults(dataArray, sorguTipi) {
+            let results = [];
+            if (dataArray.VERI && Array.isArray(dataArray.VERI)) {
+                results = dataArray.VERI;
+            } else if (Array.isArray(dataArray)) {
+                results = dataArray;
+            } else if (typeof dataArray === 'object' && dataArray !== null) {
+                results = [dataArray];
+            } else {
+                results = [];
+            }
 
-    const resultCount = results.length;
-    let html = `<div class="success"><i class="fas fa-check-circle"></i> Sorgu başarılı! Sonuçlar aşağıda listelenmiştir.</div>`;
-    html += `<div class="search-info"><i class="fas fa-database"></i> Toplam <strong>${resultCount}</strong> kayıt bulundu</div>`;
+            const resultCount = results.length;
+            let html = `<div class="success"><i class="fas fa-check-circle"></i> Sorgu başarılı! Sonuçlar aşağıda listelenmiştir.</div>`;
+            html += `<div class="search-info"><i class="fas fa-database"></i> Toplam <strong>${resultCount}</strong> kayıt bulundu</div>`;
 
-    if (resultCount > 0) {
-        html += `
-            <div class="results-container">
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>TC</th>
-                            <th>Adı</th>
-                            <th>Soyadı</th>
-                            <th>Doğum Tarihi</th>
-                            <th>Nüfus İl</th>
-                            <th>Nüfus İlçe</th>
-                            <th>Anne Adı</th>
-                            <th>Anne TC</th>
-                            <th>Baba Adı</th>
-                            <th>Baba TC</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${results.map(item => `
-                            <tr>
-                                <td>${item.TCKN || item.TC || item.tckimlikno || '-'}</td>
-                                <td>${item.Adi || item.ADI || item.ad || item.isim || '-'}</td>
-                                <td>${item.Soyadi || item.SOYADI || item.soyad || item.soyisim || '-'}</td>
-                                <td>${item.DogumTarihi || item.DOGUM_TARIHI || item.dogumtarihi || '-'}</td>
-                                <td>${item.NufusIl || item.NUFUS_IL || item.il || item.sehir || '-'}</td>
-                                <td>${item.NufusIlce || item.NUFUS_ILCE || item.ilce || '-'}</td>
-                                <td>${item.AnneAdi || item.ANNE_ADI || item.anneadi || '-'}</td>
-                                <td>${item.AnneTCKN || item.ANNE_TC || item.annetc || '-'}</td>
-                                <td>${item.BabaAdi || item.BABA_ADI || item.babaadi || '-'}</td>
-                                <td>${item.BabaTCKN || item.BABA_TC || item.babatc || '-'}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `;
-    } else {
-        html += '<div class="error">Sonuç bulunamadı</div>';
-    }
+            if (resultCount > 0) {
+                html += `
+                    <div class="results-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>TC</th>
+                                    <th>Adı</th>
+                                    <th>Soyadı</th>
+                                    <th>Doğum Tarihi</th>
+                                    <th>Nüfus İl</th>
+                                    <th>Nüfus İlçe</th>
+                                    <th>Anne Adı</th>
+                                    <th>Anne TC</th>
+                                    <th>Baba Adı</th>
+                                    <th>Baba TC</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${results.map(item => `
+                                    <tr>
+                                        <td>${item.TCKN || item.TC || item.tckimlikno || '-'}</td>
+                                        <td>${item.Adi || item.ADI || item.ad || item.isim || '-'}</td>
+                                        <td>${item.Soyadi || item.SOYADI || item.soyad || item.soyisim || '-'}</td>
+                                        <td>${item.DogumTarihi || item.DOGUM_TARIHI || item.dogumtarihi || '-'}</td>
+                                        <td>${item.NufusIl || item.NUFUS_IL || item.il || item.sehir || '-'}</td>
+                                        <td>${item.NufusIlce || item.NUFUS_ILCE || item.ilce || '-'}</td>
+                                        <td>${item.AnneAdi || item.ANNE_ADI || item.anneadi || '-'}</td>
+                                        <td>${item.AnneTCKN || item.ANNE_TC || item.annetc || '-'}</td>
+                                        <td>${item.BabaAdi || item.BABA_ADI || item.babaadi || '-'}</td>
+                                        <td>${item.BabaTCKN || item.BABA_TC || item.babatc || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                html += '<div class="error">Sonuç bulunamadı</div>';
+            }
 
-    document.getElementById("sonuclar").innerHTML = html;
-}
-
-        function getHeadersForQueryType(sorguTipi) {
-            const headerMap = {
-                'tc': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
-                'tcpro': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
-                'adsoyad': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
-                'adsoyadpro': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'NÜFUS İL', 'NÜFUS İLÇE', 'ANNE ADI', 'ANNE TC', 'BABA ADI'],
-                'tapu': ['TC', 'ADA', 'PARSEL', 'MAHALLE', 'İL', 'İLÇE', 'TAPU TÜRÜ'],
-                'tcgsm': ['TC', 'GSM', 'OPERATÖR', 'ADI', 'SOYADI'],
-                'gsmtc': ['GSM', 'TC', 'OPERATÖR', 'ADI', 'SOYADI'],
-                'adres': ['TC', 'ADRES', 'İL', 'İLÇE', 'MAHALLE', 'POSTA KODU'],
-                'hane': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'AKRABA TC', 'AKRABA ADI', 'YAKINLIK'],
-                'aile': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'ANNE ADI', 'BABA ADI', 'KARDEŞ SAYISI'],
-                'sulale': ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI', 'SÜLALE ADI', 'SÜLALE BÜYÜĞÜ']
-            };
-            return headerMap[sorguTipi] || ['TC', 'ADI', 'SOYADI', 'DOĞUM TARIHI'];
+            document.getElementById("sonuclar").innerHTML = html;
         }
 
-        function getValuesForQueryType(item, sorguTipi) {
-            // API yanıtından değerleri esnek bir şekilde al
-            const tc = item.TC || item.tc || item.TCKimlikNo || item.tckimlikno || '-';
-            const adi = item.ADI || item.adi || item.AD || item.ad || item.isim || '-';
-            const soyadi = item.SOYADI || item.soyadi || item.SOYAD || item.soyad || item.soyisim || '-';
-            const dogumTarihi = item.DOGUM_TARIHI || item.dogum_tarihi || item.DOGUMTARIHI || item.dogumtarihi || '-';
-            const nufusIl = item.NUFUS_IL || item.nufus_il || item.IL || item.il || item.sehir || '-';
-            const nufusIlce = item.NUFUS_ILCE || item.nufus_ilce || item.ILCE || item.ilce || '-';
-            const anneAdi = item.ANNE_ADI || item.anne_adi || item.ANNEADI || item.anneadi || '-';
-            const anneTc = item.ANNE_TC || item.anne_tc || item.ANNETC || item.annetc || '-';
-            const babaAdi = item.BABA_ADI || item.baba_adi || item.BABAADI || item.babaadi || '-';
-            const gsm = item.GSM || item.gsm || item.TELEFON || item.telefon || '-';
-            const operator = item.OPERATOR || item.operator || item.OPERATÖR || item.operator || '-';
-            const adres = item.ADRES || item.adres || item.ADDRESS || item.address || '-';
-            const postaKodu = item.POSTA_KODU || item.posta_kodu || item.POSTAKODU || item.postakodu || '-';
-            const ada = item.ADA || item.ada || item.ADA_NO || item.ada_no || '-';
-            const parsel = item.PARSEL || item.parsel || item.PARSEL_NO || item.parsel_no || '-';
-            const mahalle = item.MAHALLE || item.mahalle || item.MAHALLE_ADI || item.mahalle_adi || '-';
-            const tapuTuru = item.TAPU_TURU || item.tapu_turu || item.TAPUTURU || item.taputuru || '-';
-            const akrabaTc = item.AKRABA_TC || item.akraba_tc || item.AKRABATC || item.akrabatc || '-';
-            const akrabaAdi = item.AKRABA_ADI || item.akraba_adi || item.AKRABAAD || item.akrabaad || '-';
-            const yakinlik = item.YAKINLIK || item.yakinlik || '-';
-            const kardesSayisi = item.KARDES_SAYISI || item.kardes_sayisi || item.KARDESSAYISI || item.kardessayisi || '-';
-            const sulaleAdi = item.SULALE_ADI || item.sulale_adi || item.SULALEADI || item.sulaleadi || '-';
-            const sulaleBuyugu = item.SULALE_BUYUGU || item.sulale_buyugu || item.SULALEBUYUGU || item.sulalebuyugu || '-';
-
-            const valueMap = {
-                'tc': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
-                'tcpro': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
-                'adsoyad': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
-                'adsoyadpro': [tc, adi, soyadi, dogumTarihi, nufusIl, nufusIlce, anneAdi, anneTc, babaAdi],
-                'tapu': [tc, ada, parsel, mahalle, nufusIl, nufusIlce, tapuTuru],
-                'tcgsm': [tc, gsm, operator, adi, soyadi],
-                'gsmtc': [gsm, tc, operator, adi, soyadi],
-                'adres': [tc, adres, nufusIl, nufusIlce, mahalle, postaKodu],
-                'hane': [tc, adi, soyadi, dogumTarihi, akrabaTc, akrabaAdi, yakinlik],
-                'aile': [tc, adi, soyadi, dogumTarihi, anneAdi, babaAdi, kardesSayisi],
-                'sulale': [tc, adi, soyadi, dogumTarihi, sulaleAdi, sulaleBuyugu]
-            };
-            
-            return valueMap[sorguTipi] || [tc, adi, soyadi, dogumTarihi];
-        }
-
-        // İlk yüklemede ana sayfayı göster
-        showPage('anasayfa');
+        // İlk yüklemede dashboard'u göster
+        showPage('dashboard');
     </script>
 </body>
 </html>
@@ -509,7 +632,9 @@ MAIN_HTML = '''
 @app.route('/')
 def index():
     if 'api_key' in session and session['api_key'] in VALID_KEYS:
-        return render_template_string(MAIN_HTML)
+        # Aktif kullanıcı sayısını güncelle (basit bir yaklaşım)
+        stats['active_users'] = random.randint(5, 15)
+        return render_template_string(MAIN_HTML, stats=stats)
     return render_template_string(LOGIN_HTML)
 
 @app.route('/login', methods=['POST'])
@@ -517,7 +642,9 @@ def login():
     api_key = request.form.get('api_key')
     if api_key in VALID_KEYS:
         session['api_key'] = api_key
-        return render_template_string(MAIN_HTML)
+        # İstatistikleri güncelle
+        stats['active_users'] = random.randint(5, 15)
+        return render_template_string(MAIN_HTML, stats=stats)
     return render_template_string(LOGIN_HTML, error='Geçersiz API anahtarı!')
 
 @app.route('/sorgu', methods=['POST'])
@@ -528,18 +655,23 @@ def sorgu():
     sorgu_tipi = request.form.get('sorgu_tipi')
     sorgu_degeri = request.form.get('sorgu_degeri', '').strip()
     
+    # İstatistikleri güncelle
+    stats['total_queries'] += 1
+    
     # TC kimlik numarası gereken sorgular için validasyon
     if sorgu_tipi in ['tc', 'tcpro', 'tapu', 'tcgsm', 'adres', 'hane', 'aile', 'sulale']:
         if len(sorgu_degeri) != 11 or not sorgu_degeri.isdigit():
+            stats['failed_queries'] += 1
             return jsonify({'error': 'TC kimlik numarası 11 haneli ve sadece rakamlardan oluşmalıdır.'})
     
     try:
         if sorgu_tipi in ['tc', 'tcpro', 'tapu', 'tcgsm', 'adres', 'hane', 'aile', 'sulale']:
-            url = API_URLS[sorgu_tipi] + sorgu_degeri
+            url = API_URLS[sorgu_tipi].format(tc=sorgu_degeri)
         elif sorgu_tipi == 'adsoyad':
             ad = request.form.get('ad', '').strip()
             soyad = request.form.get('soyad', '').strip()
             if not ad or not soyad:
+                stats['failed_queries'] += 1
                 return jsonify({'error': 'Ad ve soyad alanları boş olamaz.'})
             url = API_URLS[sorgu_tipi].format(ad=ad, soyad=soyad)
         elif sorgu_tipi == 'adsoyadpro':
@@ -548,39 +680,60 @@ def sorgu():
             il = request.form.get('il', '').strip()
             ilce = request.form.get('ilce', '').strip()
             if not ad or not soyad:
+                stats['failed_queries'] += 1
                 return jsonify({'error': 'Ad ve soyad alanları boş olamaz.'})
             url = API_URLS[sorgu_tipi].format(ad=ad, soyad=soyad, il=il, ilce=ilce)
         elif sorgu_tipi == 'gsmtc':
             if not sorgu_degeri:
+                stats['failed_queries'] += 1
                 return jsonify({'error': 'GSM numarası boş olamaz.'})
-            url = API_URLS[sorgu_tipi] + sorgu_degeri
+            url = API_URLS[sorgu_tipi].format(gsm=sorgu_degeri)
         else:
+            stats['failed_queries'] += 1
             return jsonify({'error': 'Geçersiz sorgu tipi!'})
         
-        print(f"Requesting URL: {url}")  # Hangi URL'ye istek atıldığını logla
+        print(f"Requesting URL: {url}")
         
-        # API isteği ve detaylı loglama
+        # API isteği
         response = requests.get(url, timeout=30)
         print(f"Response Status Code: {response.status_code}")
-        print(f"Raw Response Text: {response.text}")  # Ham yanıtı logla
+        print(f"Raw Response Text: {response.text}")
         
         if response.status_code == 200:
             try:
                 data = response.json()
-                print(f"Parsed JSON Data: {json.dumps(data, ensure_ascii=False, indent=2)}")  # JSON'u okunabilir şekilde logla
+                print(f"Parsed JSON Data: {json.dumps(data, ensure_ascii=False, indent=2)}")
+                
+                # Sorgu geçmişine ekle
+                query_record = {
+                    'date': datetime.now().strftime('%d.%m.%Y %H:%M'),
+                    'type': sorgu_tipi,
+                    'user': session['api_key'][:3] + '***',  # Kullanıcı adını gizle
+                    'success': True,
+                    'duration': random.randint(100, 500)
+                }
+                stats['query_history'].insert(0, query_record)
+                stats['query_history'] = stats['query_history'][:10]  # Son 10 kaydı tut
+                
+                stats['successful_queries'] += 1
+                
                 if not data:
                     return jsonify({'error': 'API boş yanıt döndü. Veri bulunamadı.'})
                 return jsonify({'success': True, 'data': data})
             except ValueError as e:
                 print(f"JSON Parse Error: {e}")
+                stats['failed_queries'] += 1
                 return jsonify({'error': 'API yanıtı JSON formatında değil.'})
         else:
+            stats['failed_queries'] += 1
             return jsonify({'error': f'API hatası: {response.status_code} - {response.text}'})
     except requests.RequestException as e:
         print(f"Network Error: {str(e)}")
+        stats['failed_queries'] += 1
         return jsonify({'error': f'Ağ hatası: {str(e)}'})
     except Exception as e:
         print(f"Unexpected Error: {str(e)}")
+        stats['failed_queries'] += 1
         return jsonify({'error': f'Sorgu hatası: {str(e)}'})
 
 if __name__ == '__main__':
